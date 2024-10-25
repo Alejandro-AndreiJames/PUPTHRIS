@@ -11,18 +11,61 @@
 .card {
   background: linear-gradient(45deg, #b94802, #800000);
   color: white;
-  padding: 1rem;
+  padding: 1.5rem;
   border-radius: 0.5rem;
   text-align: center;
+  height: 250px;
+  display: flex;
+  flex-direction: column;
 }
 
 .card h3 {
-  font-size: 1.125rem;
+  font-size: 1.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 1rem;
+  flex: 0 0 auto;
 }
 
 .card p {
-  font-size: 2.25rem;
+  font-size: 3.5rem;
   font-weight: bold;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0 0.5rem;
+  line-height: 1.2;
+  /* Handle long words */
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  hyphens: auto;
+}
+
+/* Adjust font size for longer text */
+.card p:not(:empty) {
+  font-size: clamp(1.75rem, 2vw, 2.25rem);
+}
+
+/* Additional adjustment for very long content */
+.card p:not(:empty):not(:first-line) {
+  font-size: clamp(1.5rem, 1.75vw, 2rem);
+}
+
+@media (max-width: 1200px) {
+  .card p {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .card {
+    height: 200px;
+  }
+  .card p {
+    font-size: 1.75rem;
+  }
 }
 
 .view-btn {
