@@ -52,50 +52,58 @@
       <div class="divider divider-neutral divider-end">Charts</div>
     </div>
 
-    <!-- Charts Section -->
-    <div class="charts-container grid grid-cols-1 md:grid-cols-2 gap-8 p-4">
-      <div>
-        <h2 class="text-2xl font-bold">Employment Types</h2>
-        <canvas baseChart
-                [data]="barChartData"
-                [options]="barChartOptions"
-                [legend]="barChartLegend"
-                [type]="'bar'">
-        </canvas>
+    <!-- Inside your admin view -->
+    <div class="bg-base-200 rounded-lg shadow-lg w-full mt-3">
+      <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
+        <h2 class="text-xl font-bold">Charts</h2>
       </div>
+      
+      <div class="grid grid-cols-2 gap-6 p-6">
+        <!-- Employment Types Chart -->
+        <div class="form-control w-full">
+          <label class="label">
+            <span class="label-text font-bold">Employment Types</span>
+          </label>
+          <div class="chart-wrapper">
+            <canvas baseChart
+                    [data]="barChartData"
+                    [options]="barChartOptions"
+                    [type]="'bar'">
+            </canvas>
+          </div>
+        </div>
 
-      <div>
-        <h2 class="text-2xl font-bold">Instructor per Department</h2>
-        <canvas baseChart
-                [data]="pieChartData"
-                [options]="pieChartOptions"
-                [legend]="pieChartLegend"
-                [type]="'pie'">
-        </canvas>
+        <!-- Instructor per Department Chart -->
+        <div class="form-control w-full">
+          <label class="label">
+            <span class="label-text font-bold">Instructor per Department</span>
+          </label>
+          <div class="chart-wrapper">
+            <canvas baseChart
+                    [data]="pieChartData"
+                    [options]="pieChartOptions"
+                    [type]="'pie'">
+            </canvas>
+          </div>
+        </div>
       </div>
-      <!-- <div *ngIf="ageGroupChartData && ageGroupChartData.labels && ageGroupChartData.labels.length > 0">
-        <canvas baseChart
-                [data]="ageGroupChartData"
-                [options]="ageGroupChartOptions"
-                [type]="'bar'">
-        </canvas>
-      </div> -->
     </div>
-        <!-- Upcoming Birthdays Section -->
-        <!--
-        <div class="flex w-full flex-col mt-8">
-          <div class="divider divider-neutral divider-end">Upcoming Birthdays</div>
-        </div>
+
+    <!-- Upcoming Birthdays Section -->
+    <!--
+    <div class="flex w-full flex-col mt-8">
+      <div class="divider divider-neutral divider-end">Upcoming Birthdays</div>
+    </div>
     
-        <div class="upcoming-birthdays-container mt-4">
-          <h2 class="text-2xl font-bold mb-4">Upcoming Birthdays</h2>
-          <ul>
-            <li *ngFor="let birthday of upcomingBirthdays">
-              {{ birthday.FirstName }} {{ birthday.LastName }} - {{ birthday.DateOfBirth | date:'mediumDate' }}
-            </li>
-          </ul>
-        </div>
-        -->
+    <div class="upcoming-birthdays-container mt-4">
+      <h2 class="text-2xl font-bold mb-4">Upcoming Birthdays</h2>
+      <ul>
+        <li *ngFor="let birthday of upcomingBirthdays">
+          {{ birthday.FirstName }} {{ birthday.LastName }} - {{ birthday.DateOfBirth | date:'mediumDate' }}
+        </li>
+      </ul>
+    </div>
+    -->
   </ng-container>
 
   <ng-template #personalView>

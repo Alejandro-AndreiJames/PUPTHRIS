@@ -29,7 +29,7 @@
 }
 
 .card p {
-  font-size: 3.5rem;
+  font-size: 3.25rem;
   font-weight: bold;
   flex: 1;
   display: flex;
@@ -38,7 +38,6 @@
   margin: 0;
   padding: 0 0.5rem;
   line-height: 1.2;
-  /* Handle long words */
   overflow-wrap: break-word;
   word-wrap: break-word;
   hyphens: auto;
@@ -92,7 +91,7 @@
 
 canvas {
   max-width: 100%;
-  height: 350px !important;
+  height: 450px !important;
   margin-bottom: 2rem;
 }
 
@@ -211,4 +210,65 @@ canvas {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+}
+
+.bg-maroon {
+  background-color: #800000;
+}
+
+.bg-base-200 {
+  background: #f8f9fa; 
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.chart-wrapper {
+  background: white; 
+  border-radius: 8px;
+  padding: 1.5rem;
+  height: 500px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); 
+}
+
+.label-text {
+  font-weight: bold;
+  color: #333;
+}
+
+canvas {
+  max-width: 100%;
+  height: 450px !important;
+}
+
+
+@media (max-width: 768px) {
+  .grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bg-base-200 {
+  background: #f8f9fa; 
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.chart-wrapper {
+  background: white; 
+  border-radius: 8px;
+  padding: 1.5rem;
+  height: 500px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); 
+}
+
+.charts-grid {
+  width: 100%;
 }
