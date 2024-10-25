@@ -205,25 +205,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
                       roles.includes('staff') ? 'staff' : 'user';
     }
 
-    this.campusSubscription = this.campusContextService.getCampusId().subscribe(campusId => {
-      if (campusId !== null && (this.userRole === 'admin' || this.userRole === 'superadmin')) {
-        this.loadAdminDashboardData(campusId);
-        this.loadUserDashboardData();
-        this.isAdminView = true;
-      } else {
-        this.loadUserDashboardData();
-        this.isAdminView = false;
-      }
-    });
+    // Subscribe to campus changes and load data accordingly
+    this.campusSubscription = this.campusContextService.getCampusId().subscribe(
+      campusId => {
+        console.log('Dashboard - Received campus ID:', campusId);
+        if (campusId !== null) {
+          if (this.userRole === 'admin' || this.userRole === 'superadmin') {
+            console.log('Dashboard - Loading admin data for campus:', campusId);
+            this.loadAdminDashboardData(campusId);
+          }
+          this.loadUserDashboardData();
+          this.isAdminView = this.userRole === 'admin' || this.userRole === 'superadmin';
+        } else {
+          console.warn('Dashboard - No campus ID available');
+        }
+      },
+      error => console.error('Dashboard - Error getting campus ID:', error)
+    );
 
     this.loadUpcomingBirthdays();
-    this.campusSubscription = this.campusContextService.getCampusId().subscribe(campusId => {
-      if (campusId !== null) {
-        this.loadAgeGroupData(campusId);
-      } else {
-        console.error('Campus ID is not available');
-      }
-    });
     this.loadProfileCompletion();
   }
 

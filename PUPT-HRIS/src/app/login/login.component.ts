@@ -5,6 +5,9 @@ import { AuthService } from '../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { UserService } from '../services/user.service';
+import { CampusContextService } from '../services/campus-context.service';
+import { finalize, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-login',
@@ -38,7 +41,13 @@ export class LoginComponent implements OnInit, OnDestroy {
   currentImageIndex = 0;
   private autoScrollInterval: any;
 
-  constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
+  constructor(
+    private fb: FormBuilder, 
+    private authService: AuthService, 
+    private router: Router,
+    private userService: UserService,
+    private campusContextService: CampusContextService
+  ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required]],
@@ -88,20 +97,53 @@ export class LoginComponent implements OnInit, OnDestroy {
   login() {
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
-      this.authService.login(email, password)
-        .subscribe((response: any) => {
-          localStorage.setItem('token', response.token);
+      
+      this.authService.login(email, password).pipe(
+        switchMap(response => {
           console.log('Login successful, token:', response.token);
-          this.router.navigate(['/dashboard']);
-        }, (error) => {
-          console.error('Login failed', error);
-          this.errorMessage = 'Invalid email or password. Please try again.';
-        });
+          localStorage.setItem('token', response.token);
+          
+          const decodedToken = this.authService.getDecodedToken();
+          if (!decodedToken?.userId) {
+            throw new Error('No user ID found in token');
+          }
+          
+          // Return the getCurrentUserCampus observable
+          return this.userService.getCurrentUserCampus(decodedToken.userId);
+        }),
+        finalize(() => {
+          // This will run after success or error
+          console.log('Login process completed');
+        })
+      ).subscribe({
+        next: (campus) => {
+          if (campus?.CollegeCampusID) {
+            console.log('Setting default campus ID:', campus.CollegeCampusID);
+            this.campusContextService.setCampusId(campus.CollegeCampusID, true);
+            
+            // Small delay to ensure campus context is fully initialized
+            setTimeout(() => {
+              this.router.navigate(['/dashboard']);
+            }, 100);
+          } else {
+            console.warn('No campus ID found in response');
+            this.router.navigate(['/dashboard']);
+          }
+        },
+        error: (error) => {
+          console.error('Login process failed:', error);
+          if (error.message === 'No user ID found in token') {
+            this.errorMessage = 'Authentication failed. Please try again.';
+          } else {
+            this.errorMessage = 'Invalid email or password. Please try again.';
+          }
+        }
+      });
     } else {
-      console.error('Form is invalid');
-      this.errorMessage = 'Please fill in both fields correctly.';
+      this.errorMessage = 'Please fill in all required fields correctly.';
     }
   }
+
   togglePasswordVisibility() {
     this.showPassword = !this.showPassword;
   }

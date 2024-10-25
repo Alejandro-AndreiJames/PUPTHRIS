@@ -5,6 +5,7 @@ import { tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { jwtDecode } from 'jwt-decode'; 
 import { CampusContextService } from './campus-context.service';
+import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,12 +13,30 @@ import { CampusContextService } from './campus-context.service';
 export class AuthService {
   private apiUrl = `${environment.apiBaseUrl}/auth`;
 
-  constructor(private http: HttpClient, private injector: Injector) {}
+  constructor(
+    private http: HttpClient, 
+    private injector: Injector
+  ) {}
 
   login(email: string, password: string): Observable<{ token: string }> {
     return this.http.post<{ token: string }>(`${this.apiUrl}/login`, { email, password }).pipe(
       tap(response => {
         localStorage.setItem('token', response.token);
+        // After storing token, initialize campus context
+        const decodedToken = this.getDecodedToken();
+        if (decodedToken?.userId) {
+          // Use injector to get both services to avoid circular dependency
+          const userService = this.injector.get(UserService) as UserService;
+          const campusContextService = this.injector.get(CampusContextService);
+          
+          userService.getCurrentUserCampus(decodedToken.userId).subscribe(
+            campus => {
+              if (campus?.CollegeCampusID) {
+                campusContextService.setCampusId(campus.CollegeCampusID);
+              }
+            }
+          );
+        }
       })
     );
   }
