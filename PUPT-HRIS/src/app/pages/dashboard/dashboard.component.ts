@@ -334,8 +334,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  toggleDashboardView(): void {
-    this.isAdminView = !this.isAdminView;
+  // Update the toggle function
+  toggleDashboardView(isAdmin: boolean): void {
+    this.isAdminView = isAdmin;
+    if (isAdmin) {
+      const campusId = this.campusContextService.getCurrentCampusId();
+      if (campusId) {
+        this.loadAdminDashboardData(campusId);
+      }
+    } else {
+      this.loadUserDashboardData();
+    }
   }
 
   // New property for user activity chart

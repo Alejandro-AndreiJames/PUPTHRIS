@@ -1,6 +1,7 @@
 .dashboard-content {
   margin-left: 60px;
   margin-right: 60px;
+  margin-bottom: 4rem;
 }
 
 .cards-container {
@@ -11,18 +12,60 @@
 .card {
   background: linear-gradient(45deg, #b94802, #800000);
   color: white;
-  padding: 1rem;
+  padding: 1.5rem;
   border-radius: 0.5rem;
   text-align: center;
+  height: 250px;
+  display: flex;
+  flex-direction: column;
 }
 
 .card h3 {
-  font-size: 1.125rem;
+  font-size: 1.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 1rem;
+  flex: 0 0 auto;
 }
 
 .card p {
-  font-size: 2.25rem;
+  font-size: 3.25rem;
   font-weight: bold;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0 0.5rem;
+  line-height: 1.2;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  hyphens: auto;
+}
+
+/* Adjust font size for longer text */
+.card p:not(:empty) {
+  font-size: clamp(1.75rem, 2vw, 2.25rem);
+}
+
+/* Additional adjustment for very long content */
+.card p:not(:empty):not(:first-line) {
+  font-size: clamp(1.5rem, 1.75vw, 2rem);
+}
+
+@media (max-width: 1200px) {
+  .card p {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .card {
+    height: 200px;
+  }
+  .card p {
+    font-size: 1.75rem;
+  }
 }
 
 .view-btn {
@@ -37,15 +80,23 @@
 .charts-container {
   display: grid;
   gap: 2rem;
-  min-height: 300px;
+  min-height: 400px;
+  padding: 1.5rem;
+  margin-bottom: 3rem;
 }
 
 .charts-container h2 {
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
 }
 
 canvas {
   max-width: 100%;
+  height: 450px !important;
+  margin-bottom: 2rem;
+}
+
+.divider {
+  margin: 2rem 0;
 }
 
 .trainings-seminars-container {
@@ -79,16 +130,37 @@ canvas {
 .profile-completion-container {
   background-color: #fff;
   border-radius: 15px;
+  padding: 2rem;
+  margin-bottom: 3rem;
 }
 
 .task-item {
-  background-color: #f9f9f9;
-  border-radius: 10px;
-  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: #800000;
+  color: white;
 }
 
 .task-item:hover {
-  background-color: #e0e0e0;
+  transform: translateX(4px);
+  background-color: #000000;
+  color: white;
+}
+
+.task-item span {
+  transition: all 0.2s ease;
+  color: white;
+}
+
+.view-all-button {
+  transition: all 0.2s ease;
+}
+
+.bg-maroon {
+  background-color: #800000;
+}
+
+.hover\:bg-black:hover {
+  background-color: #000000;
 }
 
 .expandable-tasks {
@@ -96,3 +168,133 @@ canvas {
   overflow: hidden;
   transition: max-height 0.3s ease-in-out;
 }
+
+.view-toggle-container {
+  display: flex;
+  gap: 0.75rem; 
+  background: #e0e0e0;
+  padding: 0.5rem;
+  border-radius: 8px;
+  width: fit-content;
+  margin-left: auto;
+  box-shadow: 
+    -3px -3px 7px rgba(255, 255, 255, 0.6),
+    3px 3px 5px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-btn {
+  padding: 0.5rem 1rem; 
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.9rem; 
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  background: #e0e0e0;
+  color: #616161;
+}
+
+.toggle-btn:hover {
+  background: #000000;
+  color: #ffffff;
+  box-shadow: 
+    3px 3px 6px rgba(0, 0, 0, 0.3),
+    -2px -2px 5px rgba(255, 255, 255, 0.1);
+}
+
+.toggle-btn:active {
+  transform: translateY(1px);
+  box-shadow: 
+    1px 1px 2px rgba(0, 0, 0, 0.2),
+    -1px -1px 2px rgba(255, 255, 255, 0.1);
+}
+
+.toggle-btn.active {
+  background: #800000; 
+  color: white;
+  box-shadow: 
+    2px 2px 5px rgba(0, 0, 0, 0.2),
+    -2px -2px 5px rgba(255, 255, 255, 0.1);
+}
+
+.toggle-btn.active:hover {
+  background: #900000;
+}
+
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.bg-base-200 {
+  background: #f8f9fa; 
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.chart-wrapper {
+  background: white; 
+  border-radius: 8px;
+  padding: 1.5rem;
+  height: 500px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); 
+}
+
+.label-text {
+  font-weight: bold;
+  color: #333;
+}
+
+canvas {
+  max-width: 100%;
+  height: 450px !important;
+}
+
+
+@media (max-width: 768px) {
+  .grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bg-base-200 {
+  background: #f8f9fa; 
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.chart-wrapper {
+  background: white; 
+  border-radius: 8px;
+  padding: 1.5rem;
+  height: 500px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); 
+}
+
+.charts-grid {
+  width: 100%;
+}
+
+/* Add these styles */
+.bg-maroon {
+  background-color: #800000;
+}
+
+.hover\:bg-maroon-dark:hover {
+  background-color: #600000;
+}
+
+/* Keep your existing styles */
