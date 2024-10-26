@@ -1,19 +1,35 @@
 <div class="dashboard-content">
-  <div *ngIf="userRole === 'admin' || userRole === 'superadmin'" class="flex justify-between items-center mb-4">
-    <div class="form-control">
-      <label class="label cursor-pointer">
-        <span class="label-text mr-2">{{ isAdminView ? 'Admin View' : 'Personal View' }}</span> 
-        <input type="checkbox" class="toggle toggle-primary" [checked]="isAdminView" (change)="toggleDashboardView()">
-      </label>
+  <!-- Add this wrapper div -->
+  <div class="dashboard-header">
+    <div class="flex-1">
+      <a class="text-lg font-normal">
+        {{ isAdminView ? 'You are currently viewing the Dashboard (Active Users Only).' : 'Here is your Personal Dashboard.' }}
+      </a>
+    </div>
+    
+    <div *ngIf="userRole === 'admin' || userRole === 'superadmin'" class="view-toggle-container">
+      <button 
+        [class]="isAdminView ? 'active' : ''" 
+        (click)="toggleDashboardView(true)"
+        class="toggle-btn">
+        <i class="fas fa-users-cog mr-2"></i>
+        Admin View
+      </button>
+      <button 
+        [class]="!isAdminView ? 'active' : ''" 
+        (click)="toggleDashboardView(false)"
+        class="toggle-btn">
+        <i class="fas fa-user mr-2"></i>
+        Personal View
+      </button>
     </div>
   </div>
 
+  <div class="divider"></div>
+
   <ng-container *ngIf="(userRole === 'admin' || userRole === 'superadmin') && isAdminView; else personalView">
     <!-- Admin Dashboard Content -->
-    <div class="flex-1 mb-2">
-      <a class="text-lg font-normal">You are currently viewing the Dashboard (Active Users Only).</a>
-    </div>
-    <div class="cards-container grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+    <div class="cards-container grid grid-cols-1 md:grid-cols-4 gap-4 mb-2">
       <div class="card bg-gradient-to-r from-orange-400 to-red-600 text-white p-6 rounded-lg shadow-lg">
         <h3 class="text-2xl font-bold">Female</h3>
         <p class="text-6xl font-extrabold">{{ totalFemale }}</p>
@@ -36,58 +52,63 @@
       <div class="divider divider-neutral divider-end">Charts</div>
     </div>
 
-    <!-- Charts Section -->
-    <div class="charts-container grid grid-cols-1 md:grid-cols-2 gap-8 p-4">
-      <div>
-        <h2 class="text-2xl font-bold">Employment Types</h2>
-        <canvas baseChart
-                [data]="barChartData"
-                [options]="barChartOptions"
-                [legend]="barChartLegend"
-                [type]="'bar'">
-        </canvas>
+    <!-- Inside your admin view -->
+    <div class="bg-base-200 rounded-lg shadow-lg w-full mt-3">
+      <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
+        <h2 class="text-xl font-bold">Charts</h2>
       </div>
+      
+      <div class="grid grid-cols-2 gap-6 p-6">
+        <!-- Employment Types Chart -->
+        <div class="form-control w-full">
+          <label class="label">
+            <span class="label-text font-bold">Employment Types</span>
+          </label>
+          <div class="chart-wrapper">
+            <canvas baseChart
+                    [data]="barChartData"
+                    [options]="barChartOptions"
+                    [type]="'bar'">
+            </canvas>
+          </div>
+        </div>
 
-      <div>
-        <h2 class="text-2xl font-bold">Instructor per Department</h2>
-        <canvas baseChart
-                [data]="pieChartData"
-                [options]="pieChartOptions"
-                [legend]="pieChartLegend"
-                [type]="'pie'">
-        </canvas>
+        <!-- Instructor per Department Chart -->
+        <div class="form-control w-full">
+          <label class="label">
+            <span class="label-text font-bold">Instructor per Department</span>
+          </label>
+          <div class="chart-wrapper">
+            <canvas baseChart
+                    [data]="pieChartData"
+                    [options]="pieChartOptions"
+                    [type]="'pie'">
+            </canvas>
+          </div>
+        </div>
       </div>
-      <!-- <div *ngIf="ageGroupChartData && ageGroupChartData.labels && ageGroupChartData.labels.length > 0">
-        <canvas baseChart
-                [data]="ageGroupChartData"
-                [options]="ageGroupChartOptions"
-                [type]="'bar'">
-        </canvas>
-      </div> -->
     </div>
-        <!-- Upcoming Birthdays Section -->
-        <!--
-        <div class="flex w-full flex-col mt-8">
-          <div class="divider divider-neutral divider-end">Upcoming Birthdays</div>
-        </div>
+
+    <!-- Upcoming Birthdays Section -->
+    <!--
+    <div class="flex w-full flex-col mt-8">
+      <div class="divider divider-neutral divider-end">Upcoming Birthdays</div>
+    </div>
     
-        <div class="upcoming-birthdays-container mt-4">
-          <h2 class="text-2xl font-bold mb-4">Upcoming Birthdays</h2>
-          <ul>
-            <li *ngFor="let birthday of upcomingBirthdays">
-              {{ birthday.FirstName }} {{ birthday.LastName }} - {{ birthday.DateOfBirth | date:'mediumDate' }}
-            </li>
-          </ul>
-        </div>
-        -->
+    <div class="upcoming-birthdays-container mt-4">
+      <h2 class="text-2xl font-bold mb-4">Upcoming Birthdays</h2>
+      <ul>
+        <li *ngFor="let birthday of upcomingBirthdays">
+          {{ birthday.FirstName }} {{ birthday.LastName }} - {{ birthday.DateOfBirth | date:'mediumDate' }}
+        </li>
+      </ul>
+    </div>
+    -->
   </ng-container>
 
   <ng-template #personalView>
     <!-- Personal Dashboard Content -->
-    <div class="flex-1 mb-2">
-      <a class="text-lg font-normal">Welcome to your Personal Dashboard</a>
-    </div>
-    <div class="cards-container grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <div class="cards-container grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 pb-3">
       <div class="card bg-gradient-to-r from-orange-400 to-red-600 text-white p-6 rounded-lg shadow-lg">
         <h3 class="text-2xl font-bold">Department</h3>
         <p class="text-2xl font-extrabold">{{ userDepartment }}</p>
@@ -111,7 +132,8 @@
 
     <!-- User-specific charts or information -->
     <div class="charts-container grid grid-cols-1 md:grid-cols-2 gap-8 p-4">
-      <div>
+      <!-- Left side: Chart -->
+      <div class="border-r border-gray-300 pr-8">
         <h2 class="text-2xl font-bold">Your Activities</h2>
         <canvas baseChart
                 [data]="userActivityChartData"
@@ -120,7 +142,8 @@
         </canvas>
       </div>
 
-      <div class="profile-completion-container p-4">
+      <!-- Right side: Profile Completion -->
+      <div class="profile-completion-container pl-8">
         <h2 class="text-2xl font-bold mb-4">Profile Completion</h2>
         <div class="flex items-center">
           <ngx-gauge
@@ -130,33 +153,31 @@
             [thick]="gaugeThick"
             cap="round"
             [size]="gaugeSize"
-            foregroundColor="#e74c3c"
+            foregroundColor="#800000"
             [label]="''">
           </ngx-gauge>
           <div class="ml-4">
             <p class="font-bold text-lg">{{ getProfileMessage().title }}</p>
             <p class="text-sm text-gray-600">{{ getProfileMessage().description }}</p>
-            <!-- Add PDS warning message -->
             <p *ngIf="gaugeValue < 100" class="mt-2 text-sm text-red-600 font-medium">
               Please complete your profile to generate PDS
             </p>
           </div>
         </div>
-        <div class="tasks mt-4">
+
+        <!-- Added divider -->
+        <div class="border-t border-gray-200 my-4"></div>
+
+        <div class="tasks">
           <!-- First 3 Tasks (Always Visible) -->
           <div *ngFor="let task of (showAllTasks ? incompleteTasks : incompleteTasks.slice(0, 3))" 
-               class="task-item flex items-center justify-between p-3 bg-white rounded-lg shadow-sm mb-2 hover:bg-gray-50 cursor-pointer"
+               class="task-item p-3 bg-maroon text-white rounded-lg shadow-sm mb-2 cursor-pointer transition-all duration-200 hover:bg-black"
                (click)="navigateToTask(task)">
-            <span class="text-gray-700">{{ task }}</span>
-            <span class="text-blue-500">→</span>
+            <div class="flex items-center justify-between">
+              <span>{{ task }}</span>
+              <span class="text-white">→</span>
+            </div>
           </div>
-
-          <!-- View All Button -->
-          <button *ngIf="incompleteTasks.length > 3" 
-                   class="view-all-button text-blue-500 hover:text-blue-700 mt-3"
-                   (click)="toggleTasksView()">
-            {{ showAllTasks ? 'Show less' : 'View all (' + incompleteTasks.length + ')' }}
-          </button>
         </div>
       </div>
     </div>
@@ -190,4 +211,3 @@
     </div>
     -->
   </ng-template>
-
