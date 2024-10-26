@@ -135,13 +135,32 @@ canvas {
 }
 
 .task-item {
-  background-color: #f9f9f9;
-  border-radius: 10px;
-  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: #800000;
+  color: white;
 }
 
 .task-item:hover {
-  background-color: #e0e0e0;
+  transform: translateX(4px);
+  background-color: #000000;
+  color: white;
+}
+
+.task-item span {
+  transition: all 0.2s ease;
+  color: white;
+}
+
+.view-all-button {
+  transition: all 0.2s ease;
+}
+
+.bg-maroon {
+  background-color: #800000;
+}
+
+.hover\:bg-black:hover {
+  background-color: #000000;
 }
 
 .expandable-tasks {
@@ -212,10 +231,6 @@ canvas {
   margin-bottom: 1rem;
 }
 
-.bg-maroon {
-  background-color: #800000;
-}
-
 .bg-base-200 {
   background: #f8f9fa; 
   width: 100%;
@@ -272,3 +287,14 @@ canvas {
 .charts-grid {
   width: 100%;
 }
+
+/* Add these styles */
+.bg-maroon {
+  background-color: #800000;
+}
+
+.hover\:bg-maroon-dark:hover {
+  background-color: #600000;
+}
+
+/* Keep your existing styles */
