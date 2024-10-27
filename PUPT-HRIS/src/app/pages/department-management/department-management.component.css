@@ -120,3 +120,21 @@
     gap: 0.5rem;
   }
   
+.table {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  background-color: white;
+}
+
+.table thead tr th:first-child {
+  border-top-left-radius: 8px;
+}
+
+.table thead tr th:last-child {
+  border-top-right-radius: 8px;
+}
+
+.table tbody tr:hover {
+  background-color: #e5e7eb !important;
+}
