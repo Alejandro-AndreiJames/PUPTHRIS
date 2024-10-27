@@ -184,13 +184,50 @@
   margin-top: 1rem;
   border-collapse: collapse;
   padding: 0 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  background-color: white;
 }
 
-.table th,
-.table td {
-  padding: 0.75rem;
-  border-bottom: 1px solid #e2e8f0;
+.table thead tr th:first-child {
+  border-top-left-radius: 8px;
+}
+
+.table thead tr th:last-child {
+  border-top-right-radius: 8px;
+}
+
+.table tbody tr:hover {
+  background-color: #e5e7eb !important;
+}
+
+/* Info table specific styling (for basic details and other info sections) */
+.info-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 10px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  background-color: white;
+  margin-bottom: 1rem;
+}
+
+.info-table tbody tr:hover {
+  background-color: #e5e7eb !important;
+}
+
+.info-table th,
+.info-table td {
+  padding: 12px;
   text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.info-table th {
+  font-weight: 600;
+  color: #4a5568;
 }
 
 /* Pagination Controls */
