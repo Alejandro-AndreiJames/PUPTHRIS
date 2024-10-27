@@ -484,4 +484,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.router.navigate([route]);
     }
   }
+
+  // Add this method to the DashboardComponent class
+  formatEmploymentType(type: string): string {
+    switch(type.toLowerCase()) {
+      case 'parttime':
+      case 'part-time':
+        return 'Part Time';
+      case 'fulltime':
+      case 'full-time':
+        return 'Full Time';
+      case 'temporary':
+        return 'Temporary';
+      default:
+        return type; // Return original value if no match
+    }
+  }
 }
