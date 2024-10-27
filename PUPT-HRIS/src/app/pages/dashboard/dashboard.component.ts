@@ -11,6 +11,7 @@ import { UserDashboardData } from '../../services/dashboard.service';
 import { UpcomingBirthday } from '../../services/dashboard.service';
 import { NgxGaugeModule} from 'ngx-gauge';
 import { Router } from '@angular/router';
+import { DashboardStateService } from '../../services/dashboard-state.service';
 
 type NgxGaugeType = 'full' | 'semi' | 'arch';
 
@@ -188,7 +189,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private authService: AuthService,
     private campusContextService: CampusContextService,
-    private router: Router
+    private router: Router,
+    private dashboardStateService: DashboardStateService  // Add this
   ) {
     this.campusSubscription = new Subscription();
     const decodedToken = this.authService.getDecodedToken();
@@ -205,25 +207,28 @@ export class DashboardComponent implements OnInit, OnDestroy {
                       roles.includes('staff') ? 'staff' : 'user';
     }
 
-    this.campusSubscription = this.campusContextService.getCampusId().subscribe(campusId => {
-      if (campusId !== null && (this.userRole === 'admin' || this.userRole === 'superadmin')) {
-        this.loadAdminDashboardData(campusId);
-        this.loadUserDashboardData();
-        this.isAdminView = true;
-      } else {
-        this.loadUserDashboardData();
-        this.isAdminView = false;
-      }
-    });
+    // Load the saved view state
+    this.isAdminView = this.dashboardStateService.getAdminView();
+
+    // Subscribe to campus changes and load data accordingly
+    this.campusSubscription = this.campusContextService.getCampusId().subscribe(
+      campusId => {
+        console.log('Dashboard - Received campus ID:', campusId);
+        if (campusId !== null) {
+          if (this.isAdminView && (this.userRole === 'admin' || this.userRole === 'superadmin')) {
+            console.log('Dashboard - Loading admin data for campus:', campusId);
+            this.loadAdminDashboardData(campusId);
+          } else {
+            this.loadUserDashboardData();
+          }
+        } else {
+          console.warn('Dashboard - No campus ID available');
+        }
+      },
+      error => console.error('Dashboard - Error getting campus ID:', error)
+    );
 
     this.loadUpcomingBirthdays();
-    this.campusSubscription = this.campusContextService.getCampusId().subscribe(campusId => {
-      if (campusId !== null) {
-        this.loadAgeGroupData(campusId);
-      } else {
-        console.error('Campus ID is not available');
-      }
-    });
     this.loadProfileCompletion();
   }
 
@@ -337,6 +342,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // Update the toggle function
   toggleDashboardView(isAdmin: boolean): void {
     this.isAdminView = isAdmin;
+    this.dashboardStateService.setAdminView(isAdmin); // Save the state
+    
     if (isAdmin) {
       const campusId = this.campusContextService.getCurrentCampusId();
       if (campusId) {

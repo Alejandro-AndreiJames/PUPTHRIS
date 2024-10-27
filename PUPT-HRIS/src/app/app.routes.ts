@@ -33,6 +33,7 @@ import { PdsComponent } from './pages/pds/pds.component';
 import { CoordinatorManagementComponent } from './pages/coordinator-management/coordinator-management.component';
 import { AcademicRankComponent } from './pages/academic-rank/academic-rank.component';
 import { CollegeCampusManagementComponent } from './pages/college-campus-management/college-campus-management.component';
+import { CampusGuard } from './services/campus.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -41,7 +42,7 @@ export const routes: Routes = [
   {
     path: '',
     component: MainLayoutComponent,
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, CampusGuard],
     children: [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'departments', component: DepartmentManagementComponent, canActivate: [RoleGuard], data: { expectedRoles: ['superadmin', 'admin'] } },

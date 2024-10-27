@@ -127,7 +127,8 @@ export class SettingsComponent implements OnInit {
   onCampusChange(): void {
     const selectedCampusId = this.campusForm.get('selectedCampus')?.value;
     if (selectedCampusId) {
-      console.log('Campus changed in SettingsComponent:', selectedCampusId);
+      console.log('Settings - Changing campus to:', selectedCampusId);
+      // Use updateCampus instead of setCampusId
       this.campusContextService.updateCampus(Number(selectedCampusId));
       this.showToastNotification('Campus selection updated!', 'success');
     }
