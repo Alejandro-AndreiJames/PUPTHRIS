@@ -67,6 +67,12 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     }
   }
 
+  private initializePagination(): void {
+    this.currentPage = 1;
+    this.totalPages = Math.ceil(this.filteredUsers.length / this.itemsPerPage);
+    this.updatePaginatedData();
+  }
+
   fetchUsers(): void {
     if (this.campusId === null) {
       console.error('Campus ID is null, cannot fetch users');
@@ -79,7 +85,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         console.log('Number of users received:', users.length);
         this.users = users.filter(user => user.CollegeCampusID === this.campusId);
         this.filteredUsers = this.users;
-        this.updatePaginatedData(); // Add this line
+        this.initializePagination(); // Replace updatePaginatedData() with this
         console.log('Number of users after filtering:', this.users.length);
       },
       error: (error) => {
