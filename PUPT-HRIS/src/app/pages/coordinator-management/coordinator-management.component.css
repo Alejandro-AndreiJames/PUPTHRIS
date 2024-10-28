@@ -183,7 +183,6 @@ td.p-4 {
   background-color: #e5e7eb !important;
 }
 
-/* Add these animation keyframes at the end of your CSS file */
 @keyframes slideDown {
   from {
     transform: translateY(-20px);
