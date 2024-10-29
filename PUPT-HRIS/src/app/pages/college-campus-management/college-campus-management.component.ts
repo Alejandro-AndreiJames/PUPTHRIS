@@ -21,11 +21,18 @@ export class CollegeCampusManagementComponent implements OnInit {
   toastMessage: string = '';
   toastType: 'success' | 'error' | 'warning' = 'success';
 
+  editForm: FormGroup;
+
   constructor(
     private collegeCampusService: CollegeCampusService,
     private fb: FormBuilder
   ) {
     this.campusForm = this.fb.group({
+      Name: ['', [Validators.required, Validators.maxLength(100)]],
+      Description: ['', Validators.maxLength(255)]
+    });
+
+    this.editForm = this.fb.group({
       Name: ['', [Validators.required, Validators.maxLength(100)]],
       Description: ['', Validators.maxLength(255)]
     });
@@ -85,7 +92,7 @@ export class CollegeCampusManagementComponent implements OnInit {
   editCampus(campus: CollegeCampus): void {
     this.isEditing = true;
     this.currentCampusId = campus.CollegeCampusID ?? null;
-    this.campusForm.patchValue(campus);
+    this.editForm.patchValue(campus);
   }
 
   deleteCampus(id: number | undefined): void {
@@ -109,8 +116,6 @@ export class CollegeCampusManagementComponent implements OnInit {
   }
 
   resetForm(): void {
-    this.isEditing = false;
-    this.currentCampusId = null;
     this.campusForm.reset();
   }
 
@@ -122,5 +127,34 @@ export class CollegeCampusManagementComponent implements OnInit {
     setTimeout(() => {
       this.showToast = false;
     }, 3000);
+  }
+
+  closeEditModal(): void {
+    this.isEditing = false;
+    this.currentCampusId = null;
+    this.editForm.reset();
+  }
+
+  updateCampus(): void {
+    if (this.editForm.invalid) {
+      this.showToastNotification('Please fill out all required fields.', 'warning');
+      return;
+    }
+
+    const campus: CollegeCampus = this.editForm.value;
+
+    if (this.currentCampusId !== null) {
+      this.collegeCampusService.updateCollegeCampus(this.currentCampusId, campus).subscribe(
+        () => {
+          this.loadCampuses();
+          this.closeEditModal();
+          this.showToastNotification('College campus updated successfully', 'success');
+        },
+        (error) => {
+          this.showToastNotification('Error updating college campus', 'error');
+          console.error('Error updating college campus', error);
+        }
+      );
+    }
   }
 }
