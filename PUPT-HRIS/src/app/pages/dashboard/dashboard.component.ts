@@ -184,6 +184,76 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   };
 
+  // Add new chart property for academic ranks
+  public academicRankChartData: ChartData<'bar'> = {
+    labels: [],
+    datasets: [{
+      data: [],
+      backgroundColor: '#800000',
+      barThickness: 25,
+      maxBarThickness: 30,
+      minBarLength: 2
+    }]
+  };
+
+  public academicRankChartOptions: ChartOptions<'bar'> = {
+    responsive: true,
+    indexAxis: 'y',
+    plugins: {
+      legend: {
+        display: false
+      },
+      title: {
+        display: true,
+        text: 'Academic Ranks Distribution'
+      },
+      tooltip: {
+        enabled: true,
+        mode: 'index',
+        intersect: false,
+        axis: 'y',
+        position: 'nearest',
+        callbacks: {
+          label: function(context) {
+            return `Count: ${context.parsed.x}`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1
+        }
+      },
+      y: {
+        ticks: {
+          autoSkip: false,
+          padding: 10
+        }
+      }
+    },
+    layout: {
+      padding: {
+        left: 10,
+        right: 10
+      }
+    },
+    maintainAspectRatio: false,
+    hover: {
+      mode: 'index',
+      intersect: false,
+      axis: 'y'
+    },
+    elements: {
+      bar: {
+        borderWidth: 1,
+        borderRadius: 0
+      }
+    }
+  };
+
   constructor(
     private dashboardService: DashboardService,
     private cdr: ChangeDetectorRef,
@@ -285,6 +355,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
           }]
         };
   
+        // Process academic rank data
+        if (data.academicRanks && Array.isArray(data.academicRanks)) {
+          this.academicRankChartData = {
+            labels: data.academicRanks.map((rank: { Rank: string }) => rank.Rank),
+            datasets: [{
+              data: data.academicRanks.map((rank: { count: number }) => rank.count),
+              backgroundColor: '#800000',
+              barThickness: 25,
+              maxBarThickness: 30,
+              minBarLength: 2
+            }]
+          };
+        }
+
         this.updateCharts();
       } else {
         console.error('Departments data is missing or not an array');

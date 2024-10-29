@@ -11,7 +11,7 @@ const VoluntaryWork = require('../models/voluntaryworkModel');
 const OfficerMembership = require('../models/officerMembershipModel');
 const PersonalDetails = require('../models/personalDetailsModel');
 const Education = require('../models/educationModel');
-const WorkExperience = require('../models/workExperienceModel');
+const WorkExperience = require('../models/workexperienceModel');
 const ContactDetails = require('../models/contactDetailsModel');
 const FamilyBackground = require('../models/familybackgroundModel');
 const Children = require('../models/childrenModel');
@@ -20,7 +20,7 @@ const ProfileImage = require('../models/profileImageModel');
 const SpecialSkill = require('../models/specialSkillModel');
 const Membership = require('../models/membershipModel');
 const CivilServiceEligibility = require('../models/CivilServiceEligibility');
-const LearningDevelopment = require('../models/learningDevelopmentModel');
+const LearningDevelopment = require('../models/learningdevelopmentModel');
 const AdditionalQuestion = require('../models/additionalQuestionModel');
 const CharacterReference = require('../models/characterReferenceModel');
 const moment = require('moment');
@@ -81,6 +81,21 @@ exports.getDashboardData = async (req, res) => {
       }]
     });
 
+    // Count academic ranks
+    const academicRankCounts = await AcademicRank.findAll({
+      attributes: [
+        'Rank',
+        [Sequelize.fn('COUNT', Sequelize.col('AcademicRankID')), 'count']
+      ],
+      include: [{
+        model: User,
+        where: userWhereClause,
+        attributes: []
+      }],
+      group: ['Rank'],
+      raw: true
+    });
+
     // Get departments with count of users in each department
     const departments = await Department.findAll({
       where: campusId ? { CollegeCampusID: campusId } : {},
@@ -111,6 +126,7 @@ exports.getDashboardData = async (req, res) => {
       faculty,
       staff,
       departments,
+      academicRanks: academicRankCounts,
     });
   } catch (error) {
     console.error('Error fetching dashboard data:', error);

@@ -86,6 +86,20 @@
             </canvas>
           </div>
         </div>
+
+        <!-- Academic Ranks Chart -->
+        <div class="form-control w-full">
+          <label class="label">
+            <span class="label-text font-bold">Academic Ranks Distribution</span>
+          </label>
+          <div class="chart-wrapper" style="height: 400px;"> <!-- Adjust height as needed -->
+            <canvas baseChart
+                    [data]="academicRankChartData"
+                    [options]="academicRankChartOptions"
+                    [type]="'bar'">
+            </canvas>
+          </div>
+        </div>
       </div>
     </div>
 
