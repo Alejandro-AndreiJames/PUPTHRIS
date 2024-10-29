@@ -12,6 +12,7 @@ import { UpcomingBirthday } from '../../services/dashboard.service';
 import { NgxGaugeModule} from 'ngx-gauge';
 import { Router } from '@angular/router';
 import { DashboardStateService } from '../../services/dashboard-state.service';
+import { AcademicRank, AcademicRankCount } from '../../model/academicRank.model';
 
 type NgxGaugeType = 'full' | 'semi' | 'arch';
 
@@ -185,74 +186,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
   };
 
   // Add new chart property for academic ranks
-  public academicRankChartData: ChartData<'bar'> = {
+  public academicRankChartData: ChartData<'doughnut'> = {
     labels: [],
     datasets: [{
       data: [],
-      backgroundColor: '#800000',
-      barThickness: 25,
-      maxBarThickness: 30,
-      minBarLength: 2
+      backgroundColor: [
+        '#800000', '#A52A2A', '#C41E3A', '#D2042D', '#E34234',
+        '#FF2400', '#FF0800', '#CD5C5C', '#B22222', '#960018',
+        '#FF6B6B', '#E97451', '#FF4433', '#FF6961', '#FF7F7F',
+        '#FF8674', '#FFB6B6', '#FFB4B4'
+      ],
+      hoverOffset: 4,
+      borderWidth: 1,
+      borderColor: '#fff'
     }]
   };
 
-  public academicRankChartOptions: ChartOptions<'bar'> = {
-    responsive: true,
-    indexAxis: 'y',
-    plugins: {
-      legend: {
-        display: false
-      },
-      title: {
-        display: true,
-        text: 'Academic Ranks Distribution'
-      },
-      tooltip: {
-        enabled: true,
-        mode: 'index',
-        intersect: false,
-        axis: 'y',
-        position: 'nearest',
-        callbacks: {
-          label: function(context) {
-            return `Count: ${context.parsed.x}`;
-          }
-        }
-      }
-    },
-    scales: {
-      x: {
-        beginAtZero: true,
-        ticks: {
-          stepSize: 1
-        }
-      },
-      y: {
-        ticks: {
-          autoSkip: false,
-          padding: 10
-        }
-      }
-    },
-    layout: {
-      padding: {
-        left: 10,
-        right: 10
-      }
-    },
-    maintainAspectRatio: false,
-    hover: {
-      mode: 'index',
-      intersect: false,
-      axis: 'y'
-    },
-    elements: {
-      bar: {
-        borderWidth: 1,
-        borderRadius: 0
-      }
-    }
-  };
+
+  public academicRanks: AcademicRankCount[] = [];
 
   constructor(
     private dashboardService: DashboardService,
@@ -357,16 +308,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   
         // Process academic rank data
         if (data.academicRanks && Array.isArray(data.academicRanks)) {
-          this.academicRankChartData = {
-            labels: data.academicRanks.map((rank: { Rank: string }) => rank.Rank),
-            datasets: [{
-              data: data.academicRanks.map((rank: { count: number }) => rank.count),
-              backgroundColor: '#800000',
-              barThickness: 25,
-              maxBarThickness: 30,
-              minBarLength: 2
-            }]
-          };
+          this.academicRanks = data.academicRanks.map((rank: AcademicRankCount) => ({
+            Rank: rank.Rank,
+            count: rank.count || 0
+          }));
         }
 
         this.updateCharts();

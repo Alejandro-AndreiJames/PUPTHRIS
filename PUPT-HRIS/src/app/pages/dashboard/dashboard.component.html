@@ -88,21 +88,25 @@
         </div>
 
         <!-- Academic Ranks Chart -->
-        <div class="form-control w-full">
-          <label class="label">
-            <span class="label-text font-bold">Academic Ranks Distribution</span>
-          </label>
-          <div class="chart-wrapper" style="height: 400px;"> <!-- Adjust height as needed -->
-            <canvas baseChart
-                    [data]="academicRankChartData"
-                    [options]="academicRankChartOptions"
-                    [type]="'bar'">
-            </canvas>
+      </div>
+    </div>
+    <div class="form-control w-full">
+      <label class="label">
+        <span class="label-text font-bold text-xl">Academic Ranks Distribution</span>
+      </label>
+      
+      <div class="cards-container overflow-x-auto hide-scrollbar pb-4">
+        <div class="flex gap-4">
+          <div *ngFor="let rank of academicRanks" 
+               class="card flex-none" 
+               style="min-width: 250px; height: 200px;">
+            <h3>{{rank.Rank}}</h3>
+            <p>{{rank.count}}</p>
+            <span class="text-sm">Faculty Members</span>
           </div>
         </div>
       </div>
     </div>
-
     <!-- Upcoming Birthdays Section -->
     <!--
     <div class="flex w-full flex-col mt-8">

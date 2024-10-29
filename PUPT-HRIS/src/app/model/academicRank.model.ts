@@ -4,3 +4,8 @@ export interface AcademicRank {
   Rank: string;
   UpdatedAt?: Date;
 }
+
+export interface AcademicRankCount {
+  Rank: string;
+  count: number;
+}
