@@ -116,7 +116,12 @@ export class WorkExperienceComponent implements OnInit {
       this.workService.deleteWorkExperience(id).subscribe(
         response => {
           this.workExperienceData = this.workExperienceData.filter(ex => ex.WorkExperienceID !== id);
-          this.showToastNotification('Work experience deleted successfully.', 'error');
+          this.totalPages = Math.ceil(this.workExperienceData.length / this.itemsPerPage);
+          if (this.currentPage > this.totalPages) {
+            this.currentPage = Math.max(1, this.totalPages);
+          }
+          this.updatePaginatedData();
+          this.showToastNotification('Work experience deleted successfully.', 'success');
         },
         error => {
           this.showToastNotification('There is an error deleting the record.', 'error');

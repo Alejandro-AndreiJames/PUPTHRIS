@@ -157,9 +157,13 @@ export class LearningComponent implements OnInit {
     if (confirm('Are you sure you want to delete this record?')) {
       this.learningService.deleteLearningDevelopment(id).subscribe(
         response => {
-          console.log('Learning development deleted successfully', response);
           this.learningData = this.learningData.filter(ld => ld.LearningDevelopmentID !== id);
-          this.showToastNotification('Learning development deleted successfully.', 'error');
+          this.totalPages = Math.ceil(this.learningData.length / this.itemsPerPage);
+          if (this.currentPage > this.totalPages) {
+            this.currentPage = Math.max(1, this.totalPages);
+          }
+          this.updatePaginatedData();
+          this.showToastNotification('Learning development deleted successfully.', 'success');
         },
         error => {
           this.showToastNotification('There is an error deleting the record.', 'error');
