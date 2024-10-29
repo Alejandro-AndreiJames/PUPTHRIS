@@ -20,6 +20,7 @@ export class DepartmentManagementComponent implements OnInit, OnDestroy {
   currentDepartmentId: number | null = null;
   currentCampusId: number | null = null;
   private campusSubscription: Subscription | undefined;
+  editForm: FormGroup;
 
   // Toast variables
   showToast: boolean = false;
@@ -32,6 +33,11 @@ export class DepartmentManagementComponent implements OnInit, OnDestroy {
     private fb: FormBuilder
   ) {
     this.departmentForm = this.fb.group({
+      DepartmentName: ['', [Validators.required, Validators.maxLength(100)]],
+      Description: ['', Validators.maxLength(255)]
+    });
+
+    this.editForm = this.fb.group({
       DepartmentName: ['', [Validators.required, Validators.maxLength(100)]],
       Description: ['', Validators.maxLength(255)]
     });
@@ -109,7 +115,7 @@ export class DepartmentManagementComponent implements OnInit, OnDestroy {
   editDepartment(department: Department): void {
     this.isEditing = true;
     this.currentDepartmentId = department.DepartmentID ?? null;
-    this.departmentForm.patchValue(department);
+    this.editForm.patchValue(department);
   }
 
   deleteDepartment(id: number | undefined): void {
@@ -132,8 +138,6 @@ export class DepartmentManagementComponent implements OnInit, OnDestroy {
   }
 
   resetForm(): void {
-    this.isEditing = false;
-    this.currentDepartmentId = null;
     this.departmentForm.reset();
   }
 
@@ -146,5 +150,37 @@ export class DepartmentManagementComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.showToast = false;
     }, 3000); // Toast disappears after 3 seconds
+  }
+
+  closeEditModal(): void {
+    this.isEditing = false;
+    this.currentDepartmentId = null;
+    this.editForm.reset();
+  }
+
+  updateDepartment(): void {
+    if (this.editForm.invalid) {
+      this.showToastNotification('Please fill out all required fields.', 'warning');
+      return;
+    }
+
+    const department: Department = {
+      ...this.editForm.value,
+      CollegeCampusID: this.currentCampusId
+    };
+
+    if (this.currentDepartmentId !== null) {
+      this.departmentService.updateDepartment(this.currentDepartmentId, department).subscribe(
+        () => {
+          this.loadDepartments();
+          this.closeEditModal();
+          this.showToastNotification('Department updated successfully', 'success');
+        },
+        (error) => {
+          this.showToastNotification('Error updating department', 'error');
+          console.error('Error updating department', error);
+        }
+      );
+    }
   }
 }

@@ -163,3 +163,91 @@
 td.p-4 {
   text-align: center; /* Center text in the cell */
 }
+
+.table {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  background-color: white;
+}
+
+.table thead tr th:first-child {
+  border-top-left-radius: 8px;
+}
+
+.table thead tr th:last-child {
+  border-top-right-radius: 8px;
+}
+
+.table tbody tr:hover {
+  background-color: #e5e7eb !important;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Add animation classes */
+.container {
+  animation: slideDown 0.5s ease-out;
+}
+
+.table {
+  animation: slideUp 0.6s ease-out forwards;
+  animation-delay: 0.3s;
+  opacity: 0;
+}
+
+/* Modal animations */
+.modal-overlay {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+  animation: slideDown 0.3s ease-out;
+}
+
+/* Toast animation */
+.toast {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Add staggered animations for table rows */
+.table tbody tr {
+  animation: fadeIn 0.5s ease-out forwards;
+  opacity: 0;
+}
+
+.table tbody tr:nth-child(1) { animation-delay: 0.4s; }
+.table tbody tr:nth-child(2) { animation-delay: 0.5s; }
+.table tbody tr:nth-child(3) { animation-delay: 0.6s; }
+.table tbody tr:nth-child(4) { animation-delay: 0.7s; }
+.table tbody tr:nth-child(5) { animation-delay: 0.8s; }
+/* Add more if needed */

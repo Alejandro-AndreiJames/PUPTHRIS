@@ -22,37 +22,38 @@
     </div>
   </div>
 
-  <table class="table table-zebra w-full border-separate border-spacing-0">
-    <!-- head -->
-    <thead>
-      <tr class="bg-red-900 text-white">
-        <th class="p-4">#</th>
-        <th class="p-4">Fcode</th>
-        <th class="p-4">Name</th>
-        <th class="p-4">Instructor Status</th>
-        <th class="p-4">Department</th>
-        <th class="p-4">Employment Type</th>
-        <th class="p-4 w-36">Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let user of paginatedUsers; let i = index">
-        <th class="p-4">{{ (currentPage - 1) * itemsPerPage + i + 1 }}</th>
-        <td class="p-4">{{ user.Fcode }}</td>
-        <td class="p-4">
-          {{ user.FirstName }} {{ user.MiddleName }} {{ user.Surname }} {{ user.NameExtension }}
-        </td>
-        <td class="p-4">
-          {{ getRoleName(user.Roles) }}
-        </td>
-        <td class="p-4">{{ user.Department?.DepartmentName }}</td>
-        <td class="p-4">{{ user.EmploymentType }}</td>
-        <td class="p-4">
-          <button class="btn btn-primary btn-sm btn-maroon" (click)="openModal(user)">View Info</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="table-container">
+    <table class="table table-zebra w-full border-separate border-spacing-0">
+      <thead>
+        <tr class="bg-red-900 text-white">
+          <th class="p-4">#</th>
+          <th class="p-4">Fcode</th>
+          <th class="p-4">Name</th>
+          <th class="p-4">Instructor Status</th>
+          <th class="p-4">Department</th>
+          <th class="p-4">Employment Type</th>
+          <th class="p-4 w-36">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of paginatedUsers; let i = index">
+          <th class="p-4">{{ (currentPage - 1) * itemsPerPage + i + 1 }}</th>
+          <td class="p-4">{{ user.Fcode }}</td>
+          <td class="p-4">
+            {{ user.FirstName }} {{ user.MiddleName }} {{ user.Surname }} {{ user.NameExtension }}
+          </td>
+          <td class="p-4">
+            {{ getRoleName(user.Roles) }}
+          </td>
+          <td class="p-4">{{ user.Department?.DepartmentName }}</td>
+          <td class="p-4">{{ user.EmploymentType }}</td>
+          <td class="p-4">
+            <button class="btn btn-primary btn-sm btn-maroon" (click)="openModal(user)">View Info</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 
 <!-- Pagination Controls -->
@@ -68,7 +69,6 @@
   <button (click)="nextPage()" [disabled]="currentPage === totalPages" class="btn">Next</button>
 </div>
 
-<!-- Updated Modal with Sections -->
 <div *ngIf="isModalOpen" class="modal modal-open">
   <div class="modal-box">
     <div class="modal-sidebar">

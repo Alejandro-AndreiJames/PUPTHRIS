@@ -330,8 +330,21 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   }
 
   closeModal(): void {
-    this.isModalOpen = false;
-    this.clearDetails();
+    const modalElement = document.querySelector('.modal');
+    const modalBoxElement = document.querySelector('.modal-box');
+    
+    if (modalElement && modalBoxElement) {
+      modalElement.classList.add('closing');
+      modalBoxElement.classList.add('closing');
+      
+      setTimeout(() => {
+        this.isModalOpen = false;
+        this.clearDetails();
+      }, 300);
+    } else {
+      this.isModalOpen = false;
+      this.clearDetails();
+    }
   }
 
   private clearDetails(): void {
