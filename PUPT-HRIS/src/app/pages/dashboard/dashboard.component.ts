@@ -12,6 +12,7 @@ import { UpcomingBirthday } from '../../services/dashboard.service';
 import { NgxGaugeModule} from 'ngx-gauge';
 import { Router } from '@angular/router';
 import { DashboardStateService } from '../../services/dashboard-state.service';
+import { AcademicRank, AcademicRankCount } from '../../model/academicRank.model';
 
 type NgxGaugeType = 'full' | 'semi' | 'arch';
 
@@ -184,6 +185,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   };
 
+  // Add new chart property for academic ranks
+  public academicRankChartData: ChartData<'doughnut'> = {
+    labels: [],
+    datasets: [{
+      data: [],
+      backgroundColor: [
+        '#800000', '#A52A2A', '#C41E3A', '#D2042D', '#E34234',
+        '#FF2400', '#FF0800', '#CD5C5C', '#B22222', '#960018',
+        '#FF6B6B', '#E97451', '#FF4433', '#FF6961', '#FF7F7F',
+        '#FF8674', '#FFB6B6', '#FFB4B4'
+      ],
+      hoverOffset: 4,
+      borderWidth: 1,
+      borderColor: '#fff'
+    }]
+  };
+
+
+  public academicRanks: AcademicRankCount[] = [];
+
   constructor(
     private dashboardService: DashboardService,
     private cdr: ChangeDetectorRef,
@@ -285,6 +306,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
           }]
         };
   
+        // Process academic rank data
+        if (data.academicRanks && Array.isArray(data.academicRanks)) {
+          this.academicRanks = data.academicRanks.map((rank: AcademicRankCount) => ({
+            Rank: rank.Rank,
+            count: rank.count || 0
+          }));
+        }
+
         this.updateCharts();
       } else {
         console.error('Departments data is missing or not an array');
@@ -482,6 +511,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const route = this.taskRoutes[task];
     if (route) {
       this.router.navigate([route]);
+    }
+  }
+
+  // Add this method to the DashboardComponent class
+  formatEmploymentType(type: string): string {
+    switch(type.toLowerCase()) {
+      case 'parttime':
+      case 'part-time':
+        return 'Part Time';
+      case 'fulltime':
+      case 'full-time':
+        return 'Full Time';
+      case 'temporary':
+        return 'Temporary';
+      default:
+        return type; // Return original value if no match
     }
   }
 }

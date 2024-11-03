@@ -20,6 +20,10 @@
   flex-direction: column;
 }
 
+.card:hover {
+  transform: translateY(-5px);
+}
+
 .card h3 {
   font-size: 1.75rem;
   padding-bottom: 0.5rem;
@@ -297,4 +301,34 @@ canvas {
   background-color: #600000;
 }
 
-/* Keep your existing styles */
+
+/* Add these to your existing CSS file */
+.overflow-x-auto {
+  overflow-x: auto;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+.flex {
+  display: flex;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.flex-none {
+  flex: 0 0 auto;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.8);
+}
