@@ -90,38 +90,27 @@
         <!-- Academic Ranks Chart -->
       </div>
     </div>
-    <div class="form-control w-full">
-      <label class="label">
-        <span class="label-text font-bold text-xl">Academic Ranks Distribution</span>
-      </label>
+    <!-- Academic Ranks Distribution -->
+    <div class="flex w-full flex-col mt-8">
+      <div class="divider divider-neutral divider-end">Academic Ranks Distribution</div>
+    </div>
+
+    <div class="bg-base-200 rounded-lg shadow-lg w-full mt-3">
+      <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
+        <h2 class="text-xl font-bold">Academic Ranks</h2>
+      </div>
       
-      <div class="cards-container overflow-x-auto hide-scrollbar pb-4">
-        <div class="flex gap-4">
+      <div class="p-6">
+        <div class="auto-grid">
           <div *ngFor="let rank of academicRanks" 
-               class="card flex-none" 
-               style="min-width: 250px; height: 200px;">
-            <h3>{{rank.Rank}}</h3>
-            <p>{{rank.count}}</p>
-            <span class="text-sm">Faculty Members</span>
+               class="card bg-gradient-to-r from-orange-400 to-red-600 text-white p-6 rounded-lg shadow-lg">
+            <h3 class="text-2xl font-bold border-b border-white/20 pb-2">{{rank.Rank}}</h3>
+            <p class="text-5xl font-extrabold flex-1 flex items-center justify-center">{{rank.count}}</p>
+            <span class="text-white text-[14px]">Faculty Members</span>
           </div>
         </div>
       </div>
     </div>
-    <!-- Upcoming Birthdays Section -->
-    <!--
-    <div class="flex w-full flex-col mt-8">
-      <div class="divider divider-neutral divider-end">Upcoming Birthdays</div>
-    </div>
-    
-    <div class="upcoming-birthdays-container mt-4">
-      <h2 class="text-2xl font-bold mb-4">Upcoming Birthdays</h2>
-      <ul>
-        <li *ngFor="let birthday of upcomingBirthdays">
-          {{ birthday.FirstName }} {{ birthday.LastName }} - {{ birthday.DateOfBirth | date:'mediumDate' }}
-        </li>
-      </ul>
-    </div>
-    -->
   </ng-container>
 
   <ng-template #personalView>
