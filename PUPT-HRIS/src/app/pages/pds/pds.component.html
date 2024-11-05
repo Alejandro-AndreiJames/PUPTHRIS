@@ -24,24 +24,72 @@
     </div>
 
     <div *ngIf="canManageEmployees" class="bg-white p-6 space-y-6 rounded-b-lg shadow-lg">
-      <div *ngIf="paginatedUsers.length > 0" class="overflow-x-auto">
-        <!-- Replace the existing search input and button with this -->
-        <div class="flex justify-between items-center mb-4 pt-2">
-          <p class="text-lg font-normal">View PDS of other users:</p>
-          <div class="w-1/3">
-            <div class="relative">
-              <input type="text" 
-                     [(ngModel)]="searchTerm" 
-                     (input)="onSearch()"
-                     placeholder="Search user by name or Fcode..." 
-                     class="w-full py-2 pl-8 pr-4 text-sm rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
-              >
-              <span class="absolute left-3 top-1/2 transform -translate-y-1/2">
-                <i class="fas fa-search text-gray-400"></i>
-              </span>
-            </div>
+      <!-- Search Bar -->
+      <div class="flex justify-between items-center mb-4 pt-2">
+        <p class="text-lg font-normal">View PDS of other users:</p>
+        <div class="w-1/3">
+          <div class="relative">
+            <input type="text" 
+                   [(ngModel)]="searchTerm" 
+                   (input)="onSearch()"
+                   placeholder="Search user by name or Fcode..." 
+                   class="w-full py-2 pl-8 pr-4 text-sm rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
+            >
+            <span class="absolute left-3 top-1/2 transform -translate-y-1/2">
+              <i class="fas fa-search text-gray-400"></i>
+            </span>
           </div>
         </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="flex gap-4 mb-4">
+        <!-- Role Filter -->
+        <div class="w-48">
+          <select 
+            [(ngModel)]="selectedRole" 
+            (change)="applyFilters()"
+            class="w-full py-2 px-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
+          >
+            <option value="">All Roles</option>
+            <option value="faculty">Faculty</option>
+            <option value="staff">Staff</option>
+          </select>
+        </div>
+
+        <!-- Employment Type Filter -->
+        <div class="w-48">
+          <select 
+            [(ngModel)]="selectedEmploymentType" 
+            (change)="applyFilters()"
+            class="w-full py-2 px-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
+          >
+            <option value="">All Employment Types</option>
+            <option value="fulltime">Full Time</option>
+            <option value="parttime">Part Time</option>
+            <option value="temporary">Temporary</option>
+            <option value="designee">Designee</option>
+          </select>
+        </div>
+
+        <!-- Department Filter -->
+        <div class="w-48">
+          <select 
+            [(ngModel)]="selectedDepartment" 
+            (change)="applyFilters()"
+            class="w-full py-2 px-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
+          >
+            <option value="">All Departments</option>
+            <option value="na">Not Applicable</option>
+            <option *ngFor="let dept of departments" [value]="dept.DepartmentID">
+              {{ dept.DepartmentName }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Table section with conditional rendering -->
+      <div *ngIf="paginatedUsers.length > 0" class="overflow-x-auto">
         <table class="table table-zebra w-full border-separate border-spacing-0">
           <thead>
             <tr class="bg-maroon text-white">
@@ -71,7 +119,7 @@
             </tr>
           </tbody>
         </table>
-
+        
         <!-- Pagination Controls -->
         <div class="pagination-controls mt-4 flex justify-center space-x-2">
           <button class="btn-pagination" [disabled]="currentPage === 1" (click)="previousPage()">Previous</button>
@@ -82,6 +130,7 @@
         </div>
       </div>
 
+      <!-- No users message -->
       <div *ngIf="paginatedUsers.length === 0" class="p-6">
         <p class="text-lg">No users found.</p>
       </div>
