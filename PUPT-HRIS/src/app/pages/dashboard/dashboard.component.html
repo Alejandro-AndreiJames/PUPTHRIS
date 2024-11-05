@@ -145,55 +145,62 @@
       <div class="divider divider-neutral divider-end">Your Information</div>
     </div>
 
-    <!-- Profile Completion Section -->
-
-
-    <!-- User-specific charts or information -->
-    <div class="charts-container grid grid-cols-1 md:grid-cols-2 gap-8 p-4">
-      <!-- Left side: Chart -->
-      <div class="border-r border-gray-300 pr-8">
-        <h2 class="text-2xl font-bold">Your Activities</h2>
-        <canvas baseChart
-                [data]="userActivityChartData"
-                [options]="userActivityChartOptions"
-                [type]="'bar'">
-        </canvas>
+    <!-- Profile and Activities Container -->
+    <div class="bg-base-200 rounded-lg shadow-lg w-full mt-3">
+      <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
+        <h2 class="text-xl font-bold">Your Information</h2>
       </div>
-
-      <!-- Right side: Profile Completion -->
-      <div class="profile-completion-container pl-8">
-        <h2 class="text-2xl font-bold mb-4">Profile Completion</h2>
-        <div class="flex items-center">
-          <ngx-gauge
-            [type]="gaugeType"
-            [value]="gaugeValue"
-            [append]="gaugeAppendText"
-            [thick]="gaugeThick"
-            cap="round"
-            [size]="gaugeSize"
-            foregroundColor="#800000"
-            [label]="''">
-          </ngx-gauge>
-          <div class="ml-4">
-            <p class="font-bold text-lg">{{ getProfileMessage().title }}</p>
-            <p class="text-sm text-gray-600">{{ getProfileMessage().description }}</p>
-            <p *ngIf="gaugeValue < 100" class="mt-2 text-sm text-red-600 font-medium">
-              Please complete your profile to generate PDS
-            </p>
+      
+      <div class="grid grid-cols-2 gap-8 p-6">
+        <!-- Left side: Chart (Original Format) -->
+        <div class="profile-completion-container pl-8">
+          <h2 class="text-2xl font-bold mb-4">Your Activities</h2>
+          <div class="chart-wrapper">
+            <canvas baseChart
+                    [data]="userActivityChartData"
+                    [options]="userActivityChartOptions"
+                    [type]="'bar'">
+            </canvas>
           </div>
         </div>
 
-        <!-- Added divider -->
-        <div class="border-t border-gray-200 my-4"></div>
+        <!-- Right side: Profile Completion (Original Format) -->
+        <div class="profile-completion-container pl-8">
+          <h2 class="text-2xl font-bold mb-4">Profile Completion</h2>
+          <div class="flex items-center">
+            <ngx-gauge [type]="gaugeType"
+                      [value]="gaugeValue"
+                      [append]="gaugeAppendText"
+                      [thick]="gaugeThick"
+                      cap="round"
+                      [size]="gaugeSize"
+                      foregroundColor="#800000"
+                      [label]="''">
+            </ngx-gauge>
+            <div class="ml-4">
+              <p class="font-bold text-lg">{{ getProfileMessage().title }}</p>
+              <p class="text-sm">{{ getProfileMessage().description }}</p>
+              <button (click)="navigateToTask('Add your education details')" 
+                      class="bg-maroon text-white p-3 rounded-lg w-full flex justify-between items-center hover:bg-black transition-all duration-200">
+                Add your education details
+                <span>→</span>
+              </button>
+              <p class="text-sm text-black mt-2">Please complete your profile to generate PDS</p>
+            </div>
+          </div>
 
-        <div class="tasks">
-          <!-- First 3 Tasks (Always Visible) -->
-          <div *ngFor="let task of (showAllTasks ? incompleteTasks : incompleteTasks.slice(0, 3))" 
-               class="task-item p-3 bg-maroon text-white rounded-lg shadow-sm mb-2 cursor-pointer transition-all duration-200 hover:bg-black"
-               (click)="navigateToTask(task)">
-            <div class="flex items-center justify-between">
-              <span>{{ task }}</span>
-              <span class="text-white">→</span>
+          <!-- Added divider -->
+          <div class="border-t border-gray-200 my-4"></div>
+
+          <div class="tasks">
+            <!-- First 3 Tasks (Always Visible) -->
+            <div *ngFor="let task of (showAllTasks ? incompleteTasks : incompleteTasks.slice(0, 3))" 
+                 class="task-item p-3 bg-maroon text-white rounded-lg shadow-sm mb-2 cursor-pointer transition-all duration-200 hover:bg-black"
+                 (click)="navigateToTask(task)">
+              <div class="flex items-center justify-between">
+                <span>{{ task }}</span>
+                <span class="text-white">→</span>
+              </div>
             </div>
           </div>
         </div>

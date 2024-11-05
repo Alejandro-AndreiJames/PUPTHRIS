@@ -235,12 +235,6 @@ canvas {
   margin-bottom: 1rem;
 }
 
-.bg-base-200 {
-  background: #f8f9fa; 
-  width: 100%;
-  margin: 1rem 0;
-}
-
 .chart-wrapper {
   background: white; 
   border-radius: 8px;
@@ -268,24 +262,6 @@ canvas {
   .grid-cols-2 {
     grid-template-columns: 1fr;
   }
-}
-
-.bg-base-200 {
-  background: #f8f9fa; 
-  width: 100%;
-  margin: 1rem 0;
-}
-
-.chart-wrapper {
-  background: white; 
-  border-radius: 8px;
-  padding: 1.5rem;
-  height: 500px;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); 
 }
 
 .charts-grid {
