@@ -28,6 +28,7 @@ import { RoleName, Role } from '../../model/role.model';
 import { CampusContextService } from '../../services/campus-context.service';
 import { Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
+import { DepartmentService } from '../../services/department.service';
 
 @Component({
   selector: 'app-employee',
@@ -61,6 +62,10 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   private campusSubscription: Subscription | undefined;
   searchTerm: string = '';
   filteredUsers: User[] = [];
+  selectedRole: string = '';
+  selectedEmploymentType: string = '';
+  departments: any[] = [];
+  selectedDepartment: string = '';
 
   constructor(
     private campusContextService: CampusContextService,
@@ -75,7 +80,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     private learningService: LearningService,
     private workService: WorkService,
     private voluntaryWorkService: VoluntaryWorkService,
-    private characterReferenceService: CharacterReferenceService
+    private characterReferenceService: CharacterReferenceService,
+    private departmentService: DepartmentService
   ) {}
 
   ngOnInit(): void {
@@ -85,6 +91,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         if (id !== null) {
           this.campusId = id;
           this.loadActiveUsers();
+          this.loadDepartments();
         }
       }
     );
@@ -361,19 +368,91 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     this.characterReferences = null;
   }
 
-  onSearch(): void {
-    if (!this.searchTerm.trim()) {
-      this.filteredUsers = this.users;
-    } else {
-      this.filteredUsers = this.users.filter(user => 
+  applyFilters(): void {
+    console.log('Starting filter application with:', {
+      searchTerm: this.searchTerm,
+      selectedRole: this.selectedRole,
+      selectedEmploymentType: this.selectedEmploymentType,
+      selectedDepartment: this.selectedDepartment
+    });
+
+    console.log('Total users before filtering:', this.users.length);
+
+    this.filteredUsers = this.users.filter(user => {
+      console.log('Processing user:', {
+        name: `${user.FirstName} ${user.Surname}`,
+        roles: user.Roles,
+        employmentType: user.EmploymentType,
+        department: user.Department
+      });
+
+      const matchesSearch = !this.searchTerm.trim() || 
         `${user.FirstName} ${user.MiddleName} ${user.Surname} ${user.NameExtension}`
           .toLowerCase()
           .includes(this.searchTerm.toLowerCase()) ||
-        user.Fcode.toLowerCase().includes(this.searchTerm.toLowerCase())
-      );
-    }
+        user.Fcode.toLowerCase().includes(this.searchTerm.toLowerCase());
+      console.log('Search match:', matchesSearch);
+
+      const matchesRole = !this.selectedRole || 
+        user.Roles?.some(role => role.RoleName.toLowerCase() === this.selectedRole.toLowerCase());
+      console.log('Role match:', matchesRole);
+
+      const matchesEmploymentType = !this.selectedEmploymentType || 
+        user.EmploymentType.toLowerCase() === this.selectedEmploymentType.toLowerCase();
+      console.log('Employment type match:', {
+        userType: user.EmploymentType,
+        selectedType: this.selectedEmploymentType,
+        matches: matchesEmploymentType
+      });
+
+      const matchesDepartment = !this.selectedDepartment || 
+        (this.selectedDepartment === 'na' ? 
+          !user.Department : 
+          user.Department?.DepartmentName === this.departments.find(d => 
+            d.DepartmentID.toString() === this.selectedDepartment
+          )?.DepartmentName);
+
+      console.log('Department match:', {
+        userDeptName: user.Department?.DepartmentName,
+        selectedDeptId: this.selectedDepartment,
+        selectedDeptName: this.departments.find(d => 
+          d.DepartmentID.toString() === this.selectedDepartment
+        )?.DepartmentName,
+        matches: matchesDepartment
+      });
+
+      const includeUser = matchesSearch && matchesRole && matchesEmploymentType && matchesDepartment;
+      console.log('Final decision for user:', includeUser);
+
+      return includeUser;
+    });
+
+    console.log('Total users after filtering:', this.filteredUsers.length);
+
     this.currentPage = 1;
     this.totalPages = Math.ceil(this.filteredUsers.length / this.itemsPerPage);
     this.paginateUsers();
+  }
+
+  onSearch(): void {
+    this.applyFilters();
+  }
+
+  loadDepartments(): void {
+    if (this.campusId === null) {
+      console.error('Cannot load departments: Campus ID is null');
+      return;
+    }
+    
+    console.log('Loading departments for campus:', this.campusId);
+    this.departmentService.getDepartments(this.campusId).subscribe({
+      next: (departments) => {
+        console.log('Departments loaded successfully:', departments);
+        this.departments = departments;
+      },
+      error: (error) => {
+        console.error('Error loading departments:', error);
+      }
+    });
   }
 }

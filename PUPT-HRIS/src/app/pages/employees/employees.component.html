@@ -22,6 +22,53 @@
     </div>
   </div>
 
+  <!-- Add this after the search bar, before the table -->
+  <div class="flex gap-4 mb-4">
+    <!-- Role Filter -->
+    <div class="w-48">
+      <select 
+        [(ngModel)]="selectedRole" 
+        (change)="applyFilters()"
+        class="w-full py-2 px-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
+      >
+        <option value="">All Roles</option>
+        <option value="faculty">Faculty</option>
+        <option value="staff">Staff</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+
+    <!-- Employment Type Filter -->
+    <div class="w-48">
+      <select 
+        [(ngModel)]="selectedEmploymentType" 
+        (change)="applyFilters()"
+        class="w-full py-2 px-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
+      >
+        <option value="">All Employment Types</option>
+        <option value="fulltime">Full Time</option>
+        <option value="parttime">Part Time</option>
+        <option value="temporary">Temporary</option>
+        <option value="designee">Designee</option>
+      </select>
+    </div>
+
+    <!-- Department Filter -->
+    <div class="w-48">
+      <select 
+        [(ngModel)]="selectedDepartment" 
+        (change)="applyFilters()"
+        class="w-full py-2 px-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
+      >
+        <option value="">All Departments</option>
+        <option value="na">Not Applicable</option>
+        <option *ngFor="let dept of departments" [value]="dept.DepartmentID">
+          {{ dept.DepartmentName }}
+        </option>
+      </select>
+    </div>
+  </div>
+
   <div class="table-container">
     <table class="table table-zebra w-full border-separate border-spacing-0">
       <thead>
