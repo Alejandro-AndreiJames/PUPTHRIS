@@ -8,6 +8,10 @@ const AcademicRank = require('./academicRanksModel');
 const CollegeCampus = require('./collegeCampusModel');
 const Role = require('./roleModel');
 const UserRole = require('./userRoleModel');
+const AcademicPeriod = require('./academicPeriodModel');
+const EvaluationCriteria = require('./evaluationCriteriaModel');
+const FacultyEvaluation = require('./facultyEvaluationModel');
+const EvaluationScore = require('./evaluationScoresModel');
 
 // CollegeCampus and User associations
 CollegeCampus.hasMany(User, { foreignKey: 'CollegeCampusID', as: 'Users' });
@@ -60,6 +64,15 @@ Role.belongsToMany(User, {
   timestamps: false
 });
 
+// Faculty Evaluation Associations
+FacultyEvaluation.belongsTo(User, { foreignKey: 'FacultyID', as: 'Faculty' });
+FacultyEvaluation.belongsTo(User, { foreignKey: 'CreatedBy', as: 'Evaluator' });
+FacultyEvaluation.belongsTo(AcademicPeriod, { foreignKey: 'PeriodID' });
+FacultyEvaluation.hasMany(EvaluationScore, { foreignKey: 'EvaluationID' });
+
+EvaluationScore.belongsTo(FacultyEvaluation, { foreignKey: 'EvaluationID' });
+EvaluationScore.belongsTo(EvaluationCriteria, { foreignKey: 'CriteriaID' });
+
 module.exports = { 
     User, 
     Department, 
@@ -68,5 +81,9 @@ module.exports = {
     WorkExperience, 
     BasicDetails, 
     AcademicRank, 
-    CollegeCampus 
+    CollegeCampus, 
+    AcademicPeriod,
+    EvaluationCriteria,
+    FacultyEvaluation,
+    EvaluationScore
 };
