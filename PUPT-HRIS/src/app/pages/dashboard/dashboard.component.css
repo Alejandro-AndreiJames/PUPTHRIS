@@ -15,9 +15,10 @@
   padding: 1.5rem;
   border-radius: 0.5rem;
   text-align: center;
-  height: 250px;
+  min-height: 200px;
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 .card:hover {
@@ -235,12 +236,6 @@ canvas {
   margin-bottom: 1rem;
 }
 
-.bg-base-200 {
-  background: #f8f9fa; 
-  width: 100%;
-  margin: 1rem 0;
-}
-
 .chart-wrapper {
   background: white; 
   border-radius: 8px;
@@ -268,24 +263,6 @@ canvas {
   .grid-cols-2 {
     grid-template-columns: 1fr;
   }
-}
-
-.bg-base-200 {
-  background: #f8f9fa; 
-  width: 100%;
-  margin: 1rem 0;
-}
-
-.chart-wrapper {
-  background: white; 
-  border-radius: 8px;
-  padding: 1.5rem;
-  height: 500px;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); 
 }
 
 .charts-grid {
@@ -330,5 +307,24 @@ canvas {
 
 .text-sm {
   font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.8);
+}
+
+.card .text-sm {
+  color: white;
+}
+
+/* Add this new class */
+.auto-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  max-width: 100%;
+}
+
+/* Media query for larger screens */
+@media (min-width: 1200px) {
+  .auto-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    max-width: 100%;
+  }
 }
