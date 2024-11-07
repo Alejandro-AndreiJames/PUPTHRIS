@@ -1,0 +1,12 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.campus-info {
+  margin-right: 2rem;
+  font-size: 0.875rem;
+  font-style: italic;
+  color: #4a4a4a;
+}

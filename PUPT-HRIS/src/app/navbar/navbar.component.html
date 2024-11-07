@@ -2,9 +2,11 @@
     <div class="flex-1 my-8">
       <div class="text-2xl text-red-900 font-bold ml-8">
         Welcome, {{ userFirstName }}!
-        <span *ngIf="currentCampus" class="text-lg text-gray-600 ml-2">
-          (Current Campus: {{ currentCampus }})
-        </span>
       </div>
+    </div>
+    <div class="campus-info text-lg text-gray-600 mr-8">
+      <span *ngIf="currentCampus">
+        (Current Campus: <strong>{{ currentCampus }}</strong>)
+      </span>
     </div>
 </div>
