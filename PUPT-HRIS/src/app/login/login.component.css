@@ -270,13 +270,13 @@
 
 /* Loading spinner */
 .loading-spinner {
-  width: 60px;
-  height: 60px;
-  border: 6px solid rgba(128, 0, 0, 0.15);
+  width: 70px;
+  height: 70px;
+  border: 6px solid rgba(128, 0, 0, 0.2);
   border-top: 6px solid #800000;
   border-radius: 50%;
   animation: loadingRotate 1s linear infinite;
-  margin: 10px 0;
+  margin: 15px 0;
 }
 
 /* Success checkmark container */
@@ -320,6 +320,7 @@
   flex-direction: column;
   align-items: center;
   position: relative;
+  overflow: hidden;
 }
 
 /* Mini loading circle animation */
@@ -384,10 +385,27 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  background: linear-gradient(to right, #800000, #ff4444, #800000);
-  border-top-left-radius: 1rem;
-  border-top-right-radius: 1rem;
+  height: 4px;
+  transition: background 0.3s ease;
+  border-radius: 0;
+}
+
+/* Default loading state border (maroon) */
+.loading-overlay > div:not(:has(.success-container))::before {
+  background: linear-gradient(to right, 
+    rgba(128, 0, 0, 0.8),     /* Slightly transparent */
+    rgba(255, 68, 68, 0.8),   /* Slightly transparent */
+    rgba(128, 0, 0, 0.8)      /* Slightly transparent */
+  );
+}
+
+/* Success state border (green) */
+.loading-overlay > div:has(.success-container)::before {
+  background: linear-gradient(to right,
+    rgba(76, 175, 80, 0.8),   /* Slightly transparent */
+    rgba(69, 160, 73, 0.8),   /* Slightly transparent */
+    rgba(76, 175, 80, 0.8)    /* Slightly transparent */
+  );
 }
 
 /* Add a glow effect to the success container */
