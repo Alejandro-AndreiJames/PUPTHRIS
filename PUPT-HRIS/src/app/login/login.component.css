@@ -243,13 +243,14 @@
 
 /* Add these new animations */
 @keyframes loadingRotate {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% { transform: rotate(0deg); opacity: 0.8; }
+  50% { transform: rotate(180deg); opacity: 1; }
+  100% { transform: rotate(360deg); opacity: 0.8; }
 }
 
 @keyframes successScale {
-  0% { transform: scale(0); opacity: 0; }
-  50% { transform: scale(1.2); opacity: 0.8; }
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.1); }
   100% { transform: scale(1); opacity: 1; }
 }
 
@@ -275,7 +276,7 @@
   border: 6px solid rgba(128, 0, 0, 0.2);
   border-top: 6px solid #800000;
   border-radius: 50%;
-  animation: loadingRotate 1s linear infinite;
+  animation: loadingRotate 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   margin: 15px 0;
 }
 
@@ -289,8 +290,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: successScale 0.7s cubic-bezier(0.34, 1.56, 0.64, 1),
-             successGlow 2s ease-in-out infinite;
+  animation: 
+    successScale 0.8s cubic-bezier(0.34, 1.56, 0.64, 1),
+    successGlow 2.5s ease-in-out infinite;
   box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
 }
 
@@ -298,6 +300,20 @@
 .success-checkmark {
   color: white;
   font-size: 42px;
+  animation: checkmarkAppear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+@keyframes checkmarkAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.5) rotate(-45deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
 }
 
 /* Loading text */
@@ -307,6 +323,13 @@
   font-size: 19px;
   text-align: center;
   font-weight: 500;
+  transition: opacity 0.3s ease-in-out;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Update the loading overlay container */
@@ -321,6 +344,18 @@
   align-items: center;
   position: relative;
   overflow: hidden;
+  animation: containerAppear 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes containerAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 /* Mini loading circle animation */
@@ -367,8 +402,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: successScale 0.7s cubic-bezier(0.34, 1.56, 0.64, 1),
-             successGlow 2s ease-in-out infinite;
+  animation: 
+    successScale 0.8s cubic-bezier(0.34, 1.56, 0.64, 1),
+    successGlow 2.5s ease-in-out infinite;
   box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
 }
 
@@ -386,7 +422,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  transition: background 0.3s ease;
+  transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 0;
 }
 
@@ -411,11 +447,12 @@
 /* Add a glow effect to the success container */
 @keyframes successGlow {
   0% { box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2); }
-  50% { box-shadow: 0 4px 24px rgba(76, 175, 80, 0.4); }
+  50% { box-shadow: 0 8px 24px rgba(76, 175, 80, 0.4); }
   100% { box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2); }
 }
 
 .success-container {
-  animation: successScale 0.7s cubic-bezier(0.34, 1.56, 0.64, 1),
-             successGlow 2s ease-in-out infinite;
+  animation: 
+    successScale 0.8s cubic-bezier(0.34, 1.56, 0.64, 1),
+    successGlow 2.5s ease-in-out infinite;
 }
