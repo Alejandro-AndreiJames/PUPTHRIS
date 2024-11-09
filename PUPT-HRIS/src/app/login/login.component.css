@@ -240,3 +240,62 @@
 .w-14 {
   animation: pulse 2s infinite;
 }
+
+/* Add these new animations */
+@keyframes loadingRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes successScale {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Loading overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Loading spinner */
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #800000;
+  border-radius: 50%;
+  animation: loadingRotate 1s linear infinite;
+}
+
+/* Success checkmark container */
+.success-container {
+  background: white;
+  border-radius: 50%;
+  padding: 20px;
+  animation: successScale 0.5s ease-out;
+}
+
+/* Success checkmark */
+.success-checkmark {
+  color: #4CAF50;
+  font-size: 50px;
+}
+
+/* Loading text */
+.loading-text {
+  color: white;
+  margin-top: 20px;
+  font-size: 18px;
+  text-align: center;
+}

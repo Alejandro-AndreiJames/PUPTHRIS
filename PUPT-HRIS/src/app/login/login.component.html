@@ -79,3 +79,16 @@
     </div>
   </div>
 </div>
+
+<!-- Add this right before the closing </div> of the root element -->
+<div class="loading-overlay" *ngIf="isLoading">
+  <div class="flex flex-col items-center">
+    <div *ngIf="!loginSuccess" class="loading-spinner"></div>
+    <div *ngIf="loginSuccess" class="success-container">
+      <i class="fas fa-check success-checkmark"></i>
+    </div>
+    <div class="loading-text">
+      {{ loginSuccess ? 'Login Successful!' : 'Logging in...' }}
+    </div>
+  </div>
+</div>
