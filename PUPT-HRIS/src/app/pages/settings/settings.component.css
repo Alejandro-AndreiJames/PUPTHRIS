@@ -10,6 +10,7 @@
     padding: 2rem;
     max-width: 800px; /* Limit width */
     margin: 2rem auto; /* Center horizontally with margin */
+    animation: slideDown 0.3s ease-out;
   }
   
   /* Heading */
@@ -62,9 +63,81 @@
   /* Success/Failure Messages */
   .text-green-500 {
     color: #22c55e; /* Green color */
+    animation: fadeIn 0.3s ease-out;
   }
   
   .text-red-500 {
     color: #ef4444; /* Red color */
+    animation: fadeIn 0.3s ease-out;
+  }
+  
+  /* Animation keyframes */
+  @keyframes slideDown {
+    from {
+      transform: translateY(-20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  /* Form control animations */
+  .form-control {
+    margin-bottom: 1.5rem;
+    animation: fadeIn 0.3s ease-out forwards;
+    opacity: 0;
+  }
+  
+  .form-control:nth-child(1) { animation-delay: 0.05s; }
+  .form-control:nth-child(2) { animation-delay: 0.1s; }
+  .form-control:nth-child(3) { animation-delay: 0.15s; }
+  .form-control:nth-child(4) { animation-delay: 0.2s; }
+  
+  /* Button container animations */
+  .btn-container {
+    animation: fadeIn 0.3s ease-out forwards;
+    animation-delay: 0.25s;
+    opacity: 0;
+  }
+  
+  /* Modal animations */
+  .fixed {
+    animation: fadeIn 0.2s ease-out;
+  }
+  
+  .bg-white.rounded-lg {
+    animation: slideDown 0.2s ease-out;
+  }
+  
+  /* Toast/Alert animations */
+  .toast, .alert {
+    animation: slideUp 0.3s ease-out;
+  }
+  
+  /* Success/Error message animations */
+  .text-green-500, .text-red-500 {
+    animation: fadeIn 0.3s ease-out;
   }
   

@@ -10,6 +10,7 @@
     padding: 2rem;
     max-width: 800px;
     margin: 2rem auto;
+    animation: slideDown 0.3s ease-out;
   }
   
   /* Heading */
@@ -40,7 +41,14 @@
   /* Form controls */
   .form-control {
     margin-bottom: 1.5rem;
+    animation: fadeIn 0.4s ease-out forwards;
+    opacity: 0;
   }
+
+  .form-control:nth-child(1) { animation-delay: 0.1s; }
+  .form-control:nth-child(2) { animation-delay: 0.2s; }
+  .form-control:nth-child(3) { animation-delay: 0.3s; }
+  .form-control:nth-child(4) { animation-delay: 0.4s; }
   
   /* Label text */
   .label-text {
@@ -118,6 +126,9 @@
   .flex-end {
     display: flex;
     justify-content: flex-end;
+    animation: fadeIn 0.4s ease-out forwards;
+    animation-delay: 0.4s;
+    opacity: 0;
   }
   
   /* Add these new styles */
@@ -172,4 +183,74 @@
 
 .pb-2 {
   padding-bottom: 0.5rem;
+}
+
+/* Animation keyframes */
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Container animations */
+.form-container {
+  animation: slideDown 0.3s ease-out;
+}
+
+/* Form control animations */
+.form-control {
+  margin-bottom: 1.5rem;
+  animation: fadeIn 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+.form-control:nth-child(1) { animation-delay: 0.1s; }
+.form-control:nth-child(2) { animation-delay: 0.2s; }
+.form-control:nth-child(3) { animation-delay: 0.3s; }
+.form-control:nth-child(4) { animation-delay: 0.4s; }
+
+/* Button container animations */
+.flex-end {
+  animation: fadeIn 0.4s ease-out forwards;
+  animation-delay: 0.4s;
+  opacity: 0;
+}
+
+/* Modal animations if you have any */
+.fixed {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.bg-white.rounded-lg {
+  animation: slideDown 0.2s ease-out;
+}
+
+/* Toast animations if you have any */
+.toast {
+  animation: slideUp 0.3s ease-out;
 }

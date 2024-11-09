@@ -14,11 +14,9 @@ import { CommonModule } from '@angular/common';
 export class ProfileImageComponent implements OnInit {
   profileImageUrl: string | null = null;
   userID: number;
-  errorMessage: string | null = null;
   isUpdatingImage: boolean = false;
   showToast: boolean = false;
   toastMessage: string = '';
-  toastType: 'success' | 'error' = 'success';
 
   constructor(
     private profileImageService: ProfileImageService,
@@ -46,7 +44,6 @@ export class ProfileImageComponent implements OnInit {
       },
       (error) => {
         console.error('Error loading profile image:', error);
-        this.showToastMessage('Error loading profile image', 'error');
       }
     );
   }
@@ -58,11 +55,10 @@ export class ProfileImageComponent implements OnInit {
         (image) => {
           this.loadProfileImage();
           this.isUpdatingImage = false;
-          this.showToastMessage('Profile image updated successfully', 'success');
+          this.showToastMessage('Profile image updated successfully');
         },
         (error) => {
           console.error('Error uploading profile image:', error);
-          this.showToastMessage('Failed to upload profile image. Please try again.', 'error');
         }
       );
     }
@@ -74,12 +70,10 @@ export class ProfileImageComponent implements OnInit {
 
   cancelUpdateImage(): void {
     this.isUpdatingImage = false;
-    this.errorMessage = null;
   }
 
-  showToastMessage(message: string, type: 'success' | 'error'): void {
+  showToastMessage(message: string): void {
     this.toastMessage = message;
-    this.toastType = type;
     this.showToast = true;
     setTimeout(() => {
       this.showToast = false;
