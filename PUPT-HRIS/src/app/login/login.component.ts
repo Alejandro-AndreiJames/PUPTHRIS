@@ -120,23 +120,25 @@ export class LoginComponent implements OnInit, OnDestroy {
         })
       ).subscribe({
         next: (campus) => {
-          this.loginSuccess = true;
-          
           setTimeout(() => {
-            if (campus?.CollegeCampusID) {
-              console.log('Setting default campus ID:', campus.CollegeCampusID);
-              this.campusContextService.setCampusId(campus.CollegeCampusID, true);
-              
-              setTimeout(() => {
+            this.loginSuccess = true;
+            
+            setTimeout(() => {
+              if (campus?.CollegeCampusID) {
+                console.log('Setting default campus ID:', campus.CollegeCampusID);
+                this.campusContextService.setCampusId(campus.CollegeCampusID, true);
+                
+                setTimeout(() => {
+                  this.isLoading = false;
+                  this.router.navigate(['/dashboard']);
+                }, 100);
+              } else {
+                console.warn('No campus ID found in response');
                 this.isLoading = false;
                 this.router.navigate(['/dashboard']);
-              }, 100);
-            } else {
-              console.warn('No campus ID found in response');
-              this.isLoading = false;
-              this.router.navigate(['/dashboard']);
-            }
-          }, 1500);
+              }
+            }, 1500);
+          }, 800);
         },
         error: (error) => {
           this.isLoading = false;
