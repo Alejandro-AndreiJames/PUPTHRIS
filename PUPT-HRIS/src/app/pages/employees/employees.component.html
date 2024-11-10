@@ -85,15 +85,15 @@
       <tbody>
         <tr *ngFor="let user of paginatedUsers; let i = index">
           <th class="p-4">{{ (currentPage - 1) * itemsPerPage + i + 1 }}</th>
-          <td class="p-4">{{ user.Fcode }}</td>
+          <td class="p-4">{{ user.Fcode || 'No information entered' }}</td>
           <td class="p-4">
-            {{ user.FirstName }} {{ user.MiddleName }} {{ user.Surname }} {{ user.NameExtension }}
+            {{ (user.FirstName || user.MiddleName || user.Surname || user.NameExtension) ? 
+               (user.FirstName + ' ' + user.MiddleName + ' ' + user.Surname + ' ' + user.NameExtension).trim() : 
+               'No information entered' }}
           </td>
-          <td class="p-4">
-            {{ getRoleName(user.Roles) }}
-          </td>
-          <td class="p-4">{{ user.Department?.DepartmentName }}</td>
-          <td class="p-4">{{ user.EmploymentType }}</td>
+          <td class="p-4">{{ getRoleName(user.Roles) || 'No information entered' }}</td>
+          <td class="p-4">{{ user.Department?.DepartmentName || 'No information entered' }}</td>
+          <td class="p-4">{{ user.EmploymentType || 'No information entered' }}</td>
           <td class="p-4">
             <button class="btn btn-primary btn-sm btn-maroon" (click)="openModal(user)">View Info</button>
           </td>
@@ -142,30 +142,49 @@
       <div class="modal-body">
         <!-- Basic Details Content -->
         <div *ngIf="activeTab === 'basic'">
-          <table class="info-table">
-            <tbody>
-              <tr>
-                <th>Employee No:</th>
-                <td>{{ basicDetails?.EmployeeNo }}</td>
-              </tr>
-              <tr>
-                <th>Faculty Code:</th>
-                <td>{{ basicDetails?.FacultyCode }}</td>
-              </tr>
-              <tr>
-                <th>Name:</th>
-                <td>{{ basicDetails?.Honorific }} {{ basicDetails?.FirstName }} {{ basicDetails?.MiddleInitial }} {{ basicDetails?.LastName }} {{ basicDetails?.NameExtension }}</td>
-              </tr>
-              <tr>
-                <th>Date of Birth:</th>
-                <td>{{ basicDetails?.DateOfBirth | date:'longDate' }}</td>
-              </tr>
-              <tr>
-                <th>Sex:</th>
-                <td>{{ basicDetails?.Sex }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="basic-info-container">
+            <!-- Profile Picture Section -->
+            <div class="profile-section">
+              <div class="profile-picture">
+                <img 
+                  src="assets/images/default-avatar.png" 
+                  alt="Profile Picture"
+                  class="profile-img"
+                >
+              </div>
+              <h4 class="profile-title">Employee's Profile</h4>
+            </div>
+
+            <!-- Details Section -->
+            <div class="details-section">
+              <table class="info-table">
+                <tbody>
+                  <tr>
+                    <th>Employee No:</th>
+                    <td>{{ basicDetails?.EmployeeNo || 'No information entered' }}</td>
+                  </tr>
+                  <tr>
+                    <th>Faculty Code:</th>
+                    <td>{{ basicDetails?.FacultyCode || 'No information entered' }}</td>
+                  </tr>
+                  <tr>
+                    <th>Name:</th>
+                    <td>{{ (basicDetails?.Honorific || basicDetails?.FirstName || basicDetails?.MiddleInitial || basicDetails?.LastName || basicDetails?.NameExtension) ? 
+                           (basicDetails?.Honorific + ' ' + basicDetails?.FirstName + ' ' + basicDetails?.MiddleInitial + ' ' + basicDetails?.LastName + ' ' + basicDetails?.NameExtension).trim() : 
+                           'No information entered' }}</td>
+                  </tr>
+                  <tr>
+                    <th>Date of Birth:</th>
+                    <td>{{ basicDetails?.DateOfBirth ? (basicDetails?.DateOfBirth | date:'longDate') : 'No information entered' }}</td>
+                  </tr>
+                  <tr>
+                    <th>Sex:</th>
+                    <td>{{ basicDetails?.Sex || 'No information entered' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
         <!-- Educational Background Content -->
@@ -179,12 +198,17 @@
               </tr>
             </thead>
             <tbody>
+              <tr *ngIf="!educationDetails?.length">
+                <td colspan="3" class="text-center">No information entered</td>
+              </tr>
               <tr *ngFor="let education of educationDetails">
-                <td>{{ education.NameOfSchool }}</td>
-                <td>{{ education.Level }}</td>
+                <td>{{ education.NameOfSchool || 'No information entered' }}</td>
+                <td>{{ education.Level || 'No information entered' }}</td>
                 <td>
-                  {{ education.PeriodOfAttendanceFrom ? (education.PeriodOfAttendanceFrom | date:'yyyy') : '' }} - 
-                  {{ education.PeriodOfAttendanceTo ? (education.PeriodOfAttendanceTo | date:'yyyy') : '' }}
+                  {{ (education.PeriodOfAttendanceFrom || education.PeriodOfAttendanceTo) ? 
+                     ((education.PeriodOfAttendanceFrom | date:'yyyy') + ' - ' + 
+                      (education.PeriodOfAttendanceTo | date:'yyyy')) : 
+                     'No information entered' }}
                 </td>
               </tr>
             </tbody>
@@ -193,42 +217,34 @@
 
         <!-- Personal Details Content -->
         <div *ngIf="activeTab === 'personal'">
-          <table class="table w-full">
+          <table class="info-table w-full">
             <tbody>
               <tr>
-                <td><strong>Place of Birth:</strong></td>
-                <td>{{ personalDetails?.PlaceOfBirth }}</td>
-              </tr>
-              <tr>
-                <td><strong>Civil Status:</strong></td>
-                <td>{{ personalDetails?.CivilStatus }}</td>
+                <td width="20%"><strong>Place of Birth:</strong></td>
+                <td>{{ personalDetails?.PlaceOfBirth || 'No information entered' }}</td>
+                <td width="20%"><strong>Civil Status:</strong></td>
+                <td>{{ personalDetails?.CivilStatus || 'No information entered' }}</td>
               </tr>
               <tr>
                 <td><strong>Height:</strong></td>
-                <td>{{ personalDetails?.Height }} cm</td>
-              </tr>
-              <tr>
+                <td>{{ personalDetails?.Height?.toString() ? (personalDetails?.Height + ' cm') : 'No information entered' }}</td>
                 <td><strong>Weight:</strong></td>
-                <td>{{ personalDetails?.Weight }} kg</td>
+                <td>{{ personalDetails?.Weight?.toString() ? (personalDetails?.Weight + ' kg') : 'No information entered' }}</td>
               </tr>
               <tr>
                 <td><strong>Blood Type:</strong></td>
-                <td>{{ personalDetails?.BloodType }}</td>
+                <td colspan="3">{{ personalDetails?.BloodType || 'No information entered' }}</td>
               </tr>
               <tr>
-                <td colspan="2"><strong>Residential Address:</strong></td>
+                <td><strong>Residential Address:</strong></td>
+                <td colspan="3">{{ formatAddress(personalDetails, 'Residential') || 'No information entered' }}</td>
               </tr>
               <tr>
-                <td colspan="2">{{ formatAddress(personalDetails, 'Residential') }}</td>
-              </tr>
-              <tr>
-                <td colspan="2"><strong>Permanent Address:</strong></td>
-              </tr>
-              <tr>
-                <td colspan="2">{{ formatAddress(personalDetails, 'Permanent') }}</td>
+                <td><strong>Permanent Address:</strong></td>
+                <td colspan="3">{{ formatAddress(personalDetails, 'Permanent') || 'No information entered' }}</td>
               </tr>
             </tbody>
-          </table><!-- ... personal details table ... -->
+          </table>
         </div>
 
         <!-- Contact Details Content -->
@@ -237,18 +253,18 @@
             <tbody>
               <tr>
                 <td><strong>Telephone Number:</strong></td>
-                <td>{{ contactDetails?.TelephoneNumber }}</td>
+                <td>{{ contactDetails?.TelephoneNumber || 'No information entered' }}</td>
               </tr>
               <tr>
                 <td><strong>Mobile Number:</strong></td>
-                <td>{{ contactDetails?.MobileNumber }}</td>
+                <td>{{ contactDetails?.MobileNumber || 'No information entered' }}</td>
               </tr>
               <tr>
                 <td><strong>Email Address:</strong></td>
-                <td>{{ contactDetails?.EmailAddress }}</td>
+                <td>{{ contactDetails?.EmailAddress || 'No information entered' }}</td>
               </tr>
             </tbody>
-          </table><!-- ... contact details table ... -->
+          </table>
         </div>
 
         <!-- Family Background & Children Content -->
@@ -257,19 +273,25 @@
             <tbody>
               <tr>
                 <td><strong>Spouse's Name:</strong></td>
-                <td>{{ familyBackground?.SpouseFirstName }} {{ familyBackground?.SpouseMiddleName }} {{ familyBackground?.SpouseLastName }}</td>
+                <td>{{ (familyBackground?.SpouseFirstName || familyBackground?.SpouseMiddleName || familyBackground?.SpouseLastName) ? 
+                       (familyBackground?.SpouseFirstName + ' ' + familyBackground?.SpouseMiddleName + ' ' + familyBackground?.SpouseLastName).trim() : 
+                       'No information entered' }}</td>
               </tr>
               <tr>
                 <td><strong>Spouse's Occupation:</strong></td>
-                <td>{{ familyBackground?.SpouseOccupation }}</td>
+                <td>{{ familyBackground?.SpouseOccupation || 'No information entered' }}</td>
               </tr>
               <tr>
                 <td><strong>Father's Name:</strong></td>
-                <td>{{ familyBackground?.FatherFirstName }} {{ familyBackground?.FatherMiddleName }} {{ familyBackground?.FatherLastName }}</td>
+                <td>{{ (familyBackground?.FatherFirstName || familyBackground?.FatherMiddleName || familyBackground?.FatherLastName) ? 
+                       (familyBackground?.FatherFirstName + ' ' + familyBackground?.FatherMiddleName + ' ' + familyBackground?.FatherLastName).trim() : 
+                       'No information entered' }}</td>
               </tr>
               <tr>
                 <td><strong>Mother's Name:</strong></td>
-                <td>{{ familyBackground?.MotherFirstName }} {{ familyBackground?.MotherMiddleName }} {{ familyBackground?.MotherLastName }}</td>
+                <td>{{ (familyBackground?.MotherFirstName || familyBackground?.MotherMiddleName || familyBackground?.MotherLastName) ? 
+                       (familyBackground?.MotherFirstName + ' ' + familyBackground?.MotherMiddleName + ' ' + familyBackground?.MotherLastName).trim() : 
+                       'No information entered' }}</td>
               </tr>
             </tbody>
           </table>
@@ -283,12 +305,15 @@
               </tr>
             </thead>
             <tbody>
+              <tr *ngIf="!childrenDetails?.length">
+                <td colspan="2" class="text-center">No information entered</td>
+              </tr>
               <tr *ngFor="let child of childrenDetails">
-                <td>{{ child.ChildName }}</td>
-                <td>{{ child.BirthDate | date:'longDate' }}</td>
+                <td>{{ child.ChildName || 'No information entered' }}</td>
+                <td>{{ child.BirthDate ? (child.BirthDate | date:'longDate') : 'No information entered' }}</td>
               </tr>
             </tbody>
-          </table><!-- ... family background and children tables ... -->
+          </table>
         </div>
 
         <!-- Civil Service Eligibilities Content -->
@@ -305,16 +330,19 @@
               </tr>
             </thead>
             <tbody>
+              <tr *ngIf="!civilServiceEligibilities?.length">
+                <td colspan="6" class="text-center">No information entered</td>
+              </tr>
               <tr *ngFor="let eligibility of civilServiceEligibilities">
-                <td>{{ eligibility.CareerService }}</td>
-                <td>{{ eligibility.Rating }}</td>
-                <td>{{ eligibility.DateOfExamination | date:'longDate' }}</td>
-                <td>{{ eligibility.PlaceOfExamination }}</td>
-                <td>{{ eligibility.LicenseNumber }}</td>
-                <td>{{ eligibility.LicenseValidityDate | date:'longDate' }}</td>
+                <td>{{ eligibility.CareerService || 'No information entered' }}</td>
+                <td>{{ eligibility.Rating || 'No information entered' }}</td>
+                <td>{{ eligibility.DateOfExamination ? (eligibility.DateOfExamination | date:'longDate') : 'No information entered' }}</td>
+                <td>{{ eligibility.PlaceOfExamination || 'No information entered' }}</td>
+                <td>{{ eligibility.LicenseNumber || 'No information entered' }}</td>
+                <td>{{ eligibility.LicenseValidityDate ? (eligibility.LicenseValidityDate | date:'longDate') : 'No information entered' }}</td>
               </tr>
             </tbody>
-          </table><!-- ... civil service eligibilities table ... -->
+          </table>
         </div>
 
         <!-- Learning & Development Content -->
@@ -330,15 +358,21 @@
               </tr>
             </thead>
             <tbody>
+              <tr *ngIf="!learningDetails?.length">
+                <td colspan="5" class="text-center">No information entered</td>
+              </tr>
               <tr *ngFor="let learning of learningDetails">
-                <td>{{ learning.TitleOfLearningDevelopment }}</td>
-                <td>{{ learning.InclusiveDatesFrom | date:'longDate' }} - {{ learning.InclusiveDatesTo | date:'longDate' }}</td>
-                <td>{{ learning.NumberOfHours }}</td>
-                <td>{{ learning.TypeOfLD }}</td>
-                <td>{{ learning.ConductedSponsoredBy }}</td>
+                <td>{{ learning.TitleOfLearningDevelopment || 'No information entered' }}</td>
+                <td>{{ (learning.InclusiveDatesFrom && learning.InclusiveDatesTo) ? 
+                       ((learning.InclusiveDatesFrom | date:'longDate') + ' - ' + 
+                        (learning.InclusiveDatesTo | date:'longDate')) : 
+                       'No information entered' }}</td>
+                <td>{{ learning.NumberOfHours || 'No information entered' }}</td>
+                <td>{{ learning.TypeOfLD || 'No information entered' }}</td>
+                <td>{{ learning.ConductedSponsoredBy || 'No information entered' }}</td>
               </tr>
             </tbody>
-          </table><!-- ... learning and development table ... -->
+          </table>
         </div>
 
         <!-- Work Experience Content -->
@@ -356,17 +390,23 @@
               </tr>
             </thead>
             <tbody>
+              <tr *ngIf="!workExperiences?.length">
+                <td colspan="7" class="text-center">No information entered</td>
+              </tr>
               <tr *ngFor="let work of workExperiences">
-                <td>{{ work.PositionTitle }}</td>
-                <td>{{ work.DepartmentAgencyOfficeCompany }}</td>
-                <td>{{ work.InclusiveDatesFrom | date:'yyyy' }} - {{ work.InclusiveDatesTo | date:'yyyy' }}</td>
-                <td>{{ work.MonthlySalary | currency }}</td>
-                <td>{{ work.SalaryJobPayGrade }}</td>
-                <td>{{ work.StatusOfAppointment }}</td>
-                <td>{{ work.GovtService ? 'Y' : 'N' }}</td>
+                <td>{{ work.PositionTitle || 'No information entered' }}</td>
+                <td>{{ work.DepartmentAgencyOfficeCompany || 'No information entered' }}</td>
+                <td>{{ (work.InclusiveDatesFrom && work.InclusiveDatesTo) ? 
+                       ((work.InclusiveDatesFrom | date:'yyyy') + ' - ' + 
+                        (work.InclusiveDatesTo | date:'yyyy')) : 
+                       'No information entered' }}</td>
+                <td>{{ work.MonthlySalary ? (work.MonthlySalary | currency) : 'No information entered' }}</td>
+                <td>{{ work.SalaryJobPayGrade || 'No information entered' }}</td>
+                <td>{{ work.StatusOfAppointment || 'No information entered' }}</td>
+                <td>{{ work.GovtService !== null ? (work.GovtService ? 'Y' : 'N') : 'No information entered' }}</td>
               </tr>
             </tbody>
-          </table><!-- ... work experience table ... -->
+          </table>
         </div>
 
         <!-- Voluntary Work Content -->
@@ -381,14 +421,20 @@
               </tr>
             </thead>
             <tbody>
+              <tr *ngIf="!voluntaryWorks?.length">
+                <td colspan="4" class="text-center">No information entered</td>
+              </tr>
               <tr *ngFor="let voluntary of voluntaryWorks">
-                <td>{{ voluntary.OrganizationNameAddress }}</td>
-                <td>{{ voluntary.InclusiveDatesFrom | date:'yyyy' }} - {{ voluntary.InclusiveDatesTo | date:'yyyy' }}</td>
-                <td>{{ voluntary.NumberOfHours }}</td>
-                <td>{{ voluntary.PositionNatureOfWork }}</td>
+                <td>{{ voluntary.OrganizationNameAddress || 'No information entered' }}</td>
+                <td>{{ (voluntary.InclusiveDatesFrom && voluntary.InclusiveDatesTo) ? 
+                       ((voluntary.InclusiveDatesFrom | date:'yyyy') + ' - ' + 
+                        (voluntary.InclusiveDatesTo | date:'yyyy')) : 
+                       'No information entered' }}</td>
+                <td>{{ voluntary.NumberOfHours || 'No information entered' }}</td>
+                <td>{{ voluntary.PositionNatureOfWork || 'No information entered' }}</td>
               </tr>
             </tbody>
-          </table><!-- ... voluntary work table ... -->
+          </table>
         </div>
 
         <!-- Character References Content -->
@@ -402,13 +448,16 @@
               </tr>
             </thead>
             <tbody>
+              <tr *ngIf="!characterReferences?.length">
+                <td colspan="3" class="text-center">No information entered</td>
+              </tr>
               <tr *ngFor="let reference of characterReferences">
-                <td>{{ reference.Name }}</td>
-                <td>{{ reference.Address }}</td>
-                <td>{{ reference.TelephoneNumber }}</td>
+                <td>{{ reference.Name || 'No information entered' }}</td>
+                <td>{{ reference.Address || 'No information entered' }}</td>
+                <td>{{ reference.TelephoneNumber || 'No information entered' }}</td>
               </tr>
             </tbody>
-          </table><!-- ... character references table ... -->
+          </table>
         </div>
       </div>
 

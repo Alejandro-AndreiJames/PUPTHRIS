@@ -29,13 +29,14 @@ import { CampusContextService } from '../../services/campus-context.service';
 import { Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { DepartmentService } from '../../services/department.service';
+import { ProfileImageComponent } from '../profile-image/profile-image.component';
 
 @Component({
   selector: 'app-employee',
   templateUrl: './employees.component.html',
   styleUrls: ['./employees.component.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule]
+  imports: [CommonModule, FormsModule, ProfileImageComponent]
 })
 export class EmployeeComponent implements OnInit, OnDestroy {
   users: User[] = [];

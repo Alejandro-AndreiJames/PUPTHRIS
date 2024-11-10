@@ -54,19 +54,50 @@
 .info-table {
   width: 100%;
   border-collapse: separate;
-  border-spacing: 0 10px;
+  border-spacing: 0;
+  background-color: white;
+  border-radius: 0.5rem;
+  overflow: hidden;
 }
 
-.info-table th,
+.info-table tr {
+  background-color: #f3f4f6;
+}
+
+.info-table tr:nth-child(even) {
+  background-color: #ffffff;
+}
+
 .info-table td {
-  padding: 10px;
+  padding: 12px;
   text-align: left;
   border-bottom: 1px solid #e2e8f0;
+  color: #000000;
+  font-weight: 400;
+  font-style: normal;
 }
 
-.info-table th {
-  font-weight: bold;
+.info-table td:first-child {
+  width: 200px;
+  font-weight: 600;
   color: #4a5568;
+}
+
+.info-table td:empty::before,
+.info-table td:has(> :empty)::before,
+.info-table td:contains("No information entered"),
+.info-table td[data-empty="true"] {
+  color: #9ca3af !important;
+  font-weight: 300 !important;
+  font-style: italic !important;
+}
+
+.info-table tr.address-row {
+  background-color: #f8f9fa;
+}
+
+.info-table tr.address-row td {
+  padding: 16px;
 }
 
 .modal-footer {
@@ -435,4 +466,145 @@
 .table-container {
   position: relative;
   overflow: hidden; /* This prevents the scroll during animation */
+}
+
+/* Add these new styles at the end of the file */
+td:empty::before,
+td:has(> :empty)::before,
+td:contains("No information entered"):not(:has(*)) {
+  color: #9ca3af;
+  font-weight: 300;
+  font-style: italic;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Style for empty state messages */
+td:empty::before,
+td:has(> :empty)::before,
+td:contains("No information entered"):not(:has(*)) {
+  color: #9ca3af;
+  font-weight: 300;
+  font-style: italic;
+  padding: 1rem;
+}
+
+/* Add these styles for the personal details section */
+.info-table {
+  padding: 1rem;
+  background-color: white;
+  border-radius: 0.5rem;
+}
+
+.info-table label {
+  font-weight: 500;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.info-table .bg-gray-100 {
+  border-radius: 0.25rem;
+  min-height: 2.5rem;
+  display: flex;
+  align-items: center;
+}
+
+/* Style for empty values */
+.info-table .bg-gray-100:empty::before,
+.info-table .bg-gray-100:has(> :empty)::before {
+  content: 'No information entered';
+  color: #9ca3af;
+  font-weight: 300;
+  font-style: italic;
+}
+
+/* Remove any existing styles for Residential/Permanent address and add these */
+.info-table tr {
+  background-color: #f8f9fa;
+}
+
+.info-table tr:nth-child(even) {
+  background-color: #ffffff;
+}
+
+.info-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.info-table td:first-child {
+  font-weight: 600;
+  color: #4a5568;
+  width: 200px;
+}
+
+.info-table tr.bg-gray-100 {
+  background-color: #f3f4f6;
+}
+
+.info-table tr.bg-gray-100 td {
+  padding: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* Update the table cell styling to ensure normal text appearance */
+.table td {
+  color: #000000;
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* Profile picture and basic info layout */
+.basic-info-container {
+  display: flex;
+  gap: 2rem;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 8px;
+}
+
+.profile-section {
+  flex: 0 0 200px;
+  text-align: center;
+}
+
+.profile-title {
+  margin-top: 0.5rem;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.profile-picture {
+  width: 200px;
+  height: 200px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #e2e8f0;
+  background-color: #f8fafc;
+  margin: 0 auto;
+}
+
+.profile-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.details-section {
+  flex: 1;
+}
+
+/* Add responsive behavior */
+@media (max-width: 768px) {
+  .basic-info-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .profile-section {
+    margin-bottom: 1.5rem;
+  }
 }
