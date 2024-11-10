@@ -5,6 +5,7 @@
   .container {
     border-radius: 10px;
     background-color: #f8f8f8;
+    animation: slideDown 0.3s ease-out;
   }
   
   .bg-maroon {
@@ -44,6 +45,8 @@
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.3s ease-out forwards;
+    opacity: 0;
   }
   
   .table th,
@@ -78,6 +81,8 @@
     display: flex;
     justify-content: center;
     margin-top: 20px;
+    animation: fadeIn 0.3s ease-out forwards;
+    opacity: 0;
   }
   
   .pagination-controls button {
@@ -125,6 +130,7 @@
     padding: 2rem;
     opacity: 0;
     transition: opacity 0.5s ease-in-out;
+    animation: slideUp 0.3s ease-out;
   }
   
   .toast.show {
@@ -161,6 +167,9 @@
   .search-container {
     display: flex;
     align-items: center;
+    animation: fadeIn 0.3s ease-out forwards;
+    opacity: 0;
+    animation-delay: 0.25s;
   }
 
   .search-input {
@@ -187,3 +196,85 @@
 
   /* Add this if you want to use Font Awesome icons */
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css');
+
+/* Animation keyframes */
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Container animations */
+.container {
+  animation: slideDown 0.3s ease-out;
+}
+
+/* Form control animations */
+.form-control {
+  margin-bottom: 1.5rem;
+  animation: fadeIn 0.3s ease-out forwards;
+  opacity: 0;
+}
+
+.form-control:nth-child(1) { animation-delay: 0.05s; }
+.form-control:nth-child(2) { animation-delay: 0.1s; }
+.form-control:nth-child(3) { animation-delay: 0.15s; }
+.form-control:nth-child(4) { animation-delay: 0.2s; }
+
+/* Button container animations */
+.btn-container, .search-container {
+  animation: fadeIn 0.3s ease-out forwards;
+  animation-delay: 0.25s;
+  opacity: 0;
+}
+
+/* Table animations */
+.table {
+  animation: fadeIn 0.3s ease-out forwards;
+  opacity: 0;
+}
+
+/* Modal animations */
+.fixed {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.bg-white.rounded-lg {
+  animation: slideDown 0.2s ease-out;
+}
+
+/* Toast/Alert animations */
+.toast, .alert {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Pagination controls animation */
+.pagination-controls {
+  animation: fadeIn 0.3s ease-out forwards;
+  opacity: 0;
+}

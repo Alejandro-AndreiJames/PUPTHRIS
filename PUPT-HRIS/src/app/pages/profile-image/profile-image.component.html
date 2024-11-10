@@ -17,12 +17,10 @@
         <button class="btn btn-cancel" (click)="cancelUpdateImage()">Cancel</button>
       </div>
     </ng-template>
-
-    <p *ngIf="errorMessage" class="error-message">{{ errorMessage }}</p>
   </div>
 </div>
 
 <!-- Toast Notification -->
-<div *ngIf="showToast" class="toast" [ngClass]="{'toast-success': toastType === 'success', 'toast-error': toastType === 'error'}">
+<div *ngIf="showToast" class="toast">
   {{ toastMessage }}
 </div>

@@ -195,41 +195,41 @@
 
 /* Add animation classes to your existing styles */
 .container {
-  animation: slideDown 0.5s ease-out;
+  animation: slideDown 0.3s ease-out;
 }
 
 .form-control {
-  animation: fadeIn 0.6s ease-out forwards;
+  animation: fadeIn 0.4s ease-out forwards;
   opacity: 0;
 }
 
 .form-control:nth-child(1) {
-  animation-delay: 0.2s;
+  animation-delay: 0.1s;
 }
 
 .form-control:nth-child(2) {
-  animation-delay: 0.3s;
+  animation-delay: 0.2s;
 }
 
 .flex.justify-end {
-  animation: fadeIn 0.6s ease-out forwards;
-  animation-delay: 0.4s;
+  animation: fadeIn 0.4s ease-out forwards;
+  animation-delay: 0.3s;
   opacity: 0;
 }
 
 .table {
-  animation: slideUp 0.6s ease-out forwards;
-  animation-delay: 0.3s;
+  animation: slideUp 0.4s ease-out forwards;
+  animation-delay: 0.2s;
   opacity: 0;
 }
 
 /* Modal animation */
 .fixed {
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .bg-white.rounded-lg {
-  animation: slideDown 0.3s ease-out;
+  animation: slideDown 0.2s ease-out;
 }
 
 /* Toast animation */

@@ -1,188 +1,115 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-<form [formGroup]="newAccountForm" (ngSubmit)="onSubmit()" class="bg-base-200 rounded-lg shadow-lg max-w-7xl mx-auto mt-3">
+<form [formGroup]="newAccountForm" (ngSubmit)="onSubmit()" class="container bg-base-200 rounded-lg shadow-lg p-0 mx-auto max-w-7xl mb-10">
   <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
     <h2 class="text-xl font-bold">Create New Account</h2>
   </div>
   
-  <div class="grid grid-cols-2 gap-6 p-6">
-    <!-- Fcode -->
-    <div class="form-control w-full">
-      <label class="label" for="Fcode">
-        <span class="label-text font-bold">Fcode <span class="text-red-500">*</span></span>
-      </label>
-      <input
-        type="text"
-        id="Fcode"
-        formControlName="Fcode"
-        placeholder="Enter Fcode"
-        class="input input-bordered w-full"
-      />
-    </div>
+  <div class="p-6 space-y-8">
+    <!-- Basic Information -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-semibold mb-4 text-maroon">Basic Information</h2>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="form-control">
+          <label class="label-text" for="Fcode">Fcode <span class="text-red-500">*</span></label>
+          <input type="text" id="Fcode" formControlName="Fcode" placeholder="Enter Fcode" class="input input-bordered w-full" />
+        </div>
 
-    <!-- Surname -->
-    <div class="form-control w-full">
-      <label class="label" for="Surname">
-        <span class="label-text font-bold">Surname <span class="text-red-500">*</span></span>
-      </label>
-      <input
-        type="text"
-        id="Surname"
-        formControlName="Surname"
-        placeholder="Enter Surname"
-        class="input input-bordered w-full"
-      />
-    </div>
+        <div class="form-control">
+          <label class="label-text" for="Surname">Surname <span class="text-red-500">*</span></label>
+          <input type="text" id="Surname" formControlName="Surname" placeholder="Enter Surname" class="input input-bordered w-full" />
+        </div>
 
-    <!-- First Name -->
-    <div class="form-control w-full">
-      <label class="label" for="FirstName">
-        <span class="label-text font-bold">First Name <span class="text-red-500">*</span></span>
-      </label>
-      <input
-        type="text"
-        id="FirstName"
-        formControlName="FirstName"
-        placeholder="Enter First Name"
-        class="input input-bordered w-full"
-      />
-    </div>
+        <div class="form-control">
+          <label class="label-text" for="FirstName">First Name <span class="text-red-500">*</span></label>
+          <input type="text" id="FirstName" formControlName="FirstName" placeholder="Enter First Name" class="input input-bordered w-full" />
+        </div>
 
-    <!-- Middle Name -->
-    <div class="form-control w-full">
-      <label class="label" for="MiddleName">
-        <span class="label-text font-bold">Middle Name</span>
-      </label>
-      <input
-        type="text"
-        id="MiddleName"
-        formControlName="MiddleName"
-        placeholder="Enter Middle Name"
-        class="input input-bordered w-full"
-      />
-    </div>
+        <div class="form-control">
+          <label class="label-text" for="MiddleName">Middle Name</label>
+          <input type="text" id="MiddleName" formControlName="MiddleName" placeholder="Enter Middle Name" class="input input-bordered w-full" />
+        </div>
 
-    <!-- Name Extension -->
-    <div class="form-control w-full">
-      <label class="label" for="NameExtension">
-        <span class="label-text font-bold">Name Extension</span>
-      </label>
-      <input
-        type="text"
-        id="NameExtension"
-        formControlName="NameExtension"
-        placeholder="Enter Name Extension"
-        class="input input-bordered w-full"
-      />
-    </div>
+        <div class="form-control">
+          <label class="label-text" for="NameExtension">Name Extension</label>
+          <input type="text" id="NameExtension" formControlName="NameExtension" placeholder="Enter Name Extension" class="input input-bordered w-full" />
+        </div>
 
-    <!-- Email -->
-    <div class="form-control w-full">
-      <label class="label" for="Email">
-        <span class="label-text font-bold">Email <span class="text-red-500">*</span></span>
-      </label>
-      <input
-        type="email"
-        id="Email"
-        formControlName="Email"
-        placeholder="Enter Email"
-        class="input input-bordered w-full"
-      />
-    </div>
-
-    <!-- Employment Type -->
-    <div class="form-control w-full">
-      <label class="label" for="EmploymentType">
-        <span class="label-text font-bold">Employment Type <span class="text-red-500">*</span></span>
-      </label>
-      <select
-        id="EmploymentType"
-        formControlName="EmploymentType"
-        class="select select-bordered w-full"
-      >
-        <option value="" disabled selected>- Please Select Option -</option>
-        <option value="fulltime">Fulltime</option>
-        <option value="parttime">Part-time</option>
-        <option value="temporary">Temporary</option>
-      </select>
-    </div>
-
-    <!-- Password -->
-    <div class="form-control w-full relative">
-      <label class="label" for="Password">
-        <span class="label-text font-bold">Password <span class="text-red-500">*</span></span>
-      </label>
-      <div class="flex">
-        <input
-          type="text"
-          id="Password"
-          formControlName="Password"
-          placeholder="Enter Password"
-          class="input input-bordered w-full"
-        />
-        <button 
-          type="button" 
-          (click)="onGeneratePasswordClick()" 
-          class="btn bg-black text-white ml-2">
-          Generate
-        </button>
+        <div class="form-control">
+          <label class="label-text" for="Email">Email <span class="text-red-500">*</span></label>
+          <input type="email" id="Email" formControlName="Email" placeholder="Enter Email" class="input input-bordered w-full" />
+        </div>
       </div>
     </div>
 
-    <!-- Roles (Checkboxes for multi-select) -->
-    <div class="form-control w-full">
-      <label class="label-text font-bold">Roles <span class="text-red-500">*</span></label>
-      <div class="roles-container mt-3">
-        <div *ngFor="let role of roles" class="role-checkbox">
-          <input
-            type="checkbox"
-            [value]="role.RoleID"
-            (change)="onRoleCheckboxChange($event)"
-            [checked]="newAccountForm.value.Roles.includes(role.RoleID)"
-          />
-          <span class="role-label">{{ role.RoleName }}</span>
+    <!-- Account Details -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-semibold mb-4 text-maroon">Account Details</h2>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="form-control">
+          <label class="label-text" for="EmploymentType">Employment Type <span class="text-red-500">*</span></label>
+          <select id="EmploymentType" formControlName="EmploymentType" class="select input-bordered w-full">
+            <option value="" disabled selected>- Please Select Option -</option>
+            <option value="Fulltime">Fulltime</option>
+            <option value="Parttime">Parttime</option>
+            <option value="Temporary">Temporary</option>
+          </select>
         </div>
-      </div>    
+
+        <div class="form-control">
+          <label class="label-text" for="Password">Password <span class="text-red-500">*</span></label>
+          <div class="flex gap-2">
+            <input type="text" id="Password" formControlName="Password" placeholder="Enter Password" class="input input-bordered flex-1" />
+            <button type="button" (click)="onGeneratePasswordClick()" class="btn btn-save">Generate</button>
+          </div>
+        </div>
+
+        <div class="form-control">
+          <label class="label-text" for="DepartmentID">Department <span class="text-red-500">*</span></label>
+          <select id="DepartmentID" formControlName="DepartmentID" class="select input-bordered w-full">
+            <option value="" disabled selected>- Please Select Option -</option>
+            <option value="na">Not Applicable</option>
+            <option *ngFor="let department of departments" [value]="department.DepartmentID">{{ department.DepartmentName }}</option>
+          </select>
+        </div>
+
+        <div class="form-control" *ngIf="showCollegeCampus">
+          <label class="label-text" for="CollegeCampusID">College Campus <span class="text-red-500">*</span></label>
+          <select id="CollegeCampusID" formControlName="CollegeCampusID" class="select input-bordered w-full">
+            <option value="" disabled selected>- Please Select Option -</option>
+            <option *ngFor="let campus of collegeCampuses" [value]="campus.CollegeCampusID">{{ campus.Name }}</option>
+          </select>
+        </div>
+      </div>
     </div>
 
-    <!-- Department -->
-    <div class="form-control w-full">
-      <label class="label" for="DepartmentID">
-        <span class="label-text font-bold">Department <span class="text-red-500">*</span></span>
-      </label>
-      <select id="DepartmentID" formControlName="DepartmentID" class="select select-bordered w-full">
-        <option value="" disabled selected>- Please Select Option -</option>
-        <option value="na">Not Applicable</option> <!-- New Option -->
-        <option *ngFor="let department of departments" [value]="department.DepartmentID">
-          {{ department.DepartmentName }}
-        </option>
-      </select>      
+    <!-- Roles Section -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-semibold mb-4 text-maroon">Roles</h2>
+      <div class="form-control">
+        <label class="label-text mb-3">Select Roles <span class="text-red-500">*</span></label>
+        <div class="roles-container">
+          <div *ngFor="let role of roles" class="role-checkbox">
+            <input 
+              type="checkbox" 
+              [value]="role.RoleID" 
+              (change)="onRoleCheckboxChange($event)" 
+              [checked]="newAccountForm.value.Roles.includes(role.RoleID)"
+            />
+            <span class="role-label">{{ role.RoleName }}</span>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- College Campus (only visible when admin role is selected) -->
-    <div class="form-control w-full" *ngIf="showCollegeCampus">
-      <label class="label" for="CollegeCampusID">
-        <span class="label-text font-bold">College Campus <span class="text-red-500">*</span></span>
-      </label>
-      <select id="CollegeCampusID" formControlName="CollegeCampusID" class="select select-bordered w-full">
-        <option value="" disabled selected>- Please Select Option -</option>
-        <option *ngFor="let campus of collegeCampuses" [value]="campus.CollegeCampusID">
-          {{ campus.Name }}
-        </option>
-      </select>
+    <div class="flex justify-end">
+      <button type="submit" class="btn btn-save" [disabled]="newAccountForm.invalid">Create Account</button>
     </div>
-  </div>
-
-  <div class="flex justify-end p-4">
-    <button type="submit" class="btn bg-black text-white" [disabled]="newAccountForm.invalid">Create Account</button>
   </div>
 </form>
 
 <!-- Toast Notifications -->
-<div class="toast" 
-     [ngClass]="{'show': toastVisible, 'hide': !toastVisible}" 
-     [@toastAnimation]
->
+<div class="toast" *ngIf="toastVisible && toastMessage" [ngClass]="{'show': toastVisible}" [@toastAnimation]>
   <div *ngIf="toastType === 'success'" class="alert alert-success">
     <span>{{ toastMessage }}</span>
   </div>

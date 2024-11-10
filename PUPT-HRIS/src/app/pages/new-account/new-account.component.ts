@@ -210,13 +210,22 @@ export class NewAccountComponent implements OnInit {
   }
 
   showToast(type: 'success' | 'error', message: string): void {
-    this.toastType = type;
-    this.toastMessage = message;
-    this.toastVisible = true;
-
+    // Reset first
+    this.toastVisible = false;
+    this.toastMessage = '';
+    
+    // Small delay before showing new toast
     setTimeout(() => {
-      this.toastVisible = false;
-    }, 3000); // Hide the toast after 3 seconds
+      this.toastType = type;
+      this.toastMessage = message;
+      this.toastVisible = true;
+
+      // Hide toast after 3 seconds
+      setTimeout(() => {
+        this.toastVisible = false;
+        this.toastMessage = '';  // Clear the message when hiding
+      }, 3000);
+    }, 100);
   }
 
   onSubmit(): void {
@@ -291,12 +300,10 @@ export class NewAccountComponent implements OnInit {
             },
             error: (error) => {
               console.error('Error fetching current user details:', error);
-              this.showToast('error', 'Failed to fetch user details');
             }
           });
         } else {
           console.error('No user ID found in token');
-          this.showToast('error', 'Authentication error');
         }
       }
     });
@@ -308,7 +315,6 @@ export class NewAccountComponent implements OnInit {
       next: departments => {
         console.log('Fetched departments:', departments);
         this.departments = departments;
-        // Clear the selected department
         this.newAccountForm.get('DepartmentID')?.setValue('');
         if (departments.length === 0) {
           console.log('No departments found for this campus');
@@ -316,7 +322,6 @@ export class NewAccountComponent implements OnInit {
       },
       error: error => {
         console.error('Error fetching departments', error);
-        this.showToast('error', 'Failed to load departments');
       }
     });
   }

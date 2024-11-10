@@ -40,6 +40,8 @@ export class LoginComponent implements OnInit, OnDestroy {
   ];
   currentImageIndex = 0;
   private autoScrollInterval: any;
+  isLoading: boolean = false;
+  loginSuccess: boolean = false;
 
   constructor(
     private fb: FormBuilder, 
@@ -98,6 +100,9 @@ export class LoginComponent implements OnInit, OnDestroy {
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
       
+      this.isLoading = true;
+      this.loginSuccess = false;
+
       this.authService.login(email, password).pipe(
         switchMap(response => {
           console.log('Login successful, token:', response.token);
@@ -108,29 +113,35 @@ export class LoginComponent implements OnInit, OnDestroy {
             throw new Error('No user ID found in token');
           }
           
-          // Return the getCurrentUserCampus observable
           return this.userService.getCurrentUserCampus(decodedToken.userId);
         }),
         finalize(() => {
-          // This will run after success or error
           console.log('Login process completed');
         })
       ).subscribe({
         next: (campus) => {
-          if (campus?.CollegeCampusID) {
-            console.log('Setting default campus ID:', campus.CollegeCampusID);
-            this.campusContextService.setCampusId(campus.CollegeCampusID, true);
+          setTimeout(() => {
+            this.loginSuccess = true;
             
-            // Small delay to ensure campus context is fully initialized
             setTimeout(() => {
-              this.router.navigate(['/dashboard']);
-            }, 100);
-          } else {
-            console.warn('No campus ID found in response');
-            this.router.navigate(['/dashboard']);
-          }
+              if (campus?.CollegeCampusID) {
+                console.log('Setting default campus ID:', campus.CollegeCampusID);
+                this.campusContextService.setCampusId(campus.CollegeCampusID, true);
+                
+                setTimeout(() => {
+                  this.isLoading = false;
+                  this.router.navigate(['/dashboard']);
+                }, 100);
+              } else {
+                console.warn('No campus ID found in response');
+                this.isLoading = false;
+                this.router.navigate(['/dashboard']);
+              }
+            }, 1500);
+          }, 800);
         },
         error: (error) => {
+          this.isLoading = false;
           console.error('Login process failed:', error);
           if (error.message === 'No user ID found in token') {
             this.errorMessage = 'Authentication failed. Please try again.';
