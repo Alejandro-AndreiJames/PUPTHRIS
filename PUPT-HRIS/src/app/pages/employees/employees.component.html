@@ -95,32 +95,49 @@
       <div class="modal-body">
         <!-- Basic Details Content -->
         <div *ngIf="activeTab === 'basic'">
-          <table class="info-table">
-            <tbody>
-              <tr>
-                <th>Employee No:</th>
-                <td>{{ basicDetails?.EmployeeNo || 'No information entered' }}</td>
-              </tr>
-              <tr>
-                <th>Faculty Code:</th>
-                <td>{{ basicDetails?.FacultyCode || 'No information entered' }}</td>
-              </tr>
-              <tr>
-                <th>Name:</th>
-                <td>{{ (basicDetails?.Honorific || basicDetails?.FirstName || basicDetails?.MiddleInitial || basicDetails?.LastName || basicDetails?.NameExtension) ? 
-                       (basicDetails?.Honorific + ' ' + basicDetails?.FirstName + ' ' + basicDetails?.MiddleInitial + ' ' + basicDetails?.LastName + ' ' + basicDetails?.NameExtension).trim() : 
-                       'No information entered' }}</td>
-              </tr>
-              <tr>
-                <th>Date of Birth:</th>
-                <td>{{ basicDetails?.DateOfBirth ? (basicDetails?.DateOfBirth | date:'longDate') : 'No information entered' }}</td>
-              </tr>
-              <tr>
-                <th>Sex:</th>
-                <td>{{ basicDetails?.Sex || 'No information entered' }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="basic-info-container">
+            <!-- Profile Picture Section -->
+            <div class="profile-section">
+              <div class="profile-picture">
+                <img 
+                  src="assets/images/default-avatar.png" 
+                  alt="Profile Picture"
+                  class="profile-img"
+                >
+              </div>
+              <h4 class="profile-title">Employee's Profile</h4>
+            </div>
+
+            <!-- Details Section -->
+            <div class="details-section">
+              <table class="info-table">
+                <tbody>
+                  <tr>
+                    <th>Employee No:</th>
+                    <td>{{ basicDetails?.EmployeeNo || 'No information entered' }}</td>
+                  </tr>
+                  <tr>
+                    <th>Faculty Code:</th>
+                    <td>{{ basicDetails?.FacultyCode || 'No information entered' }}</td>
+                  </tr>
+                  <tr>
+                    <th>Name:</th>
+                    <td>{{ (basicDetails?.Honorific || basicDetails?.FirstName || basicDetails?.MiddleInitial || basicDetails?.LastName || basicDetails?.NameExtension) ? 
+                           (basicDetails?.Honorific + ' ' + basicDetails?.FirstName + ' ' + basicDetails?.MiddleInitial + ' ' + basicDetails?.LastName + ' ' + basicDetails?.NameExtension).trim() : 
+                           'No information entered' }}</td>
+                  </tr>
+                  <tr>
+                    <th>Date of Birth:</th>
+                    <td>{{ basicDetails?.DateOfBirth ? (basicDetails?.DateOfBirth | date:'longDate') : 'No information entered' }}</td>
+                  </tr>
+                  <tr>
+                    <th>Sex:</th>
+                    <td>{{ basicDetails?.Sex || 'No information entered' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
         <!-- Educational Background Content -->
