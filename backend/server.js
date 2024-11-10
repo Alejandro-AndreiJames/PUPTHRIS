@@ -80,16 +80,16 @@ app.use('/api/excel-import', excelImportRoutes);
 app.use('/api/college-campuses', collegeCampusRoutes);
 app.use('/api/evaluation', evaluationRoutes);
 
-//sequelize.sync().then(() => {
-//  console.log('Database synced successfully');
+sequelize.sync().then(() => {
+  console.log('Database synced successfully');
   
-//app.listen(port, () => {
-//    console.log(`Server running at http://localhost:${port}/`);
-//  });
-//}).catch(err => {
-//    console.error('Unable to sync database:', err);
-//});
-
 app.listen(port, () => {
-   console.log(`Server running at http://localhost:${port}/`);
+    console.log(`Server running at http://localhost:${port}/`);
+  });
+}).catch(err => {
+    console.error('Unable to sync database:', err);
 });
+
+//app.listen(port, () => {
+//   console.log(`Server running at http://localhost:${port}/`);
+//});

@@ -67,11 +67,21 @@ Role.belongsToMany(User, {
 // Faculty Evaluation Associations
 FacultyEvaluation.belongsTo(User, { foreignKey: 'FacultyID', as: 'Faculty' });
 FacultyEvaluation.belongsTo(User, { foreignKey: 'CreatedBy', as: 'Evaluator' });
-FacultyEvaluation.belongsTo(AcademicPeriod, { foreignKey: 'PeriodID' });
 FacultyEvaluation.hasMany(EvaluationScore, { foreignKey: 'EvaluationID' });
 
 EvaluationScore.belongsTo(FacultyEvaluation, { foreignKey: 'EvaluationID' });
 EvaluationScore.belongsTo(EvaluationCriteria, { foreignKey: 'CriteriaID' });
+
+AcademicPeriod.hasMany(FacultyEvaluation, {
+  foreignKey: 'PeriodID',
+  constraints: true,
+  onDelete: 'SET NULL',
+  onUpdate: 'CASCADE'
+});
+
+FacultyEvaluation.belongsTo(AcademicPeriod, {
+  foreignKey: 'PeriodID'
+});
 
 module.exports = { 
     User, 

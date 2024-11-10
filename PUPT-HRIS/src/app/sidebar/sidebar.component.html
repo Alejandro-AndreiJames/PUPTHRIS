@@ -107,6 +107,12 @@
     </ul>
   </li>
 
+  <!-- Evaluation - Visible to Faculty, Admin, and Super Admin -->
+  <li *ngIf="canAccessEvaluation">
+    <a id="evaluation" class="sidebar-link" routerLink="/evaluation" (click)="setActive('evaluation')"
+    [class.active]="activeItem === 'evaluation'"><i class="fas fa-chart-line mr-3"></i>Evaluation</a>
+  </li>
+
   <!-- Spacer div for expanding sidebar content -->
   <div class="flex-grow"></div>
 

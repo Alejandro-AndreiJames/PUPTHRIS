@@ -1,4 +1,5 @@
 const { Sequelize, Op } = require('sequelize');
+const sequelize = require('../config/db.config');
 const FacultyEvaluation = require('../models/facultyEvaluationModel');
 const EvaluationScore = require('../models/evaluationScoresModel');
 const User = require('../models/userModel');
@@ -11,36 +12,42 @@ exports.submitEvaluation = async (req, res) => {
   
   try {
     const { 
-      facultyId, 
-      periodId, 
+      facultyId,
+      evaluatorId,
       courseSection, 
       numberOfRespondents,
-      scores 
+      scores,
+      createdBy,
+      academicYear,
+      semester,
+      totalScore,
+      qualitativeRating
     } = req.body;
 
-    // Calculate total score from individual criteria scores
-    const totalScore = scores.reduce((sum, score) => sum + score.Score, 0) / scores.length;
-    
-    // Determine qualitative rating based on total score
-    let qualitativeRating;
-    if (totalScore >= 91) qualitativeRating = 'Outstanding';
-    else if (totalScore >= 71) qualitativeRating = 'Very Satisfactory';
-    else if (totalScore >= 51) qualitativeRating = 'Satisfactory';
-    else if (totalScore >= 31) qualitativeRating = 'Fair';
-    else qualitativeRating = 'Poor';
+    // Validate required fields
+    if (!facultyId || !evaluatorId || !courseSection || 
+        !numberOfRespondents || !scores || !createdBy || 
+        !academicYear || !semester ||
+        !Array.isArray(scores) || scores.length === 0) {
+      return res.status(400).json({ 
+        error: 'Missing or invalid required fields'
+      });
+    }
 
-    // Create the main evaluation record
+    // Create the evaluation record
     const evaluation = await FacultyEvaluation.create({
       FacultyID: facultyId,
-      PeriodID: periodId,
+      EvaluatorID: evaluatorId,
+      AcademicYear: academicYear,
+      Semester: semester,
       CourseSection: courseSection,
       NumberOfRespondents: numberOfRespondents,
       TotalScore: totalScore,
       QualitativeRating: qualitativeRating,
-      CreatedBy: req.user.UserID // Assuming you have user info in request
+      CreatedBy: createdBy
     }, { transaction: t });
 
-    // Create individual scores for each criteria
+    // Create individual scores
     await Promise.all(scores.map(score => 
       EvaluationScore.create({
         EvaluationID: evaluation.EvaluationID,
@@ -53,6 +60,7 @@ exports.submitEvaluation = async (req, res) => {
     res.status(201).json(evaluation);
   } catch (error) {
     await t.rollback();
+    console.error('Evaluation submission error:', error);
     res.status(500).json({ error: error.message });
   }
 };

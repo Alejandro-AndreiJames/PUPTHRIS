@@ -15,32 +15,44 @@ const FacultyEvaluation = sequelize.define('FacultyEvaluation', {
       key: 'UserID'
     }
   },
-  PeriodID: {
+  EvaluatorID: {
     type: DataTypes.INTEGER,
     allowNull: false,
+    references: {
+      model: 'users',
+      key: 'UserID'
+    }
+  },
+  PeriodID: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
     references: {
       model: 'academic_periods',
       key: 'PeriodID'
     }
   },
+  AcademicYear: {
+    type: DataTypes.STRING(9),
+    allowNull: false,
+    validate: {
+      is: /^\d{4}-\d{4}$/
+    }
+  },
+  Semester: {
+    type: DataTypes.ENUM('First Semester', 'Second Semester'),
+    allowNull: false
+  },
   CourseSection: {
-    type: DataTypes.STRING(100),
+    type: DataTypes.STRING,
     allowNull: false
   },
   NumberOfRespondents: {
     type: DataTypes.INTEGER,
-    allowNull: false,
-    validate: {
-      min: 1
-    }
+    allowNull: false
   },
   TotalScore: {
     type: DataTypes.DECIMAL(5, 2),
-    allowNull: false,
-    validate: {
-      min: 0,
-      max: 100
-    }
+    allowNull: false
   },
   QualitativeRating: {
     type: DataTypes.ENUM('Poor', 'Fair', 'Satisfactory', 'Very Satisfactory', 'Outstanding'),
