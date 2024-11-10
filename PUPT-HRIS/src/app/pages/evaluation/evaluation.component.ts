@@ -568,4 +568,8 @@ export class EvaluationComponent implements OnInit, OnDestroy {
       Number(score) <= 100
     );
   }
+
+  formatScore(score: number | string): string {
+    return Number(score).toFixed(4);
+  }
 }

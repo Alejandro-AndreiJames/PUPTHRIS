@@ -230,7 +230,7 @@
           <tr *ngFor="let eval of evaluationHistory">
             <td>{{ eval.AcademicYear }}</td>
             <td>{{ eval.Semester }}</td>
-            <td>{{ eval.TotalScore }}</td>
+            <td>{{ formatScore(eval.TotalScore) }}</td>
             <td>{{ eval.QualitativeRating }}</td>
             <td>{{ eval.CourseSection }}</td>
             <td>
