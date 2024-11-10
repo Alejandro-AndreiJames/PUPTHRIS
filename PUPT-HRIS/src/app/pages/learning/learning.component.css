@@ -12,6 +12,7 @@
   max-width: 1400px;
   margin: 2rem auto;
   overflow-x: auto;
+  animation: slideDown 0.3s ease-out;
 }
 
 /* Table styles */
@@ -25,6 +26,8 @@
   overflow: hidden;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   background-color: #ffffff;
+  animation: fadeIn 0.3s ease-out forwards;
+  opacity: 0;
 }
 
 .table th,
@@ -61,6 +64,7 @@
   background-color: #f3f4f6;
   padding: 1.5rem;
   border-radius: 0 0 8px 8px;
+  animation: slideDown 0.3s ease-out;
 }
 
 .edit-form {
@@ -78,6 +82,7 @@
   margin-bottom: 1rem;
   font-size: 0.875rem;
   color: #92400e;
+  animation: slideUp 0.3s ease-out;
 }
 
 /* Heading */
@@ -99,7 +104,14 @@ h2 {
 /* Form controls */
 .form-control {
   margin-bottom: 1.5rem; /* Space between fields */
+  animation: fadeIn 0.3s ease-out forwards;
+  opacity: 0;
 }
+
+.form-control:nth-child(1) { animation-delay: 0.05s; }
+.form-control:nth-child(2) { animation-delay: 0.1s; }
+.form-control:nth-child(3) { animation-delay: 0.15s; }
+.form-control:nth-child(4) { animation-delay: 0.2s; }
 
 /* Label text */
 .label-text {
@@ -212,6 +224,9 @@ h2 {
 .flex-end {
   display: flex;
   justify-content: flex-end; /* Align buttons to the right */
+  animation: fadeIn 0.3s ease-out forwards;
+  animation-delay: 0.25s;
+  opacity: 0;
 }
 
 /* Grid layout for display fields */
@@ -249,6 +264,8 @@ h2 {
   display: flex;
   justify-content: center;
   margin-top: 20px;
+  animation: fadeIn 0.3s ease-out forwards;
+  opacity: 0;
 }
 
 .pagination-controls button {
@@ -313,4 +330,91 @@ h2 {
   font-weight: 300;
   font-style: italic;
   color: #888888;
+}
+
+/* Animation keyframes */
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Container animations */
+.container {
+  animation: slideDown 0.3s ease-out;
+}
+
+/* Form control animations */
+.form-control {
+  margin-bottom: 1.5rem;
+  animation: fadeIn 0.3s ease-out forwards;
+  opacity: 0;
+}
+
+.form-control:nth-child(1) { animation-delay: 0.05s; }
+.form-control:nth-child(2) { animation-delay: 0.1s; }
+.form-control:nth-child(3) { animation-delay: 0.15s; }
+.form-control:nth-child(4) { animation-delay: 0.2s; }
+
+/* Button container animations */
+.btn-container, .flex-end {
+  animation: fadeIn 0.3s ease-out forwards;
+  animation-delay: 0.25s;
+  opacity: 0;
+}
+
+/* Table animations */
+.table {
+  animation: fadeIn 0.3s ease-out forwards;
+  opacity: 0;
+}
+
+/* Modal animations */
+.fixed {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.bg-white.rounded-lg {
+  animation: slideDown 0.2s ease-out;
+}
+
+/* Toast/Alert animations */
+.toast, .alert, .edit-note {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Pagination controls animation */
+.pagination-controls {
+  animation: fadeIn 0.3s ease-out forwards;
+  opacity: 0;
+}
+
+/* Edit form container animation */
+.edit-container {
+  animation: slideDown 0.3s ease-out;
 }

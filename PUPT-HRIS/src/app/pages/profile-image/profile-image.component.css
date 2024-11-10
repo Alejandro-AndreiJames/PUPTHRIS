@@ -108,6 +108,8 @@
   border-radius: 4px;
   color: white;
   z-index: 1000;
+  background-color: #4CAF50;
+  animation: slideUp 0.3s ease-out;
 }
 
 .toast-success {

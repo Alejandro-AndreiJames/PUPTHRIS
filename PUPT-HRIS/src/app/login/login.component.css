@@ -240,3 +240,219 @@
 .w-14 {
   animation: pulse 2s infinite;
 }
+
+/* Add these new animations */
+@keyframes loadingRotate {
+  0% { transform: rotate(0deg); opacity: 0.8; }
+  50% { transform: rotate(180deg); opacity: 1; }
+  100% { transform: rotate(360deg); opacity: 0.8; }
+}
+
+@keyframes successScale {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Loading overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Loading spinner */
+.loading-spinner {
+  width: 70px;
+  height: 70px;
+  border: 6px solid rgba(128, 0, 0, 0.2);
+  border-top: 6px solid #800000;
+  border-radius: 50%;
+  animation: loadingRotate 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  margin: 15px 0;
+}
+
+/* Success checkmark container */
+.success-container {
+  background: #4CAF50;
+  padding: 22px;
+  border-radius: 50%;
+  width: 85px;
+  height: 85px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: 
+    successScale 0.8s cubic-bezier(0.34, 1.56, 0.64, 1),
+    successGlow 2.5s ease-in-out infinite;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+}
+
+/* Success checkmark */
+.success-checkmark {
+  color: white;
+  font-size: 42px;
+  animation: checkmarkAppear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+@keyframes checkmarkAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.5) rotate(-45deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* Loading text */
+.loading-text {
+  color: #333;
+  margin-top: 25px;
+  font-size: 19px;
+  text-align: center;
+  font-weight: 500;
+  transition: opacity 0.3s ease-in-out;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Update the loading overlay container */
+.loading-overlay > div {
+  background-color: white;
+  padding: 3.5rem 4.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  min-width: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  animation: containerAppear 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes containerAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Mini loading circle animation */
+@keyframes miniLoadingRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.mini-loading {
+  width: 30px;
+  height: 30px;
+  border: 4px solid rgba(128, 0, 0, 0.15);
+  border-top: 4px solid #800000;
+  border-radius: 50%;
+  animation: miniLoadingRotate 0.8s linear infinite;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.mini-loading.show {
+  opacity: 1;
+}
+
+/* Update loading text color since background is now white */
+.loading-text {
+  color: #333;
+  margin-top: 25px;
+  font-size: 19px;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Update success container */
+.success-container {
+  background: #4CAF50;
+  padding: 22px;
+  border-radius: 50%;
+  width: 85px;
+  height: 85px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: 
+    successScale 0.8s cubic-bezier(0.34, 1.56, 0.64, 1),
+    successGlow 2.5s ease-in-out infinite;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+}
+
+/* Update success checkmark color to match theme */
+.success-checkmark {
+  color: white;
+  font-size: 42px;
+}
+
+/* Add a subtle gradient border at the top */
+.loading-overlay > div::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  transition: background 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 0;
+}
+
+/* Default loading state border (maroon) */
+.loading-overlay > div:not(:has(.success-container))::before {
+  background: linear-gradient(to right, 
+    rgba(128, 0, 0, 0.8),     /* Slightly transparent */
+    rgba(255, 68, 68, 0.8),   /* Slightly transparent */
+    rgba(128, 0, 0, 0.8)      /* Slightly transparent */
+  );
+}
+
+/* Success state border (green) */
+.loading-overlay > div:has(.success-container)::before {
+  background: linear-gradient(to right,
+    rgba(76, 175, 80, 0.8),   /* Slightly transparent */
+    rgba(69, 160, 73, 0.8),   /* Slightly transparent */
+    rgba(76, 175, 80, 0.8)    /* Slightly transparent */
+  );
+}
+
+/* Add a glow effect to the success container */
+@keyframes successGlow {
+  0% { box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2); }
+  50% { box-shadow: 0 8px 24px rgba(76, 175, 80, 0.4); }
+  100% { box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2); }
+}
+
+.success-container {
+  animation: 
+    successScale 0.8s cubic-bezier(0.34, 1.56, 0.64, 1),
+    successGlow 2.5s ease-in-out infinite;
+}

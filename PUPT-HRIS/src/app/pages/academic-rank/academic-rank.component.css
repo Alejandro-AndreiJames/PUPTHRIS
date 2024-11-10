@@ -48,7 +48,14 @@
 
 .form-control {
   margin-bottom: 1.5rem;
+  animation: fadeIn 0.4s ease-out forwards;
+  opacity: 0;
 }
+
+.form-control:nth-child(1) { animation-delay: 0.1s; }
+.form-control:nth-child(2) { animation-delay: 0.2s; }
+.form-control:nth-child(3) { animation-delay: 0.3s; }
+.form-control:nth-child(4) { animation-delay: 0.4s; }
 
 .label-text {
   color: #000000;
@@ -104,6 +111,7 @@
   bottom: 1rem;
   right: 1rem;
   z-index: 9999;
+  animation: slideUp 0.3s ease-out;
 }
 
 .alert {
@@ -134,4 +142,81 @@
 .btn-edit:hover {
   background-color: #333333;
   transform: translateY(-1px);
+}
+
+/* Animation keyframes */
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Container animations */
+.container {
+  animation: slideDown 0.3s ease-out;
+}
+
+/* Form control animations */
+.form-control {
+  margin-bottom: 1.5rem;
+  animation: fadeIn 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+.form-control:nth-child(1) { animation-delay: 0.1s; }
+.form-control:nth-child(2) { animation-delay: 0.2s; }
+.form-control:nth-child(3) { animation-delay: 0.3s; }
+.form-control:nth-child(4) { animation-delay: 0.4s; }
+
+/* Button container animations */
+.flex.justify-end {
+  animation: fadeIn 0.4s ease-out forwards;
+  animation-delay: 0.4s;
+  opacity: 0;
+}
+
+/* Table animations */
+.table {
+  animation: slideUp 0.4s ease-out forwards;
+  animation-delay: 0.2s;
+  opacity: 0;
+}
+
+/* Modal animations */
+.fixed {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.bg-white.rounded-lg {
+  animation: slideDown 0.2s ease-out;
+}
+
+/* Toast animations */
+.toast {
+  animation: slideUp 0.3s ease-out;
 }

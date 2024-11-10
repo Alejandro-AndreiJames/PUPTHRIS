@@ -35,6 +35,7 @@ import { AcademicRankComponent } from './pages/academic-rank/academic-rank.compo
 import { CollegeCampusManagementComponent } from './pages/college-campus-management/college-campus-management.component';
 import { CampusGuard } from './services/campus.guard';
 import { EvaluationComponent } from './pages/evaluation/evaluation.component';
+import { Page404Component } from './page-404/page-404.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -80,5 +81,5 @@ export const routes: Routes = [
       { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
     ]
   },
-  { path: '**', redirectTo: '/dashboard' }
+  { path: '**', component: Page404Component }
 ];
