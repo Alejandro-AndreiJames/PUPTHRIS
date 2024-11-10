@@ -1,10 +1,17 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { PersonalDetailsService } from '../../services/personal-details.service';
 import { AuthService } from '../../services/auth.service';
 import { PersonalDetails } from '../../model/personal-details.model';
 import { jwtDecode} from 'jwt-decode'; // Correct import
 import { CommonModule } from '@angular/common';
+
+function exactLengthValidator(length: number) {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value?.toString().replace(/\D/g, ''); // Remove non-digits
+    return value && value.length !== length ? { exactLength: {required: length, actual: value.length} } : null;
+  };
+}
 
 @Component({
   selector: 'app-personal-details',
@@ -46,11 +53,11 @@ export class PersonalDetailsComponent implements OnInit {
       Height: [''],
       Weight: [''],
       BloodType: [''],
-      GSISNumber: [''],
-      PagIbigNumber: [''],
-      PhilHealthNumber: [''],
-      SSSNumber: [''],
-      TINNumber: [''],
+      GSISNumber: ['', [Validators.pattern(/^\d+$/), exactLengthValidator(11)]],
+      PagIbigNumber: ['', [Validators.pattern(/^\d+$/), exactLengthValidator(12)]],
+      PhilHealthNumber: ['', [Validators.pattern(/^\d+$/), exactLengthValidator(12)]],
+      SSSNumber: ['', [Validators.pattern(/^\d+$/), exactLengthValidator(10)]],
+      TINNumber: ['', [Validators.pattern(/^\d+$/), exactLengthValidator(12)]],
       AgencyEmployeeNumber: [''],
       CitizenshipType: ['', Validators.required],
       CitizenshipAcquisition: [''],
@@ -195,6 +202,19 @@ export class PersonalDetailsComponent implements OnInit {
         PermanentZipCode: '',
       });
     }
+  }
+
+  getErrorMessage(controlName: string): string {
+    const control = this.personalDetailsForm.get(controlName);
+    if (control?.errors) {
+      if (control.errors['pattern']) {
+        return 'Please enter numbers only';
+      }
+      if (control.errors['exactLength']) {
+        return `Must be exactly ${control.errors['exactLength'].required} digits`;
+      }
+    }
+    return '';
   }
 }
 
