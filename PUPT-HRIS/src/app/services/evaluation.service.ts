@@ -43,6 +43,30 @@ export class EvaluationService {
     }).pipe(catchError(this.handleError));
   }
 
+  getFacultyEvaluationHistory(facultyId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/evaluations/faculty/${facultyId}/history`, {
+      headers: this.getHeaders()
+    }).pipe(catchError(this.handleError));
+  }
+
+  updateEvaluation(evaluationId: number, evaluation: EvaluationSubmission): Observable<any> {
+    console.log('Updating evaluation:', evaluationId, evaluation);
+    return this.http.put(`${this.apiUrl}/evaluations/${evaluationId}`, evaluation, {
+      headers: this.getHeaders()
+    }).pipe(
+      catchError(error => {
+        console.error('Update evaluation error:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  deleteEvaluation(evaluationId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/evaluations/${evaluationId}`, {
+      headers: this.getHeaders()
+    }).pipe(catchError(this.handleError));
+  }
+
   private handleError(error: HttpErrorResponse): Observable<never> {
     console.error('An error occurred:', error);
     return throwError(() => error.message || 'Server error');

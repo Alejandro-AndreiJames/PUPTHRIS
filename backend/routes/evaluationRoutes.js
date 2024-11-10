@@ -1,23 +1,25 @@
 const express = require('express');
 const router = express.Router();
-const academicPeriodController = require('../controllers/academicPeriodController');
 const evaluationController = require('../controllers/evaluationController');
 const authenticateJWT = require('../middleware/authMiddleware');
 
-// Academic Period routes
-router.post('/periods', authenticateJWT, academicPeriodController.createAcademicPeriod);
-router.get('/periods', authenticateJWT, academicPeriodController.getAllAcademicPeriods);
-router.patch('/periods/:periodId/activate', authenticateJWT, academicPeriodController.setActivePeriod);
-
-// Evaluation routes
+// Evaluation submission and retrieval
 router.post('/evaluations', authenticateJWT, evaluationController.submitEvaluation);
 router.get('/evaluations', authenticateJWT, evaluationController.getFacultyEvaluations);
+router.put('/evaluations/:evaluationId', authenticateJWT, evaluationController.updateEvaluation);
+// Faculty evaluation history
+router.get('/evaluations/faculty/:facultyId/history', authenticateJWT, evaluationController.getFacultyEvaluationHistory);
+
+// Evaluation statistics
 router.get('/statistics', authenticateJWT, evaluationController.getEvaluationStatistics);
 
-// Add these new routes for managing evaluation criteria
+// Evaluation criteria management
 router.get('/criteria', authenticateJWT, evaluationController.getEvaluationCriteria);
 router.post('/criteria', authenticateJWT, evaluationController.createEvaluationCriteria);
 router.put('/criteria/:criteriaId', authenticateJWT, evaluationController.updateEvaluationCriteria);
 router.delete('/criteria/:criteriaId', authenticateJWT, evaluationController.deleteEvaluationCriteria);
+
+// Add this new route
+router.delete('/evaluations/:evaluationId', authenticateJWT, evaluationController.deleteEvaluation);
 
 module.exports = router;

@@ -4,7 +4,6 @@ const FacultyEvaluation = require('../models/facultyEvaluationModel');
 const EvaluationScore = require('../models/evaluationScoresModel');
 const User = require('../models/userModel');
 const Department = require('../models/departmentModel');
-const AcademicPeriod = require('../models/academicPeriodModel');
 const EvaluationCriteria = require('../models/evaluationCriteriaModel');
 
 exports.submitEvaluation = async (req, res) => {
@@ -13,13 +12,36 @@ exports.submitEvaluation = async (req, res) => {
   try {
     const { 
       facultyId,
+      academicYear,
+      semester
+    } = req.body;
+
+    // Check for existing evaluation
+    const existingEvaluation = await FacultyEvaluation.findOne({
+      where: {
+        FacultyID: facultyId,
+        AcademicYear: academicYear,
+        Semester: semester
+      }
+    });
+
+    if (existingEvaluation) {
+      return res.status(400).json({ 
+        error: 'An evaluation already exists for this faculty member in the specified academic period',
+        existingEvaluation: {
+          evaluationId: existingEvaluation.EvaluationID,
+          academicYear: existingEvaluation.AcademicYear,
+          semester: existingEvaluation.Semester
+        }
+      });
+    }
+
+    const { 
       evaluatorId,
       courseSection, 
       numberOfRespondents,
       scores,
       createdBy,
-      academicYear,
-      semester,
       totalScore,
       qualitativeRating
     } = req.body;
@@ -67,10 +89,11 @@ exports.submitEvaluation = async (req, res) => {
 
 exports.getFacultyEvaluations = async (req, res) => {
   try {
-    const { periodId, departmentId } = req.query;
+    const { academicYear, semester, departmentId } = req.query;
     
     const whereClause = {};
-    if (periodId) whereClause.PeriodID = periodId;
+    if (academicYear) whereClause.AcademicYear = academicYear;
+    if (semester) whereClause.Semester = semester;
 
     const evaluations = await FacultyEvaluation.findAll({
       include: [
@@ -83,10 +106,6 @@ exports.getFacultyEvaluations = async (req, res) => {
             model: Department,
             attributes: ['DepartmentName']
           }]
-        },
-        {
-          model: AcademicPeriod,
-          attributes: ['AcademicYear', 'Semester']
         },
         {
           model: EvaluationScore,
@@ -105,10 +124,14 @@ exports.getFacultyEvaluations = async (req, res) => {
 
 exports.getEvaluationStatistics = async (req, res) => {
   try {
-    const { periodId } = req.query;
+    const { academicYear, semester } = req.query;
+    
+    const whereClause = {};
+    if (academicYear) whereClause.AcademicYear = academicYear;
+    if (semester) whereClause.Semester = semester;
     
     const statistics = await FacultyEvaluation.findAll({
-      where: { PeriodID: periodId },
+      where: whereClause,
       attributes: [
         'QualitativeRating',
         [Sequelize.fn('COUNT', Sequelize.col('EvaluationID')), 'count']
@@ -247,6 +270,126 @@ exports.deleteEvaluationCriteria = async (req, res) => {
 
     res.status(200).json({ message: 'Criteria deleted successfully' });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getFacultyEvaluationHistory = async (req, res) => {
+  try {
+    const { facultyId } = req.params;
+    
+    const evaluations = await FacultyEvaluation.findAll({
+      where: { FacultyID: facultyId },
+      include: [{
+        model: EvaluationScore,
+        include: [{
+          model: EvaluationCriteria,
+          as: 'EvaluationCriteria'
+        }]
+      }],
+      order: [
+        ['AcademicYear', 'DESC'],
+        ['Semester', 'ASC']
+      ]
+    });
+
+    if (!evaluations) {
+      return res.status(404).json({ error: 'No evaluation history found' });
+    }
+
+    res.status(200).json(evaluations);
+  } catch (error) {
+    console.error('Error fetching evaluation history:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Add new endpoint for updating evaluation
+exports.updateEvaluation = async (req, res) => {
+  const t = await sequelize.transaction();
+  
+  try {
+    const { evaluationId } = req.params;
+    const {
+      courseSection,
+      numberOfRespondents,
+      scores,
+      totalScore,
+      qualitativeRating
+    } = req.body;
+
+    console.log('Updating evaluation:', { evaluationId, totalScore, scores }); // Add logging
+
+    // First check if evaluation exists
+    const evaluation = await FacultyEvaluation.findByPk(evaluationId);
+    if (!evaluation) {
+      await t.rollback();
+      return res.status(404).json({ error: 'Evaluation not found' });
+    }
+
+    // Update the main evaluation record
+    await evaluation.update({
+      CourseSection: courseSection,
+      NumberOfRespondents: numberOfRespondents,
+      TotalScore: totalScore,
+      QualitativeRating: qualitativeRating
+    }, { transaction: t });
+
+    // Delete existing scores
+    await EvaluationScore.destroy({
+      where: { EvaluationID: evaluationId },
+      transaction: t
+    });
+
+    // Create new scores
+    await Promise.all(scores.map(score => 
+      EvaluationScore.create({
+        EvaluationID: evaluationId,
+        CriteriaID: score.CriteriaID,
+        Score: score.Score
+      }, { transaction: t })
+    ));
+
+    await t.commit();
+    res.status(200).json({ message: 'Evaluation updated successfully' });
+  } catch (error) {
+    await t.rollback();
+    console.error('Error updating evaluation:', error);
+    res.status(500).json({ 
+      error: 'Error updating evaluation',
+      details: error.message 
+    });
+  }
+};
+
+exports.deleteEvaluation = async (req, res) => {
+  const t = await sequelize.transaction();
+  
+  try {
+    const { evaluationId } = req.params;
+
+    // First check if evaluation exists
+    const evaluation = await FacultyEvaluation.findByPk(evaluationId);
+    if (!evaluation) {
+      return res.status(404).json({ error: 'Evaluation not found' });
+    }
+
+    // Delete related scores first (due to foreign key constraint)
+    await EvaluationScore.destroy({
+      where: { EvaluationID: evaluationId },
+      transaction: t
+    });
+
+    // Delete the evaluation
+    await FacultyEvaluation.destroy({
+      where: { EvaluationID: evaluationId },
+      transaction: t
+    });
+
+    await t.commit();
+    res.status(200).json({ message: 'Evaluation deleted successfully' });
+  } catch (error) {
+    await t.rollback();
     res.status(500).json({ error: error.message });
   }
 };

@@ -23,14 +23,6 @@ const FacultyEvaluation = sequelize.define('FacultyEvaluation', {
       key: 'UserID'
     }
   },
-  PeriodID: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-    references: {
-      model: 'academic_periods',
-      key: 'PeriodID'
-    }
-  },
   AcademicYear: {
     type: DataTypes.STRING(9),
     allowNull: false,

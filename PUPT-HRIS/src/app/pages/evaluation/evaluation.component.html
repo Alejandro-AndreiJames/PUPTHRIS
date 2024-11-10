@@ -75,9 +75,14 @@
           <td class="p-4">{{ user.Department?.DepartmentName }}</td>
           <td class="p-4">{{ user.EmploymentType }}</td>
           <td class="p-4">
-            <button class="btn btn-primary btn-sm" (click)="openEvaluationModal(user)">
-              Evaluate
-            </button>
+            <div class="flex gap-2">
+              <button class="btn btn-primary btn-sm" (click)="openEvaluationModal(user)">
+                Evaluate
+              </button>
+              <button class="btn btn-info btn-sm" (click)="viewEvaluationHistory(user)">
+                View History
+              </button>
+            </div>
           </td>
         </tr>
       </tbody>
@@ -101,7 +106,9 @@
 <!-- Evaluation Modal -->
 <div *ngIf="isEvaluationModalOpen" class="modal modal-open">
   <div class="modal-box max-w-4xl">
-    <h3 class="font-bold text-lg mb-4">Faculty Evaluation Form</h3>
+    <h3 class="font-bold text-lg mb-4">
+      {{ isEditMode ? 'Edit Faculty Evaluation' : 'Faculty Evaluation Form' }}
+    </h3>
     
     <!-- Faculty Information -->
     <div class="bg-gray-100 p-4 rounded-lg mb-6">
@@ -162,13 +169,11 @@
           <h4 class="font-medium mb-2">{{ category.name }}</h4>
           <p class="text-sm text-gray-600 mb-4">{{ category.description }}</p>
           <div class="flex items-center space-x-4">
-            <input type="number" 
+            <input type="text" 
                    [(ngModel)]="ratings[category.id]"
+                   (input)="validateScore($event, category.id)"
                    [name]="category.id"
                    required
-                   min="20"
-                   max="100"
-                   step="0.0001"
                    class="input input-bordered w-32"
             >
             <span class="text-sm" *ngIf="ratings[category.id]">
@@ -189,9 +194,83 @@
         <button type="submit" 
                 class="btn btn-primary"
                 [disabled]="!evaluationForm.form.valid">
-          Submit Evaluation
+          {{ isEditMode ? 'Update' : 'Submit' }} Evaluation
         </button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Evaluation History Modal -->
+<div *ngIf="showEvaluationHistory" class="modal modal-open">
+  <div class="modal-box max-w-4xl">
+    <h3 class="font-bold text-lg mb-4">
+      Evaluation History for {{ selectedUser?.FirstName }} {{ selectedUser?.Surname }}
+    </h3>
+
+    <!-- Chart Container -->
+    <div class="chart-container mb-6">
+      <canvas #evaluationChart></canvas>
+    </div>
+
+    <!-- History Table -->
+    <div class="overflow-x-auto">
+      <table class="table w-full">
+        <thead>
+          <tr>
+            <th>Academic Year</th>
+            <th>Semester</th>
+            <th>Total Score</th>
+            <th>Rating</th>
+            <th>Course Section</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let eval of evaluationHistory">
+            <td>{{ eval.AcademicYear }}</td>
+            <td>{{ eval.Semester }}</td>
+            <td>{{ eval.TotalScore }}</td>
+            <td>{{ eval.QualitativeRating }}</td>
+            <td>{{ eval.CourseSection }}</td>
+            <td>
+              <div class="flex gap-2">
+                <button class="btn btn-info btn-sm" 
+                        (click)="editEvaluation(eval)">
+                  Edit
+                </button>
+                <button *ngIf="canDeleteEvaluation()" 
+                        class="btn btn-error btn-sm" 
+                        (click)="confirmDeleteEvaluation(eval.EvaluationID)">
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Close button -->
+    <div class="modal-action">
+      <button class="btn" (click)="showEvaluationHistory = false">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add this error modal -->
+<div *ngIf="showErrorModal" class="modal modal-open">
+  <div class="modal-box">
+    <h3 class="font-bold text-lg text-error">Duplicate Evaluation</h3>
+    <p class="py-4">
+      An evaluation already exists for this faculty member in 
+      {{ currentAcademicYear }} {{ currentSemester }}.
+    </p>
+    <div class="modal-action">
+      <button class="btn btn-ghost" (click)="showErrorModal = false">Close</button>
+      <button class="btn btn-primary" (click)="viewExistingEvaluation()">
+        View Existing Evaluation
+      </button>
+    </div>
   </div>
 </div>
