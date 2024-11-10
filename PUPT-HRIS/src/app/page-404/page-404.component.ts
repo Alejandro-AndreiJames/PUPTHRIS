@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-page-404',
@@ -9,14 +10,21 @@ import { CommonModule } from '@angular/common';
   templateUrl: './page-404.component.html',
   styleUrl: './page-404.component.css'
 })
-export class Page404Component {
-  constructor(private router: Router) {}
+export class Page404Component implements OnInit {
+  constructor(
+    private router: Router,
+    private location: Location
+  ) {}
 
-  goBack() {
-    window.history.back();
+  ngOnInit() {
+    const previousUrl = sessionStorage.getItem('lastValidUrl');
+    if (!previousUrl) {
+      sessionStorage.setItem('lastValidUrl', '/dashboard');
+    }
   }
 
-  goHome() {
-    this.router.navigate(['/dashboard']);
+  goBack(): void {
+    const previousUrl = sessionStorage.getItem('lastValidUrl') || '/dashboard';
+    this.router.navigate([previousUrl]);
   }
 }
