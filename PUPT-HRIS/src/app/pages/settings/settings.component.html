@@ -1,77 +1,87 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-<div class="container bg-base-200 rounded-lg shadow-lg p-0 mx-auto max-w-6xl mb-10">
+<div class="container bg-base-200 rounded-lg shadow-lg p-0 mx-auto max-w-7xl mb-10">
   <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
-    <h1 class="text-2xl font-bold">Settings</h1>
+    <h2 class="text-xl font-bold">Settings</h2>
   </div>
 
-  <div class="p-6 space-y-12">
+  <div class="p-6 space-y-8">
     <!-- Campus Selection Form -->
-    <form *ngIf="showCampusSelection()" [formGroup]="campusForm" (ngSubmit)="onCampusChange()">
-      <div class="form-control w-full mb-10">
-        <label for="selectedCampus" class="label-text font-bold text-lg">Select Campus</label>
-        <select
-          id="selectedCampus"
-          formControlName="selectedCampus"
-          class="select select-bordered w-full"
-          (change)="onCampusChange()"
-        >
-          <option value="">Select a campus</option>
-          <option *ngFor="let campus of campuses" [value]="campus.CollegeCampusID">
-            {{ campus.Name }}
-          </option>
-        </select>
+    <div class="bg-white rounded-lg shadow-md p-6" *ngIf="showCampusSelection()">
+      <div class="border-b border-gray-200 pb-2 mb-6">
+        <h2 class="text-xl font-semibold text-maroon">Campus Selection</h2>
       </div>
-    </form>
+      <form [formGroup]="campusForm" (ngSubmit)="onCampusChange()">
+        <div class="form-control">
+          <label for="selectedCampus" class="label-text">Select Campus</label>
+          <select
+            id="selectedCampus"
+            formControlName="selectedCampus"
+            class="select input-bordered w-full"
+            (change)="onCampusChange()"
+          >
+            <option value="">- Please Select Option -</option>
+            <option *ngFor="let campus of campuses" [value]="campus.CollegeCampusID">
+              {{ campus.Name }}
+            </option>
+          </select>
+        </div>
+      </form>
+    </div>
 
     <!-- Change Password Form -->
-    <form [formGroup]="changePasswordForm" (ngSubmit)="onSubmit()">
-      <div class="form-control w-full mb-10"> <!-- Further increased bottom margin -->
-        <label for="currentPassword" class="label-text font-bold text-lg">Current Password</label>
-        <input
-          id="currentPassword"
-          formControlName="currentPassword"
-          type="password"
-          class="input input-bordered w-full"
-          placeholder="Enter your current password"
-        />
-        <div *ngIf="changePasswordForm.get('currentPassword')?.invalid && changePasswordForm.get('currentPassword')?.touched" class="text-red-500 text-sm">
-          Current password is required.
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="border-b border-gray-200 pb-2 mb-6">
+        <h2 class="text-xl font-semibold text-maroon">Change Password</h2>
+      </div>
+      <form [formGroup]="changePasswordForm" (ngSubmit)="onSubmit()">
+        <div class="form-control w-full mb-10"> <!-- Further increased bottom margin -->
+          <label for="currentPassword" class="label-text font-bold text-lg">Current Password</label>
+          <input
+            id="currentPassword"
+            formControlName="currentPassword"
+            type="password"
+            class="input input-bordered w-full"
+            placeholder="Enter your current password"
+          />
+          <div *ngIf="changePasswordForm.get('currentPassword')?.invalid && changePasswordForm.get('currentPassword')?.touched" class="text-red-500 text-sm">
+            Current password is required.
+          </div>
         </div>
-      </div>
 
-      <div class="form-control w-full mb-10"> <!-- Further increased bottom margin -->
-        <label for="newPassword" class="label-text font-bold text-lg">New Password</label>
-        <input
-          id="newPassword"
-          formControlName="newPassword"
-          type="password"
-          class="input input-bordered w-full"
-          placeholder="Enter your new password"
-        />
-        <div *ngIf="changePasswordForm.get('newPassword')?.invalid && changePasswordForm.get('newPassword')?.touched" class="text-red-500 text-sm">
-          New password must be at least 8 characters long.
+        <div class="form-control w-full mb-10"> <!-- Further increased bottom margin -->
+          <label for="newPassword" class="label-text font-bold text-lg">New Password</label>
+          <input
+            id="newPassword"
+            formControlName="newPassword"
+            type="password"
+            class="input input-bordered w-full"
+            placeholder="Enter your new password"
+          />
+          <div *ngIf="changePasswordForm.get('newPassword')?.invalid && changePasswordForm.get('newPassword')?.touched" class="text-red-500 text-sm">
+            New password must be at least 8 characters long.
+          </div>
         </div>
-      </div>
 
-      <div class="form-control w-full mb-8"> <!-- Further increased bottom margin -->
-        <label for="confirmPassword" class="label-text font-bold text-lg">Confirm New Password</label>
-        <input
-          id="confirmPassword"
-          formControlName="confirmPassword"
-          type="password"
-          class="input input-bordered w-full"
-          placeholder="Confirm your new password"
-        />
-        <div *ngIf="changePasswordForm.get('confirmPassword')?.invalid && changePasswordForm.get('confirmPassword')?.touched" class="text-red-500 text-sm">
-          Passwords do not match.
+        <div class="form-control w-full mb-8"> <!-- Further increased bottom margin -->
+          <label for="confirmPassword" class="label-text font-bold text-lg">Confirm New Password</label>
+          <input
+            id="confirmPassword"
+            formControlName="confirmPassword"
+            type="password"
+            class="input input-bordered w-full"
+            placeholder="Confirm your new password"
+          />
+          <div *ngIf="changePasswordForm.get('confirmPassword')?.invalid && changePasswordForm.get('confirmPassword')?.touched" class="text-red-500 text-sm">
+            Passwords do not match.
+          </div>
         </div>
-      </div>
 
-      <div class="flex justify-end mt-12"> <!-- Further increased top margin for button -->
-        <button type="submit" class="btn btn-save" [disabled]="changePasswordForm.invalid">Change Password</button>
-      </div>
-    </form>
+        <div class="flex justify-end mt-12"> <!-- Further increased top margin for button -->
+          <button type="submit" class="btn btn-save" [disabled]="changePasswordForm.invalid">Change Password</button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 
