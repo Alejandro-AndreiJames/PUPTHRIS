@@ -29,6 +29,14 @@ interface Employee {
   name: string;
 }
 
+// Add this constant at the top of the file
+const ALL_ACADEMIC_RANKS = [
+  'Instructor I', 'Instructor II', 'Instructor III',
+  'Assistant Professor I', 'Assistant Professor II', 'Assistant Professor III', 'Assistant Professor IV',
+  'Associate Professor I', 'Associate Professor II', 'Associate Professor III', 'Associate Professor IV', 'Associate Professor V',
+  'Professor I', 'Professor II', 'Professor III', 'Professor IV', 'Professor V', 'Professor VI'
+];
+
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
@@ -364,10 +372,23 @@ export class DashboardComponent implements OnInit, OnDestroy {
   
         // Process academic rank data
         if (data.academicRanks && Array.isArray(data.academicRanks)) {
-          this.academicRanks = data.academicRanks.map((rank: AcademicRankCount) => ({
-            Rank: rank.Rank,
-            count: rank.count || 0
+          console.log('Incoming academic ranks:', data.academicRanks); // Debug log
+
+          // Create a map of existing ranks and their counts
+          const rankCountMap = new Map<string, number>();
+          
+          // Populate the map with the incoming data
+          data.academicRanks.forEach((rank: any) => {
+            rankCountMap.set(rank.Rank, Number(rank.count));
+          });
+
+          // Create the full list including zeros for missing ranks
+          this.academicRanks = ALL_ACADEMIC_RANKS.map(rankName => ({
+            Rank: rankName,
+            count: rankCountMap.get(rankName) || 0
           }));
+
+          console.log('Processed academic ranks:', this.academicRanks); // Debug log
         }
 
         this.updateCharts();
