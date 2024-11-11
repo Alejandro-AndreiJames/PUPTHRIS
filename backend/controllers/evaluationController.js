@@ -5,6 +5,7 @@ const EvaluationScore = require('../models/evaluationScoresModel');
 const User = require('../models/userModel');
 const Department = require('../models/departmentModel');
 const EvaluationCriteria = require('../models/evaluationCriteriaModel');
+const Role = require('../models/roleModel');
 
 exports.submitEvaluation = async (req, res) => {
   const t = await sequelize.transaction();
@@ -390,6 +391,105 @@ exports.deleteEvaluation = async (req, res) => {
     res.status(200).json({ message: 'Evaluation deleted successfully' });
   } catch (error) {
     await t.rollback();
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getEvaluationRatingDistribution = async (req, res) => {
+  try {
+    const { campusId } = req.params;
+    const { academicYear, semester } = req.query;
+
+    // Build where clause for FacultyEvaluation
+    const whereClause = {};
+    
+    // If no academicYear is provided, use current academic year
+    if (academicYear) {
+      whereClause.AcademicYear = academicYear;
+    }
+    
+    // If no semester is provided, use "First Semester"
+    if (semester) {
+      whereClause.Semester = semester;
+    }
+
+    const distribution = await FacultyEvaluation.findAll({
+      where: whereClause,
+      attributes: [
+        'QualitativeRating',
+        [sequelize.fn('COUNT', sequelize.col('EvaluationID')), 'count']
+      ],
+      include: [{
+        model: User,
+        as: 'Faculty',
+        where: { 
+          CollegeCampusID: campusId,
+          isActive: true  // Only include active users
+        },
+        include: [{
+          model: Role,
+          where: { RoleName: 'faculty' },
+          through: { attributes: [] },
+          attributes: []
+        }],
+        attributes: []
+      }],
+      group: ['QualitativeRating'],
+      order: [
+        ['QualitativeRating', 'DESC']
+      ]
+    });
+
+    // Transform the results to ensure we have all rating categories
+    const ratingCategories = ['Outstanding', 'Very Satisfactory', 'Satisfactory', 'Fair', 'Poor'];
+    const formattedDistribution = ratingCategories.map(rating => {
+      const found = distribution.find(d => d.QualitativeRating === rating);
+      return {
+        rating,
+        count: found ? parseInt(found.get('count')) : 0
+      };
+    });
+
+    res.status(200).json(formattedDistribution);
+  } catch (error) {
+    console.error('Error getting evaluation distribution:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getFacultiesByRating = async (req, res) => {
+  try {
+    const { campusId } = req.params;
+    const { academicYear, semester, rating } = req.query;
+
+    const faculties = await FacultyEvaluation.findAll({
+      where: {
+        QualitativeRating: rating,
+        ...(academicYear && { AcademicYear: academicYear }),
+        ...(semester && { Semester: semester })
+      },
+      include: [{
+        model: User,
+        as: 'Faculty',
+        where: { 
+          CollegeCampusID: campusId,
+          isActive: true
+        },
+        include: [{
+          model: Department,
+          as: 'Department',
+          attributes: ['DepartmentName']
+        }],
+        attributes: ['FirstName', 'MiddleName', 'Surname', 'DepartmentID']
+      }],
+      order: [
+        [{ model: User, as: 'Faculty' }, 'Surname', 'ASC']
+      ]
+    });
+
+    res.status(200).json(faculties);
+  } catch (error) {
+    console.error('Error getting faculties by rating:', error);
     res.status(500).json({ error: error.message });
   }
 };

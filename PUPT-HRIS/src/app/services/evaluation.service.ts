@@ -1,10 +1,15 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { EvaluationCriteria } from '../model/evaluation-criteria.model';
 import { FacultyEvaluation, EvaluationSubmission } from '../model/evaluation.model';
+
+export interface EvaluationRatingCount {
+  rating: string;
+  count: number;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -65,6 +70,41 @@ export class EvaluationService {
     return this.http.delete(`${this.apiUrl}/evaluations/${evaluationId}`, {
       headers: this.getHeaders()
     }).pipe(catchError(this.handleError));
+  }
+
+  getEvaluationRatingDistribution(
+    campusId: number, 
+    academicYear?: string, 
+    semester?: string
+  ): Observable<EvaluationRatingCount[]> {
+    let url = `${this.apiUrl}/evaluations/ratings-distribution/${campusId}`;
+    
+    // Add query parameters if provided
+    const params = new HttpParams()
+      .set('academicYear', academicYear || '')
+      .set('semester', semester || '');
+
+    return this.http.get<EvaluationRatingCount[]>(url, {
+      headers: this.getHeaders(),
+      params
+    }).pipe(catchError(this.handleError));
+  }
+
+  getFacultiesByRating(
+    campusId: number,
+    rating: string,
+    academicYear?: string,
+    semester?: string
+  ): Observable<any[]> {
+    let params = new HttpParams()
+      .set('rating', rating)
+      .set('academicYear', academicYear || '')
+      .set('semester', semester || '');
+
+    return this.http.get<any[]>(
+      `${this.apiUrl}/evaluations/faculties-by-rating/${campusId}`,
+      { headers: this.getHeaders(), params }
+    ).pipe(catchError(this.handleError));
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
