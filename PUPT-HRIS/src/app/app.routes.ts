@@ -34,6 +34,7 @@ import { CoordinatorManagementComponent } from './pages/coordinator-management/c
 import { AcademicRankComponent } from './pages/academic-rank/academic-rank.component';
 import { CollegeCampusManagementComponent } from './pages/college-campus-management/college-campus-management.component';
 import { CampusGuard } from './services/campus.guard';
+import { EvaluationComponent } from './pages/evaluation/evaluation.component';
 import { Page404Component } from './page-404/page-404.component';
 
 export const routes: Routes = [
@@ -76,6 +77,7 @@ export const routes: Routes = [
       { path: 'academic-rank', component: AcademicRankComponent, canActivate: [RoleGuard], data: { expectedRoles: ['faculty', 'staff', 'admin', 'superadmin'] } },
       { path: 'coordinator-management', component: CoordinatorManagementComponent, canActivate: [RoleGuard], data: { expectedRoles: ['superadmin', 'admin'] } },
       { path: 'college-campuses', component: CollegeCampusManagementComponent, canActivate: [RoleGuard], data: { expectedRoles: ['superadmin'] } },
+      { path: 'evaluation', component: EvaluationComponent, canActivate: [RoleGuard], data: { expectedRoles: ['admin', 'superadmin'] } },
       { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
     ]
   },

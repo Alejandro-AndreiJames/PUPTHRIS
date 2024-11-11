@@ -200,23 +200,38 @@
           <div class="grid grid-cols-2 gap-4">
             <div class="form-control">
               <label class="label-text">GSIS Number</label>
-              <input formControlName="GSISNumber" class="input input-bordered w-full" type="text" placeholder="GSIS number">
+              <input formControlName="GSISNumber" class="input input-bordered w-full" type="text" placeholder="11-digit GSIS number">
+              <div *ngIf="personalDetailsForm.get('GSISNumber')?.touched && personalDetailsForm.get('GSISNumber')?.invalid" class="text-red-500 text-sm mt-1">
+                {{ getErrorMessage('GSISNumber') }}
+              </div>
             </div>
             <div class="form-control">
               <label class="label-text">Pag-Ibig Number</label>
-              <input formControlName="PagIbigNumber" class="input input-bordered w-full" type="text" placeholder="Pag-Ibig number">
+              <input formControlName="PagIbigNumber" class="input input-bordered w-full" type="text" placeholder="12-digit Pag-Ibig number">
+              <div *ngIf="personalDetailsForm.get('PagIbigNumber')?.touched && personalDetailsForm.get('PagIbigNumber')?.invalid" class="text-red-500 text-sm mt-1">
+                {{ getErrorMessage('PagIbigNumber') }}
+              </div>
             </div>
             <div class="form-control">
               <label class="label-text">PhilHealth Number</label>
-              <input formControlName="PhilHealthNumber" class="input input-bordered w-full" type="text" placeholder="PhilHealth number">
+              <input formControlName="PhilHealthNumber" class="input input-bordered w-full" type="text" placeholder="12-digit PhilHealth number">
+              <div *ngIf="personalDetailsForm.get('PhilHealthNumber')?.touched && personalDetailsForm.get('PhilHealthNumber')?.invalid" class="text-red-500 text-sm mt-1">
+                {{ getErrorMessage('PhilHealthNumber') }}
+              </div>
             </div>
             <div class="form-control">
               <label class="label-text">SSS Number</label>
-              <input formControlName="SSSNumber" class="input input-bordered w-full" type="text" placeholder="SSS number">
+              <input formControlName="SSSNumber" class="input input-bordered w-full" type="text" placeholder="10-digit SSS number">
+              <div *ngIf="personalDetailsForm.get('SSSNumber')?.touched && personalDetailsForm.get('SSSNumber')?.invalid" class="text-red-500 text-sm mt-1">
+                {{ getErrorMessage('SSSNumber') }}
+              </div>
             </div>
             <div class="form-control">
               <label class="label-text">TIN Number</label>
-              <input formControlName="TINNumber" class="input input-bordered w-full" type="text" placeholder="TIN number">
+              <input formControlName="TINNumber" class="input input-bordered w-full" type="text" placeholder="12-digit TIN number">
+              <div *ngIf="personalDetailsForm.get('TINNumber')?.touched && personalDetailsForm.get('TINNumber')?.invalid" class="text-red-500 text-sm mt-1">
+                {{ getErrorMessage('TINNumber') }}
+              </div>
             </div>
             <div class="form-control">
               <label class="label-text">Agency Employee Number</label>

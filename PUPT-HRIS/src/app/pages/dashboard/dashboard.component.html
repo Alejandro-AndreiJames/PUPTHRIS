@@ -89,6 +89,54 @@
 
         <!-- Academic Ranks Chart -->
       </div>
+
+      <!-- Add this new chart -->
+      <div class="form-control w-full">
+        <label class="label">
+          <span class="label-text font-bold">Faculty Evaluation Ratings</span>
+        </label>
+        
+        <!-- Add filters -->
+        <div class="flex gap-4 mb-4">
+          <select 
+            [(ngModel)]="selectedAcademicYear"
+            (change)="onEvaluationFilterChange()"
+            class="select select-bordered w-full max-w-xs">
+            <option *ngFor="let year of academicYears" [value]="year">
+              {{ year }}
+            </option>
+          </select>
+
+          <select 
+            [(ngModel)]="selectedSemester"
+            (change)="onEvaluationFilterChange()"
+            class="select select-bordered w-full max-w-xs">
+            <option *ngFor="let sem of semesters" [value]="sem">
+              {{ sem }}
+            </option>
+          </select>
+        </div>
+
+        <div class="flex flex-col">
+          <div class="chart-container">
+            <canvas baseChart
+              [data]="evaluationRatingChartData"
+              [options]="evaluationRatingChartOptions"
+              [type]="'pie'">
+            </canvas>
+          </div>
+          
+          <!-- Add buttons below the chart -->
+          <div class="mt-4 flex flex-wrap gap-2">
+            <button *ngFor="let rating of ['Outstanding', 'Very Satisfactory', 'Satisfactory', 'Fair', 'Poor']"
+                    class="btn btn-sm"
+                    [class.btn-primary]="rating === selectedRating"
+                    (click)="viewFacultiesByRating(rating)">
+              View {{ rating }}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
     <!-- Academic Ranks Distribution -->
     <div class="flex w-full flex-col mt-8">
@@ -220,3 +268,46 @@
     </div>
     -->
   </ng-template>
+
+  <!-- Add the modal -->
+  <div *ngIf="showFacultyList" class="modal modal-open">
+    <div class="modal-box w-11/12 max-w-5xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold text-lg">
+          Faculty Members with {{ selectedRating }} Rating
+          <div class="text-sm font-normal text-gray-600">
+            {{ selectedAcademicYear }} - {{ selectedSemester }}
+          </div>
+        </h3>
+        <button class="btn btn-sm btn-circle btn-ghost" (click)="closeFacultyList()">✕</button>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="table table-zebra w-full">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Department</th>
+              <th>Rating</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let faculty of facultiesList">
+              <td>{{ faculty.Faculty.Surname }}, {{ faculty.Faculty.FirstName }} {{ faculty.Faculty.MiddleName }}</td>
+              <td>{{ faculty.Faculty.Department.DepartmentName }}</td>
+              <td>{{ faculty.QualitativeRating }}</td>
+            </tr>
+            <tr *ngIf="facultiesList.length === 0">
+              <td colspan="3" class="text-center py-4">
+                No faculty members found with this rating for the selected period.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-action">
+        <button class="btn" (click)="closeFacultyList()">Close</button>
+      </div>
+    </div>
+  </div>

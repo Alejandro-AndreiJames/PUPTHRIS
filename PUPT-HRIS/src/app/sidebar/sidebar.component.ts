@@ -218,4 +218,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
   get canManageUsers(): boolean {
     return this.isSuperAdmin || (this.hasRole('admin') && this.currentCampusId === this.userDefaultCampusId);
   }
+
+  get canAccessEvaluation(): boolean {
+    return this.hasRole('faculty') || this.hasRole('admin') || this.hasRole('superadmin');
+  }
 }

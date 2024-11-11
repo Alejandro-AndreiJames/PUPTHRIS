@@ -13,6 +13,8 @@ import { NgxGaugeModule} from 'ngx-gauge';
 import { Router } from '@angular/router';
 import { DashboardStateService } from '../../services/dashboard-state.service';
 import { AcademicRank, AcademicRankCount } from '../../model/academicRank.model';
+import { EvaluationService, EvaluationRatingCount } from '../../services/evaluation.service';
+import { FormsModule } from '@angular/forms';
 
 type NgxGaugeType = 'full' | 'semi' | 'arch';
 
@@ -32,7 +34,7 @@ interface Employee {
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
   standalone: true,
-  imports: [NgChartsModule, CommonModule, NgxGaugeModule]
+  imports: [NgChartsModule, CommonModule, NgxGaugeModule, FormsModule]
 })
 export class DashboardComponent implements OnInit, OnDestroy {
 
@@ -205,13 +207,50 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   public academicRanks: AcademicRankCount[] = [];
 
+  public evaluationRatingChartData: ChartData<'pie'> = {
+    labels: [],
+    datasets: [{
+      data: [],
+      backgroundColor: [
+        '#4BC0C0', // Outstanding (Green)
+        '#36A2EB', // Very Satisfactory (Blue)
+        '#FFCE56', // Satisfactory (Yellow)
+        '#FF9F40', // Fair (Orange)
+        '#FF6384'  // Poor (Red)
+      ],
+      hoverOffset: 4
+    }]
+  };
+
+  public evaluationRatingChartOptions: ChartOptions<'pie'> = {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: true,
+        position: 'right',
+      }
+    }
+  };
+
+  // Add new properties
+  academicYears: string[] = [];
+  selectedAcademicYear: string = '';
+  semesters: string[] = ['First Semester', 'Second Semester'];
+  selectedSemester: string = '';
+
+  // Add these properties
+  showFacultyList: boolean = false;
+  selectedRating: string = '';
+  facultiesList: any[] = [];
+
   constructor(
     private dashboardService: DashboardService,
     private cdr: ChangeDetectorRef,
     private authService: AuthService,
     private campusContextService: CampusContextService,
     private router: Router,
-    private dashboardStateService: DashboardStateService  // Add this
+    private dashboardStateService: DashboardStateService,
+    private evaluationService: EvaluationService
   ) {
     this.campusSubscription = new Subscription();
     const decodedToken = this.authService.getDecodedToken();
@@ -251,6 +290,23 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.loadUpcomingBirthdays();
     this.loadProfileCompletion();
+
+    // Generate academic years dynamically
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth(); // 0-11 where 0 is January
+    
+    // If we're past June (month 5), start with current year, otherwise start with previous year
+    const startYear = currentMonth > 5 ? currentYear : currentYear - 1;
+    
+    // Generate last 5 academic years
+    this.academicYears = Array.from({length: 5}, (_, i) => {
+      const year = startYear - i;
+      return `${year}-${year + 1}`;
+    });
+    
+    // Set default academic year based on current date
+    this.selectedAcademicYear = `${startYear}-${startYear + 1}`;
+    this.selectedSemester = currentMonth > 5 ? 'First Semester' : 'Second Semester';
   }
 
   ngOnDestroy(): void {
@@ -318,6 +374,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       } else {
         console.error('Departments data is missing or not an array');
       }
+
+      this.loadEvaluationRatingsDistribution(campusId);
     });
   }
 
@@ -528,5 +586,72 @@ export class DashboardComponent implements OnInit, OnDestroy {
       default:
         return type; // Return original value if no match
     }
+  }
+
+  loadEvaluationRatingsDistribution(campusId: number): void {
+    const academicYear = this.selectedAcademicYear || `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`;
+    const semester = this.selectedSemester || 'First Semester';
+
+    this.evaluationService.getEvaluationRatingDistribution(
+      campusId,
+      academicYear,
+      semester
+    ).subscribe({
+      next: (data: EvaluationRatingCount[]) => {
+        this.evaluationRatingChartData = {
+          labels: data.map(item => item.rating),
+          datasets: [{
+            data: data.map(item => item.count),
+            backgroundColor: [
+              '#4BC0C0', // Outstanding (Green)
+              '#36A2EB', // Very Satisfactory (Blue)
+              '#FFCE56', // Satisfactory (Yellow)
+              '#FF9F40', // Fair (Orange)
+              '#FF6384'  // Poor (Red)
+            ],
+            hoverOffset: 4
+          }]
+        };
+        this.updateCharts();
+      },
+      error: (error) => {
+        console.error('Error loading evaluation ratings distribution:', error);
+      }
+    });
+  }
+  // Add this method to handle filter changes specifically for evaluation data
+  onEvaluationFilterChange(): void {
+    const campusId = this.campusContextService.getCurrentCampusId();
+    if (campusId) {
+      this.loadEvaluationRatingsDistribution(campusId);
+    }
+  }
+
+  viewFacultiesByRating(rating: string): void {
+    this.selectedRating = rating;
+    const campusId = this.campusContextService.getCurrentCampusId();
+    
+    if (campusId) {
+      this.evaluationService.getFacultiesByRating(
+        campusId,
+        rating,
+        this.selectedAcademicYear,
+        this.selectedSemester
+      ).subscribe({
+        next: (faculties) => {
+          this.facultiesList = faculties;
+          this.showFacultyList = true;
+        },
+        error: (error) => {
+          console.error('Error fetching faculties:', error);
+        }
+      });
+    }
+  }
+
+  closeFacultyList(): void {
+    this.showFacultyList = false;
+    this.selectedRating = '';
+    this.facultiesList = [];
   }
 }

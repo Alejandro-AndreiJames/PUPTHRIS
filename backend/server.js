@@ -35,7 +35,7 @@ const coordinatorRoutes = require('./routes/coordinatorRoute');
 const academicRanksRoutes = require('./routes/academicRanksRoute');
 const excelImportRoutes = require('./routes/excelImportRoute');
 const collegeCampusRoutes = require('./routes/collegeCampusRoutes');
-
+const evaluationRoutes = require('./routes/evaluationRoutes');
 
 require('./models/associations');
 
@@ -78,17 +78,18 @@ app.use('/api/coordinators', coordinatorRoutes);
 app.use('/api/academic-ranks', academicRanksRoutes);
 app.use('/api/excel-import', excelImportRoutes);
 app.use('/api/college-campuses', collegeCampusRoutes);
+app.use('/api/evaluation', evaluationRoutes);
 
-//sequelize.sync().then(() => {
-//  console.log('Database synced successfully');
+sequelize.sync().then(() => {
+  console.log('Database synced successfully');
   
-//app.listen(port, () => {
-//    console.log(`Server running at http://localhost:${port}/`);
-//  });
-//}).catch(err => {
-//    console.error('Unable to sync database:', err);
-//});
-
 app.listen(port, () => {
-   console.log(`Server running at http://localhost:${port}/`);
+    console.log(`Server running at http://localhost:${port}/`);
+  });
+}).catch(err => {
+    console.error('Unable to sync database:', err);
 });
+
+//app.listen(port, () => {
+//   console.log(`Server running at http://localhost:${port}/`);
+//});

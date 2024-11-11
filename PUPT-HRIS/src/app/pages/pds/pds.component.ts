@@ -11,6 +11,7 @@ import { timeout, catchError, retry } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { DepartmentService } from '../../services/department.service';
 
 @Component({
   selector: 'app-pds',
@@ -49,12 +50,18 @@ export class PdsComponent implements OnInit {
 
   private searchSubject = new Subject<string>();
 
+  selectedRole: string = '';
+  selectedEmploymentType: string = '';
+  selectedDepartment: string = '';
+  departments: any[] = [];
+
   constructor(
     private pdsService: PdsService, 
     private userService: UserService, 
     private authService: AuthService,
     private sanitizer: DomSanitizer,
-    private campusContextService: CampusContextService
+    private campusContextService: CampusContextService,
+    private departmentService: DepartmentService
   ) {}
 
   ngOnInit(): void {
@@ -69,6 +76,7 @@ export class PdsComponent implements OnInit {
       if (id !== null) {
         this.campusId = id;
         this.fetchAllUsers();
+        this.loadDepartments();
       }
     });
 
@@ -240,16 +248,54 @@ export class PdsComponent implements OnInit {
   }
 
   onSearch(): void {
-    if (!this.searchTerm.trim()) {
-      this.filteredUsers = this.users;
-    } else {
-      this.filteredUsers = this.users.filter(user => 
+    this.applyFilters();
+  }
+
+  loadDepartments(): void {
+    if (this.campusId === null) {
+      console.error('Cannot load departments: Campus ID is null');
+      return;
+    }
+    
+    this.departmentService.getDepartments(this.campusId).subscribe({
+      next: (departments) => {
+        console.log('Departments loaded successfully:', departments);
+        this.departments = departments;
+      },
+      error: (error) => {
+        console.error('Error loading departments:', error);
+      }
+    });
+  }
+
+  applyFilters(): void {
+    console.log('Applying filters:', {
+      searchTerm: this.searchTerm,
+      selectedRole: this.selectedRole,
+      selectedEmploymentType: this.selectedEmploymentType,
+      selectedDepartment: this.selectedDepartment
+    });
+
+    this.filteredUsers = this.users.filter(user => {
+      const matchesSearch = !this.searchTerm.trim() || 
         `${user.FirstName} ${user.MiddleName} ${user.Surname} ${user.NameExtension}`
           .toLowerCase()
           .includes(this.searchTerm.toLowerCase()) ||
-        user.Fcode.toLowerCase().includes(this.searchTerm.toLowerCase())
-      );
-    }
+        user.Fcode.toLowerCase().includes(this.searchTerm.toLowerCase());
+
+      const matchesRole = !this.selectedRole || 
+        user.Roles?.some(role => role.RoleName.toLowerCase() === this.selectedRole.toLowerCase());
+
+      const matchesEmploymentType = !this.selectedEmploymentType || 
+        user.EmploymentType.toLowerCase() === this.selectedEmploymentType.toLowerCase();
+
+      const matchesDepartment = !this.selectedDepartment || 
+        (this.selectedDepartment === 'na' ? !user.Department : 
+          user.Department?.DepartmentID?.toString() === this.selectedDepartment);
+
+      return matchesSearch && matchesRole && matchesEmploymentType && matchesDepartment;
+    });
+
     this.currentPage = 1;
     this.totalPages = Math.ceil(this.filteredUsers.length / this.itemsPerPage);
     this.updatePaginatedUsers();
