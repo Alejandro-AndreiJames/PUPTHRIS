@@ -24,6 +24,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
   private currentCampusId: number | null = null;
   private campusSubscription: Subscription = new Subscription();
   isSuperAdmin: boolean = false;
+  isMaintenanceDropdownOpen: boolean = false;
+  isMaintenanceActive: boolean = false;
 
   constructor(
     private router: Router,
@@ -181,6 +183,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.activeItem = 'coordinator-management';
     } else if (url.includes('college-campuses')) {
       this.activeItem = 'college-campus-management';
+    } else if (url.includes('college-campuses') || url.includes('departments') || 
+               url.includes('coordinator-management') || url.includes('user-management')) {
+      this.isMaintenanceDropdownOpen = true;
+      this.isMaintenanceActive = true;
+    } else if (url.includes('evaluation') || url.includes('print-pds')) {
+      this.isReportsDropdownOpen = true;
+      this.isReportsActive = true;
     } else {
       this.activeItem = '';
     }
@@ -188,6 +197,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   toggleReportsDropdown() {
     this.isReportsDropdownOpen = !this.isReportsDropdownOpen;
+    this.isReportsActive = this.isReportsDropdownOpen;
+    if (!this.isReportsDropdownOpen) {
+      if (this.activeItem === 'evaluation' ||
+          this.activeItem === 'print-pds') {
+        this.activeItem = '';
+      }
+    }
   }
 
   logout() {
@@ -220,6 +236,28 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   get canAccessEvaluation(): boolean {
-    return this.hasRole('faculty') || this.hasRole('admin') || this.hasRole('superadmin');
+    return this.hasRole('admin') || this.hasRole('superadmin');
+  }
+
+  get showMaintenanceMenu(): boolean {
+    return this.canManageCollegeCampuses || this.canManageDepartments || 
+           this.canManageCoordinators || this.canManageUsers;
+  }
+
+  get showReportsMenu(): boolean {
+    return this.canAccessEvaluation || this.canPrintPds;
+  }
+
+  toggleMaintenanceDropdown() {
+    this.isMaintenanceDropdownOpen = !this.isMaintenanceDropdownOpen;
+    this.isMaintenanceActive = this.isMaintenanceDropdownOpen;
+    if (!this.isMaintenanceDropdownOpen) {
+      if (this.activeItem === 'college-campus-management' ||
+          this.activeItem === 'department-management' ||
+          this.activeItem === 'coordinator-management' ||
+          this.activeItem === 'user-management') {
+        this.activeItem = '';
+      }
+    }
   }
 }
