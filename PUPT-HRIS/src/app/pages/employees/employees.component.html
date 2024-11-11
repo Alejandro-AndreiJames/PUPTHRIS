@@ -147,9 +147,10 @@
             <div class="profile-section">
               <div class="profile-picture">
                 <img 
-                  src="assets/images/default-avatar.png" 
-                  alt="Profile Picture"
+                  [src]="getProfileImage()"
+                  [alt]="selectedUser?.FirstName || 'Profile Picture'"
                   class="profile-img"
+                  onerror="this.src='../../../assets/default-avatar.jpg'"
                 >
               </div>
               <h4 class="profile-title">Employee's Profile</h4>

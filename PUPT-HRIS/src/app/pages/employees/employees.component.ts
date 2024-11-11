@@ -30,6 +30,7 @@ import { Subscription } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { DepartmentService } from '../../services/department.service';
 import { ProfileImageComponent } from '../profile-image/profile-image.component';
+import { ProfileImageService } from '../../services/profile-image.service';
 
 @Component({
   selector: 'app-employee',
@@ -67,6 +68,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   selectedEmploymentType: string = '';
   departments: any[] = [];
   selectedDepartment: string = '';
+  selectedUser: User | null = null;
 
   constructor(
     private campusContextService: CampusContextService,
@@ -82,7 +84,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     private workService: WorkService,
     private voluntaryWorkService: VoluntaryWorkService,
     private characterReferenceService: CharacterReferenceService,
-    private departmentService: DepartmentService
+    private departmentService: DepartmentService,
+    private profileImageService: ProfileImageService
   ) {}
 
   ngOnInit(): void {
@@ -165,8 +168,24 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   }
 
   openModal(user: User): void {
+    this.selectedUser = user;
     this.isModalOpen = true;
-    this.setActiveTab('basic');
+    this.activeTab = 'basic';
+    
+    // Load profile image when opening modal
+    this.profileImageService.getProfileImage(user.UserID).subscribe({
+      next: (profileImage) => {
+        if (profileImage && this.selectedUser) {
+          this.selectedUser.profileImageUrl = profileImage.ImagePath;
+        }
+      },
+      error: (error) => {
+        console.error('Error loading profile image:', error);
+        if (this.selectedUser) {
+          this.selectedUser.profileImageUrl = 'assets/images/default-avatar.png';
+        }
+      }
+    });
 
     this.fetchBasicDetails(user.UserID);
     this.fetchEducationDetails(user.UserID);
@@ -455,5 +474,46 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         console.error('Error loading departments:', error);
       }
     });
+  }
+
+  loadProfileImage(user: User): void {
+    this.profileImageService.getProfileImage(user.UserID).subscribe({
+      next: (profileImage) => {
+        if (profileImage) {
+          user.profileImageUrl = profileImage.ImagePath;
+        }
+      },
+      error: (error) => {
+        console.error('Error loading profile image for user:', user.UserID, error);
+        user.profileImageUrl = 'assets/images/default-avatar.png';
+      }
+    });
+  }
+
+  loadUsers(): void {
+    this.userService.getUsers(this.campusId || undefined).subscribe({
+      next: (users) => {
+        this.users = users;
+        this.users.forEach(user => this.loadProfileImage(user));
+        this.applyFilters();
+      },
+      error: (error) => {
+        console.error('Error loading users:', error);
+      }
+    });
+  }
+
+  handleImageError(event: any): void {
+    event.target.src = '../../../assets/images/default-avatar.jpeg';
+    if (this.selectedUser) {
+      this.selectedUser.profileImageUrl = undefined;
+    }
+  }
+
+  getProfileImage(): string {
+    if (this.selectedUser?.profileImageUrl) {
+      return this.selectedUser.profileImageUrl;
+    }
+    return '../../../assets/default-avatar.jpg';
   }
 }
