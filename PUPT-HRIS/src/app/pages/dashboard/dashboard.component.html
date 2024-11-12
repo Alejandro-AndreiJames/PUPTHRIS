@@ -58,12 +58,10 @@
         <h2 class="text-xl font-bold">Charts</h2>
       </div>
       
-      <div class="grid grid-cols-2 gap-6 p-6">
+      <div class="charts-container p-6">
         <!-- Employment Types Chart -->
-        <div class="form-control w-full">
-          <label class="label">
-            <span class="label-text font-bold">Employment Types</span>
-          </label>
+        <div class="chart-section">
+          <h3 class="chart-title">Employment Types</h3>
           <div class="chart-wrapper">
             <canvas baseChart
               [data]="barChartData"
@@ -74,10 +72,8 @@
         </div>
 
         <!-- Instructor per Department Chart -->
-        <div class="form-control w-full">
-          <label class="label">
-            <span class="label-text font-bold">Instructor per Department</span>
-          </label>
+        <div class="chart-section">
+          <h3 class="chart-title">Instructor per Department</h3>
           <div class="chart-wrapper">
             <canvas baseChart
               [data]="pieChartData"
@@ -89,7 +85,7 @@
       </div>
     </div>
 
-    <!-- Faculty Evaluation Section in its own container -->
+    <!-- Faculty Evaluation Section -->
     <div class="flex w-full flex-col mt-8">
       <div class="divider divider-neutral divider-end">Faculty Evaluation Overview</div>
     </div>
@@ -100,46 +96,48 @@
       </div>
       
       <div class="p-6">
-        <div class="form-control w-full">
-          <!-- Add filters -->
-          <div class="flex gap-4 mb-4">
-            <select 
-              [(ngModel)]="selectedAcademicYear"
-              (change)="onEvaluationFilterChange()"
-              class="select select-bordered w-full max-w-xs">
-              <option *ngFor="let year of academicYears" [value]="year">
-                {{ year }}
-              </option>
-            </select>
+        <!-- Filters at the top -->
+        <div class="flex gap-4 mb-6">
+          <select 
+            [(ngModel)]="selectedAcademicYear"
+            (change)="onEvaluationFilterChange()"
+            class="select select-bordered w-full max-w-xs">
+            <option *ngFor="let year of academicYears" [value]="year">
+              {{ year }}
+            </option>
+          </select>
 
-            <select 
-              [(ngModel)]="selectedSemester"
-              (change)="onEvaluationFilterChange()"
-              class="select select-bordered w-full max-w-xs">
-              <option *ngFor="let sem of semesters" [value]="sem">
-                {{ sem }}
-              </option>
-            </select>
+          <select 
+            [(ngModel)]="selectedSemester"
+            (change)="onEvaluationFilterChange()"
+            class="select select-bordered w-full max-w-xs">
+            <option *ngFor="let sem of semesters" [value]="sem">
+              {{ sem }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Chart and Buttons in a grid -->
+        <div class="faculty-evaluation-grid">
+          <!-- Chart on the left -->
+          <div class="faculty-evaluation-chart">
+            <canvas baseChart
+              [data]="evaluationRatingChartData"
+              [options]="evaluationRatingChartOptions"
+              [type]="'pie'">
+            </canvas>
           </div>
-
-          <div class="flex flex-col">
-            <div class="chart-container">
-              <canvas baseChart
-                [data]="evaluationRatingChartData"
-                [options]="evaluationRatingChartOptions"
-                [type]="'pie'">
-              </canvas>
-            </div>
-            
-            <!-- Add buttons below the chart -->
-            <div class="mt-4 flex flex-wrap gap-2">
-              <button *ngFor="let rating of ['Outstanding', 'Very Satisfactory', 'Satisfactory', 'Fair', 'Poor']"
-                      class="btn btn-sm"
-                      [class.btn-primary]="rating === selectedRating"
-                      (click)="viewFacultiesByRating(rating)">
-                View {{ rating }}
-              </button>
-            </div>
+          
+          <!-- Buttons on the right -->
+          <div class="rating-buttons-container">
+            <h3 class="text-lg font-bold mb-2">View Faculty Members by Rating</h3>
+            <button *ngFor="let rating of ['Outstanding', 'Very Satisfactory', 'Satisfactory', 'Fair', 'Poor']"
+                    class="btn btn-outline hover:bg-maroon hover:border-maroon transition-all duration-300
+                           {{ rating === selectedRating ? 'bg-maroon text-white border-maroon' : '' }}"
+                    (click)="viewFacultiesByRating(rating)">
+              <i class="fas fa-users mr-2"></i>
+              View {{ rating }} Faculty
+            </button>
           </div>
         </div>
       </div>
