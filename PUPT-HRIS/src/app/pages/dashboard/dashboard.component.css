@@ -381,8 +381,10 @@ canvas {
 }
 
 .faculty-evaluation-chart {
-  width: 100%;
-  height: 400px;
+  height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .rating-buttons-container {
@@ -425,4 +427,34 @@ canvas {
   padding-bottom: 0.5rem;
   border-bottom: 2px solid #800000;
   margin-bottom: 0.5rem;
+}
+
+.btn-outline {
+  background-color: white;
+  color: #800000;
+  border: 2px solid #800000;
+}
+
+.btn-outline:hover, .btn-outline.active {
+  background-color: #800000;
+  color: white;
+  border-color: #800000;
+}
+
+.select-bordered {
+  border-color: #800000;
+}
+
+.select-bordered:focus {
+  border-color: #800000;
+  box-shadow: 0 0 0 1px #800000;
+}
+
+/* Remove the previous button styles and add these */
+.btn {
+  border: none;
+}
+
+.btn:hover {
+  border: none;
 }
