@@ -293,7 +293,6 @@
             {{ selectedAcademicYear }} - {{ selectedSemester }}
           </div>
         </h3>
-        <button class="btn btn-sm btn-circle btn-ghost" (click)="closeFacultyList()">✕</button>
       </div>
       
       <div class="overflow-x-auto">
@@ -318,6 +317,28 @@
             </tr>
           </tbody>
         </table>
+
+        <!-- Add pagination controls -->
+        <div class="pagination-controls mt-4">
+          <button 
+            (click)="previousModalPage()" 
+            [disabled]="modalCurrentPage === 1" 
+            class="btn">Previous</button>
+
+          <span *ngFor="let page of getModalPageArray(); let i = index">
+            <button 
+              (click)="setModalPage(i + 1)" 
+              [class.active]="i + 1 === modalCurrentPage" 
+              class="btn">
+              {{ i + 1 }}
+            </button>
+          </span>
+
+          <button 
+            (click)="nextModalPage()" 
+            [disabled]="modalCurrentPage === modalTotalPages" 
+            class="btn">Next</button>
+        </div>
       </div>
 
       <div class="modal-action">

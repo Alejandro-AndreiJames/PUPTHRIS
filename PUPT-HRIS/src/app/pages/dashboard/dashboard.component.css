@@ -487,3 +487,130 @@ canvas {
 .flex.flex-col.gap-3 .btn:last-child {
   margin-bottom: 0;
 }
+
+/* Add these new modal styles */
+.modal {
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.modal-box {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Modal header styling */
+.modal-box h3 {
+  color: #800000;
+  font-size: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #800000;
+  margin-bottom: 1.5rem;
+}
+
+/* Table styling */
+.table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+
+.table thead tr {
+  background-color: #800000;
+  color: white;
+}
+
+.table th {
+  padding: 1rem;
+  font-weight: 600;
+}
+
+.table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Modal actions */
+.modal-action {
+  margin-top: 1rem;
+}
+
+.modal-action .btn {
+  min-width: 120px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background-color: #800000;
+  color: white;
+}
+
+.modal-action .btn:hover {
+  background-color: #000000;
+  color: white;
+}
+
+/* Close button in header */
+.btn-circle {
+  background-color: #f3f4f6;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-circle:hover {
+  background-color: #800000;
+  color: white;
+  transform: rotate(90deg);
+}
+
+/* Pagination controls */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.pagination-controls .btn {
+  min-width: 40px;
+  height: 40px;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #800000;
+  color: white;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.pagination-controls .btn:hover:not([disabled]) {
+  background-color: #000000;
+}
+
+.pagination-controls .btn.active {
+  background-color: #000000;
+}
+
+.pagination-controls .btn.active:hover {
+  background-color: #600000;
+}
+
+.pagination-controls .btn[disabled] {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
