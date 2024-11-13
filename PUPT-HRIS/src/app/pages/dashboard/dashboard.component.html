@@ -137,8 +137,13 @@
             <button *ngFor="let rating of ['Outstanding', 'Very Satisfactory', 'Satisfactory', 'Fair', 'Poor']"
                     class="btn w-full transition-all duration-300 bg-maroon text-white hover:bg-black"
                     (click)="viewFacultiesByRating(rating)">
-              <i class="fas fa-users mr-2"></i>
-              View {{ rating }} Faculty
+              <div class="flex justify-between items-center w-full">
+                <div>
+                  <i class="fas fa-users mr-2"></i>
+                  View {{ rating }} Faculty
+                </div>
+                <i class="fas fa-arrow-right"></i>
+              </div>
             </button>
           </div>
         </div>
