@@ -187,10 +187,12 @@ export class EvaluationComponent implements OnInit, OnDestroy {
 
   applyFilters(): void {
     this.filteredUsers = this.users.filter(user => {
-      const matchesSearch = !this.searchTerm.trim() || 
-        `${user.FirstName} ${user.MiddleName} ${user.Surname} ${user.NameExtension}`
+      // Search by name or Fcode
+      const searchText = this.searchTerm.toLowerCase().trim();
+      const matchesSearch = !searchText || 
+        `${user.FirstName} ${user.MiddleName} ${user.Surname} ${user.NameExtension} ${user.Fcode}`
           .toLowerCase()
-          .includes(this.searchTerm.toLowerCase());
+          .includes(searchText);
 
       const matchesDepartment = !this.selectedDepartment || 
         user.Department?.DepartmentName === this.departments.find(d => 
@@ -199,15 +201,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
 
       const matchesEmploymentType = !this.selectedEmploymentType || 
         user.EmploymentType?.toLowerCase() === this.selectedEmploymentType.toLowerCase();
-
-      console.log('Department matching:', {
-        userDeptName: user.Department?.DepartmentName,
-        selectedDeptId: this.selectedDepartment,
-        selectedDeptName: this.departments.find(d => 
-          d.DepartmentID.toString() === this.selectedDepartment
-        )?.DepartmentName,
-        matches: matchesDepartment
-      });
 
       return matchesSearch && matchesDepartment && matchesEmploymentType;
     });
