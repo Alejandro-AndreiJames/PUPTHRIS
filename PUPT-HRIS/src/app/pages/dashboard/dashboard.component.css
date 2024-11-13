@@ -533,8 +533,18 @@ canvas {
   border-bottom: 1px solid #e5e7eb;
 }
 
+/* Table styling with darker zebra stripes */
+.table tbody tr:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.05); /* Increased from 0.02 to 0.05 for darker grey */
+}
+
+.table tbody tr:nth-child(odd) {
+  background-color: white;
+}
+
+/* Hover effect */
 .table tbody tr:hover {
-  background-color: #f8f9fa;
+  background-color: rgba(128, 0, 0, 0.1);
 }
 
 /* Modal actions */
