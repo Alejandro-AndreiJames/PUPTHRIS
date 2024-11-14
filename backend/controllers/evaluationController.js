@@ -8,25 +8,31 @@ const EvaluationCriteria = require('../models/evaluationCriteriaModel');
 const Role = require('../models/roleModel');
 
 exports.submitEvaluation = async (req, res) => {
-  const t = await sequelize.transaction();
+  let transaction;
   
   try {
+    transaction = await sequelize.transaction({
+      timeout: 30000
+    });
+    
     const { 
       facultyId,
       academicYear,
       semester
     } = req.body;
 
-    // Check for existing evaluation
     const existingEvaluation = await FacultyEvaluation.findOne({
       where: {
         FacultyID: facultyId,
         AcademicYear: academicYear,
         Semester: semester
-      }
+      },
+      transaction,
+      lock: true
     });
 
     if (existingEvaluation) {
+      await transaction.rollback();
       return res.status(400).json({ 
         error: 'An evaluation already exists for this faculty member in the specified academic period',
         existingEvaluation: {
@@ -47,7 +53,6 @@ exports.submitEvaluation = async (req, res) => {
       qualitativeRating
     } = req.body;
 
-    // Validate required fields
     if (!facultyId || !evaluatorId || !courseSection || 
         !numberOfRespondents || !scores || !createdBy || 
         !academicYear || !semester ||
@@ -57,7 +62,6 @@ exports.submitEvaluation = async (req, res) => {
       });
     }
 
-    // Create the evaluation record
     const evaluation = await FacultyEvaluation.create({
       FacultyID: facultyId,
       EvaluatorID: evaluatorId,
@@ -68,23 +72,37 @@ exports.submitEvaluation = async (req, res) => {
       TotalScore: totalScore,
       QualitativeRating: qualitativeRating,
       CreatedBy: createdBy
-    }, { transaction: t });
+    }, { transaction });
 
-    // Create individual scores
-    await Promise.all(scores.map(score => 
-      EvaluationScore.create({
-        EvaluationID: evaluation.EvaluationID,
-        CriteriaID: score.CriteriaID,
-        Score: score.Score
-      }, { transaction: t })
-    ));
+    const chunkSize = 5;
+    for (let i = 0; i < scores.length; i += chunkSize) {
+      const chunk = scores.slice(i, i + chunkSize);
+      await Promise.all(chunk.map(score => 
+        EvaluationScore.create({
+          EvaluationID: evaluation.EvaluationID,
+          CriteriaID: score.CriteriaID,
+          Score: score.Score
+        }, { transaction })
+      ));
+    }
 
-    await t.commit();
+    await transaction.commit();
     res.status(201).json(evaluation);
   } catch (error) {
-    await t.rollback();
     console.error('Evaluation submission error:', error);
-    res.status(500).json({ error: error.message });
+    if (transaction) {
+      try {
+        await transaction.rollback();
+      } catch (rollbackError) {
+        console.error('Rollback error:', rollbackError);
+      }
+    }
+    if (error.name === 'SequelizeConnectionAcquireTimeoutError') {
+      return res.status(503).json({ 
+        error: 'Service temporarily unavailable. Please try again.' 
+      });
+    }
+    res.status(500).json({ error: 'Failed to submit evaluation' });
   }
 };
 
@@ -155,7 +173,6 @@ exports.getEvaluationCriteria = async (req, res) => {
       ]
     });
 
-    // Group criteria by category
     const groupedCriteria = criteria.reduce((acc, criterion) => {
       if (!acc[criterion.Category]) {
         acc[criterion.Category] = {
@@ -177,7 +194,6 @@ exports.createEvaluationCriteria = async (req, res) => {
   try {
     const { CriteriaName, Description, Weight, Category } = req.body;
     
-    // Validate total weight per category doesn't exceed 100
     const existingCriteria = await EvaluationCriteria.findAll({
       where: { Category }
     });
@@ -207,7 +223,6 @@ exports.updateEvaluationCriteria = async (req, res) => {
     const { criteriaId } = req.params;
     const { CriteriaName, Description, Weight, Category } = req.body;
 
-    // Get all criteria in the same category except the one being updated
     const otherCriteria = await EvaluationCriteria.findAll({
       where: {
         Category,
@@ -217,7 +232,6 @@ exports.updateEvaluationCriteria = async (req, res) => {
       }
     });
 
-    // Calculate total weight including the new weight
     const totalWeight = otherCriteria.reduce((sum, criterion) => sum + criterion.Weight, 0) + Weight;
 
     if (totalWeight > 100) {
@@ -250,7 +264,6 @@ exports.deleteEvaluationCriteria = async (req, res) => {
   try {
     const { criteriaId } = req.params;
     
-    // Check if criteria is being used in any evaluations
     const usedInEvaluations = await EvaluationScore.findOne({
       where: { CriteriaID: criteriaId }
     });
@@ -305,7 +318,6 @@ exports.getFacultyEvaluationHistory = async (req, res) => {
   }
 };
 
-// Add new endpoint for updating evaluation
 exports.updateEvaluation = async (req, res) => {
   const t = await sequelize.transaction();
   
@@ -319,16 +331,14 @@ exports.updateEvaluation = async (req, res) => {
       qualitativeRating
     } = req.body;
 
-    console.log('Updating evaluation:', { evaluationId, totalScore, scores }); // Add logging
+    console.log('Updating evaluation:', { evaluationId, totalScore, scores });
 
-    // First check if evaluation exists
     const evaluation = await FacultyEvaluation.findByPk(evaluationId);
     if (!evaluation) {
       await t.rollback();
       return res.status(404).json({ error: 'Evaluation not found' });
     }
 
-    // Update the main evaluation record
     await evaluation.update({
       CourseSection: courseSection,
       NumberOfRespondents: numberOfRespondents,
@@ -336,13 +346,11 @@ exports.updateEvaluation = async (req, res) => {
       QualitativeRating: qualitativeRating
     }, { transaction: t });
 
-    // Delete existing scores
     await EvaluationScore.destroy({
       where: { EvaluationID: evaluationId },
       transaction: t
     });
 
-    // Create new scores
     await Promise.all(scores.map(score => 
       EvaluationScore.create({
         EvaluationID: evaluationId,
@@ -369,19 +377,16 @@ exports.deleteEvaluation = async (req, res) => {
   try {
     const { evaluationId } = req.params;
 
-    // First check if evaluation exists
     const evaluation = await FacultyEvaluation.findByPk(evaluationId);
     if (!evaluation) {
       return res.status(404).json({ error: 'Evaluation not found' });
     }
 
-    // Delete related scores first (due to foreign key constraint)
     await EvaluationScore.destroy({
       where: { EvaluationID: evaluationId },
       transaction: t
     });
 
-    // Delete the evaluation
     await FacultyEvaluation.destroy({
       where: { EvaluationID: evaluationId },
       transaction: t
@@ -400,15 +405,12 @@ exports.getEvaluationRatingDistribution = async (req, res) => {
     const { campusId } = req.params;
     const { academicYear, semester } = req.query;
 
-    // Build where clause for FacultyEvaluation
     const whereClause = {};
     
-    // If no academicYear is provided, use current academic year
     if (academicYear) {
       whereClause.AcademicYear = academicYear;
     }
     
-    // If no semester is provided, use "First Semester"
     if (semester) {
       whereClause.Semester = semester;
     }
@@ -424,7 +426,7 @@ exports.getEvaluationRatingDistribution = async (req, res) => {
         as: 'Faculty',
         where: { 
           CollegeCampusID: campusId,
-          isActive: true  // Only include active users
+          isActive: true
         },
         include: [{
           model: Role,
@@ -440,7 +442,6 @@ exports.getEvaluationRatingDistribution = async (req, res) => {
       ]
     });
 
-    // Transform the results to ensure we have all rating categories
     const ratingCategories = ['Outstanding', 'Very Satisfactory', 'Satisfactory', 'Fair', 'Poor'];
     const formattedDistribution = ratingCategories.map(rating => {
       const found = distribution.find(d => d.QualitativeRating === rating);

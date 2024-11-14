@@ -3,6 +3,8 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const sequelize = require('./config/db.config');
+require('./utils/databaseCleanup');
+
 
 const educationRoutes = require('./routes/educationRoutes');
 const familybackgroundRoutes = require('./routes/familybackgroundRoutes');

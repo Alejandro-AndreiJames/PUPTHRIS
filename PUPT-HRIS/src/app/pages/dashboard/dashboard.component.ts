@@ -29,6 +29,22 @@ interface Employee {
   name: string;
 }
 
+// Add this constant at the top of the file
+const ALL_ACADEMIC_RANKS = [
+  'Instructor I', 'Instructor II', 'Instructor III',
+  'Assistant Professor I', 'Assistant Professor II', 'Assistant Professor III', 'Assistant Professor IV',
+  'Associate Professor I', 'Associate Professor II', 'Associate Professor III', 'Associate Professor IV', 'Associate Professor V',
+  'Professor I', 'Professor II', 'Professor III', 'Professor IV', 'Professor V', 'Professor VI'
+];
+
+// Add these interfaces and properties
+interface DashboardSection {
+  id: string;
+  title: string;
+  visible: boolean;
+  order: number;
+}
+
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
@@ -188,22 +204,34 @@ export class DashboardComponent implements OnInit, OnDestroy {
   };
 
   // Add new chart property for academic ranks
-  public academicRankChartData: ChartData<'doughnut'> = {
+  public academicRankChartData: ChartData<'bar'> = {
     labels: [],
     datasets: [{
       data: [],
-      backgroundColor: [
-        '#800000', '#A52A2A', '#C41E3A', '#D2042D', '#E34234',
-        '#FF2400', '#FF0800', '#CD5C5C', '#B22222', '#960018',
-        '#FF6B6B', '#E97451', '#FF4433', '#FF6961', '#FF7F7F',
-        '#FF8674', '#FFB6B6', '#FFB4B4'
-      ],
-      hoverOffset: 4,
-      borderWidth: 1,
-      borderColor: '#fff'
+      backgroundColor: '#800000', // Maroon color
+      borderColor: '#800000',
+      borderWidth: 1
     }]
   };
 
+  public academicRankChartOptions: ChartOptions<'bar'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    indexAxis: 'y',
+    plugins: {
+      legend: {
+        display: false
+      }
+    },
+    scales: {
+      y: {
+        ticks: {
+          autoSkip: false,
+          padding: 10
+        }
+      }
+    }
+  };
 
   public academicRanks: AcademicRankCount[] = [];
 
@@ -248,6 +276,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   modalItemsPerPage: number = 10;
   modalTotalPages: number = 1;
   paginatedFacultiesList: any[] = [];
+
+  // Add these properties
+  showDashboardSettings = false;
+  dashboardSections: DashboardSection[] = [
+    { id: 'faculty-evaluation', title: 'Faculty Evaluation', visible: true, order: 0 },
+    { id: 'charts', title: 'Charts', visible: true, order: 1 },
+    { id: 'academic-ranks', title: 'Academic Ranks', visible: true, order: 2 }
+  ];
 
   constructor(
     private dashboardService: DashboardService,
@@ -313,6 +349,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Set default academic year based on current date
     this.selectedAcademicYear = `${startYear}-${startYear + 1}`;
     this.selectedSemester = currentMonth > 5 ? 'First Semester' : 'Second Semester';
+
+    this.loadDashboardPreferences();
   }
 
   ngOnDestroy(): void {
@@ -370,10 +408,78 @@ export class DashboardComponent implements OnInit, OnDestroy {
   
         // Process academic rank data
         if (data.academicRanks && Array.isArray(data.academicRanks)) {
-          this.academicRanks = data.academicRanks.map((rank: AcademicRankCount) => ({
-            Rank: rank.Rank,
-            count: rank.count || 0
+          console.log('Incoming academic ranks:', data.academicRanks);
+
+          // Create a map of existing ranks and their counts
+          const rankCountMap = new Map<string, number>();
+          
+          // Populate the map with the incoming data
+          data.academicRanks.forEach((rank: any) => {
+            rankCountMap.set(rank.Rank, Number(rank.count));
+          });
+
+          // Create the full list including zeros for missing ranks
+          this.academicRanks = ALL_ACADEMIC_RANKS.map(rankName => ({
+            Rank: rankName,
+            count: rankCountMap.get(rankName) || 0
           }));
+
+          // Find the maximum count
+          const maxCount = Math.max(...this.academicRanks.map(rank => rank.count));
+          
+          // Calculate a reasonable maximum for the scale
+          const scaleMax = Math.ceil((maxCount + 1) / 5) * 5;
+
+          // Calculate dynamic step size
+          const stepSize = Math.max(1, Math.floor(scaleMax / 10));
+
+          // Update chart options with type assertion
+          this.academicRankChartOptions = {
+            ...this.academicRankChartOptions,
+            scales: {
+              x: {
+                beginAtZero: true,
+                grid: {
+                  display: true,
+                  color: '#e5e5e5',
+                  drawTicks: true,
+                  lineWidth: 1
+                },
+                border: {
+                  display: false
+                },
+                ticks: {
+                  stepSize: stepSize,
+                  precision: 0
+                },
+                max: scaleMax,
+                min: 0
+              } as any, // Type assertion to avoid TypeScript error
+              y: {
+                grid: {
+                  display: false
+                }
+              }
+            }
+          };
+
+          // Update the chart data
+          this.academicRankChartData = {
+            labels: this.academicRanks.map(rank => rank.Rank),
+            datasets: [{
+              data: this.academicRanks.map(rank => rank.count),
+              backgroundColor: '#800000',
+              borderColor: '#800000',
+              borderWidth: 1
+            }]
+          };
+
+          // Force chart update
+          if (this.chart) {
+            this.chart.update();
+          }
+
+          console.log('Processed academic ranks:', this.academicRanks);
         }
 
         this.updateCharts();
@@ -692,5 +798,29 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const endIndex = startIndex + this.modalItemsPerPage;
     this.paginatedFacultiesList = this.facultiesList.slice(startIndex, endIndex);
     this.modalTotalPages = Math.ceil(this.facultiesList.length / this.modalItemsPerPage);
+  }
+
+  // Add these methods
+  toggleSectionVisibility(section: DashboardSection): void {
+    section.visible = !section.visible;
+    this.saveDashboardPreferences();
+  }
+
+  updateSectionOrder(section: DashboardSection, newOrder: number): void {
+    section.order = newOrder;
+    this.dashboardSections.sort((a, b) => a.order - b.order);
+    this.saveDashboardPreferences();
+  }
+
+  private saveDashboardPreferences(): void {
+    localStorage.setItem('dashboardPreferences', JSON.stringify(this.dashboardSections));
+  }
+
+  private loadDashboardPreferences(): void {
+    const saved = localStorage.getItem('dashboardPreferences');
+    if (saved) {
+      this.dashboardSections = JSON.parse(saved);
+      this.dashboardSections.sort((a, b) => a.order - b.order);
+    }
   }
 }

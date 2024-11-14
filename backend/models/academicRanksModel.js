@@ -19,10 +19,10 @@ const AcademicRank = sequelize.define('AcademicRank', {
   },
   Rank: {
     type: DataTypes.ENUM(
-      'Instructor 1', 'Instructor 2', 'Instructor 3',
-      'Assistant Professor 1', 'Assistant Professor 2', 'Assistant Professor 3', 'Assistant Professor 4',
-      'Associate Professor 1', 'Associate Professor 2', 'Associate Professor 3', 'Associate Professor 4', 'Associate Professor 5',
-      'Professor 1', 'Professor 2', 'Professor 3', 'Professor 4', 'Professor 5', 'Professor 6'
+      'Instructor I', 'Instructor II', 'Instructor III',
+      'Assistant Professor I', 'Assistant Professor II', 'Assistant Professor III', 'Assistant Professor IV',
+      'Associate Professor I', 'Associate Professor II', 'Associate Professor III', 'Associate Professor IV', 'Associate Professor V',
+      'Professor I', 'Professor II', 'Professor III', 'Professor IV', 'Professor V', 'Professor VI'
     ),
     allowNull: false,
   },

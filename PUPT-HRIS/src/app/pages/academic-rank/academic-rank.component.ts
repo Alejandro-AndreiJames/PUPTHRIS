@@ -6,6 +6,13 @@ import { AcademicRank } from '../../model/academicRank.model';
 import { jwtDecode } from 'jwt-decode';
 import { CommonModule } from '@angular/common';
 
+const ACADEMIC_RANKS = [
+  'Instructor I', 'Instructor II', 'Instructor III',
+  'Assistant Professor I', 'Assistant Professor II', 'Assistant Professor III', 'Assistant Professor IV',
+  'Associate Professor I', 'Associate Professor II', 'Associate Professor III', 'Associate Professor IV', 'Associate Professor V',
+  'Professor I', 'Professor II', 'Professor III', 'Professor IV', 'Professor V', 'Professor VI'
+] as const;
+
 @Component({
   selector: 'app-academic-rank',
   templateUrl: './academic-rank.component.html',
@@ -25,6 +32,8 @@ export class AcademicRankComponent implements OnInit {
   toastType: 'success' | 'error' | 'warning' = 'success';
 
   submitted: boolean = false;
+
+  academicRanks = ACADEMIC_RANKS;
 
   constructor(
     private fb: FormBuilder,

@@ -35,8 +35,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   displayedUsers: User[] = [];
 
-  // Add this property to store original user data
-  originalUsers: { [key: number]: User } = {};
+  originalUserStates: Map<number, { roles: number[], employmentType: string }> = new Map();
+  modifiedUsers: Set<number> = new Set();
 
   constructor(
     private userManagementService: UserManagementService,
@@ -81,19 +81,20 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       console.error('Campus ID is null, cannot fetch users');
       return;
     }
-    console.log('Fetching users for campus ID:', this.campusId);
+    
     this.userManagementService.getAllUsers(this.campusId).subscribe({
       next: (users) => {
-        console.log('Received users:', users);
         this.users = users.filter(user => user.CollegeCampusID === this.campusId);
-        // Store original state of each user
-        this.users.forEach(user => {
-          this.originalUsers[user.UserID] = {
-            ...user,
-            Roles: [...user.Roles]
-          };
-        });
         this.filteredUsers = this.users;
+        
+        this.originalUserStates.clear();
+        this.users.forEach(user => {
+          this.originalUserStates.set(user.UserID, {
+            roles: user.Roles.map(role => role.RoleID),
+            employmentType: user.EmploymentType
+          });
+        });
+        
         this.initializePagination();
       },
       error: (error) => {
@@ -131,47 +132,64 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         user.Roles.push(roleToAdd);
       }
     }
-    // Force change detection
-    this.users = [...this.users];
+    this.checkForChanges(user);
+  }
+
+  onEmploymentTypeChange(user: User): void {
+    this.checkForChanges(user);
+  }
+
+  private checkForChanges(user: User): void {
+    const originalState = this.originalUserStates.get(user.UserID);
+    if (!originalState) return;
+
+    const currentRoles = user.Roles.map(role => role.RoleID).sort().toString();
+    const originalRoles = originalState.roles.sort().toString();
+    const hasChanges = 
+      currentRoles !== originalRoles || 
+      user.EmploymentType !== originalState.employmentType;
+
+    if (hasChanges) {
+      this.modifiedUsers.add(user.UserID);
+    } else {
+      this.modifiedUsers.delete(user.UserID);
+    }
+  }
+
+  hasUserChanges(user: User): boolean {
+    return this.modifiedUsers.has(user.UserID);
   }
 
   saveUserDetails(user: User): void {
-    // Create a counter to track completed operations
-    let operationsCompleted = 0;
-    const totalOperations = 2; // We have 2 operations: employment type and roles
+    this.saveEmploymentType(user);
+    this.saveUserRoles(user);
+    
+    this.originalUserStates.set(user.UserID, {
+      roles: user.Roles.map(role => role.RoleID),
+      employmentType: user.EmploymentType
+    });
+    this.modifiedUsers.delete(user.UserID);
+  }
 
-    const updateOriginalUser = () => {
-      if (operationsCompleted === totalOperations) {
-        // Update the original user data after both operations complete successfully
-        this.originalUsers[user.UserID] = {
-          ...user,
-          Roles: [...user.Roles]
-        };
-        // Show success toast after both operations complete
-        this.showToastNotification('Changes saved successfully', 'success');
-      }
-    };
-
-    // Save employment type
+  saveEmploymentType(user: User): void {
     this.userManagementService.updateEmploymentType(user.UserID, user.EmploymentType).subscribe({
       next: (response) => {
         console.log('Employment type updated successfully', response);
-        operationsCompleted++;
-        updateOriginalUser();
+        this.showToastNotification('Employment type updated successfully', 'success');
       },
       error: (error) => {
         console.error('Error updating employment type', error);
         this.showToastNotification('Error updating employment type', 'error');
       },
     });
+  }
 
-    // Save user roles
+  saveUserRoles(user: User): void {
     const roleIDs = user.Roles.map(role => role.RoleID);
     this.userManagementService.updateUserRoles(user.UserID, roleIDs).subscribe({
       next: (response) => {
         console.log('Roles updated successfully', response);
-        operationsCompleted++;
-        updateOriginalUser();
+        this.showToastNotification('Roles updated successfully', 'success');
       },
       error: (error) => {
         console.error('Error updating roles', error);
@@ -286,38 +304,5 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     this.currentPage = 1;
     this.totalPages = Math.ceil(this.filteredUsers.length / this.itemsPerPage);
     this.updatePaginatedData();
-  }
-
-  hasUserChanges(user: User): boolean {
-    const originalUser = this.originalUsers[user.UserID];
-    
-    if (!originalUser) {
-      console.log('No original user found for comparison');
-      return false;
-    }
-
-    const hasEmploymentTypeChanged = originalUser.EmploymentType !== user.EmploymentType;
-    const hasRolesChanged = !this.areRolesEqual(originalUser.Roles, user.Roles);
-
-    console.log('Changes detected:', {
-      userId: user.UserID,
-      hasEmploymentTypeChanged,
-      hasRolesChanged,
-      originalEmploymentType: originalUser.EmploymentType,
-      currentEmploymentType: user.EmploymentType,
-      originalRoles: originalUser.Roles,
-      currentRoles: user.Roles
-    });
-
-    return hasEmploymentTypeChanged || hasRolesChanged;
-  }
-
-  private areRolesEqual(roles1: Role[], roles2: Role[]): boolean {
-    if (roles1.length !== roles2.length) return false;
-    
-    const roleIds1 = roles1.map(r => r.RoleID).sort();
-    const roleIds2 = roles2.map(r => r.RoleID).sort();
-    
-    return roleIds1.every((id, index) => id === roleIds2[index]);
   }
 }

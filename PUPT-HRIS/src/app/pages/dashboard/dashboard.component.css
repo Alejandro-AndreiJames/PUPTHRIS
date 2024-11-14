@@ -624,3 +624,16 @@ canvas {
   color: #9ca3af;
   cursor: not-allowed;
 }
+
+/* Add specific styles for academic ranks chart */
+.academic-ranks-chart {
+  height: auto !important;
+  min-height: 400px;
+  padding: 2rem;
+  margin: 1rem 0;
+}
+
+.academic-ranks-chart canvas {
+  height: auto !important;
+  min-height: 400px;
+}

@@ -23,6 +23,13 @@
         Personal View
       </button>
     </div>
+
+    <!-- Add settings button -->
+    <button *ngIf="(userRole === 'admin' || userRole === 'superadmin') && isAdminView"
+            (click)="showDashboardSettings = true"
+            class="btn btn-ghost btn-circle">
+      <i class="fas fa-cog text-xl"></i>
+    </button>
   </div>
 
   <div class="divider"></div>
@@ -48,129 +55,136 @@
       </div>
     </div>
 
-    <div class="flex w-full flex-col">
-      <div class="divider divider-neutral divider-end">Charts</div>
-    </div>
+    <!-- Display sections according to order -->
+    <ng-container *ngFor="let section of dashboardSections">
+      <!-- Charts Section -->
+      <div *ngIf="section.id === 'charts' && section.visible">
+        <div class="flex w-full flex-col">
+          <div class="divider divider-neutral divider-end">Charts</div>
+        </div>
+        <div class="bg-base-200 rounded-lg shadow-lg w-full mt-3">
+          <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
+            <h2 class="text-xl font-bold">Charts</h2>
+          </div>
+          
+          <div class="charts-container p-6">
+            <!-- Employment Types Chart -->
+            <div class="chart-section">
+              <h3 class="chart-title">Employment Types</h3>
+              <div class="chart-wrapper">
+                <canvas baseChart
+                  [data]="barChartData"
+                  [options]="barChartOptions"
+                  [type]="'bar'">
+                </canvas>
+              </div>
+            </div>
 
-    <!-- Charts Container -->
-    <div class="bg-base-200 rounded-lg shadow-lg w-full mt-3">
-      <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
-        <h2 class="text-xl font-bold">Charts</h2>
-      </div>
-      
-      <div class="charts-container p-6">
-        <!-- Employment Types Chart -->
-        <div class="chart-section">
-          <h3 class="chart-title">Employment Types</h3>
-          <div class="chart-wrapper">
-            <canvas baseChart
-              [data]="barChartData"
-              [options]="barChartOptions"
-              [type]="'bar'">
-            </canvas>
+            <!-- Instructor per Department Chart -->
+            <div class="chart-section">
+              <h3 class="chart-title">Instructor per Department</h3>
+              <div class="chart-wrapper">
+                <canvas baseChart
+                  [data]="pieChartData"
+                  [options]="pieChartOptions"
+                  [type]="'pie'">
+                </canvas>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
 
-        <!-- Instructor per Department Chart -->
-        <div class="chart-section">
-          <h3 class="chart-title">Instructor per Department</h3>
-          <div class="chart-wrapper">
-            <canvas baseChart
-              [data]="pieChartData"
-              [options]="pieChartOptions"
-              [type]="'pie'">
-            </canvas>
+      <!-- Faculty Evaluation Section -->
+      <div *ngIf="section.id === 'faculty-evaluation' && section.visible">
+        <div class="flex w-full flex-col mt-8">
+          <div class="divider divider-neutral divider-end">Faculty Evaluation Overview</div>
+        </div>
+
+        <div class="bg-base-200 rounded-lg shadow-lg w-full mt-3">
+          <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
+            <h2 class="text-xl font-bold">Faculty Evaluation Ratings</h2>
+          </div>
+          
+          <div class="p-6">
+            <!-- Filters at the top -->
+            <div class="flex gap-4 mb-6">
+              <select 
+                [(ngModel)]="selectedAcademicYear"
+                (change)="onEvaluationFilterChange()"
+                class="select select-bordered w-full max-w-xs">
+                <option *ngFor="let year of academicYears" [value]="year">
+                  {{ year }}
+                </option>
+              </select>
+
+              <select 
+                [(ngModel)]="selectedSemester"
+                (change)="onEvaluationFilterChange()"
+                class="select select-bordered w-full max-w-xs">
+                <option *ngFor="let sem of semesters" [value]="sem">
+                  {{ sem }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Chart and Buttons in a simpler layout -->
+            <div class="grid grid-cols-2 gap-6">
+              <!-- Chart on the left -->
+              <div>
+                <h3 class="chart-title">Evaluation Ratings Distribution</h3>
+                <div class="chart-wrapper">
+                  <canvas baseChart
+                    [data]="evaluationRatingChartData"
+                    [options]="evaluationRatingChartOptions"
+                    [type]="'pie'">
+                  </canvas>
+                </div>
+              </div>
+
+              <!-- Buttons directly on the right -->
+              <div class="flex flex-col gap-3">
+                <h3 class="chart-title">View Faculty Members by Rating</h3>
+                <button *ngFor="let rating of ['Outstanding', 'Very Satisfactory', 'Satisfactory', 'Fair', 'Poor']"
+                        class="btn w-full transition-all duration-300 bg-maroon text-white hover:bg-black"
+                        (click)="viewFacultiesByRating(rating)">
+                  <div class="flex justify-between items-center w-full">
+                    <div>
+                      <i class="fas fa-users mr-2"></i>
+                      View {{ rating }} Faculty
+                    </div>
+                    <i class="fas fa-arrow-right"></i>
+                  </div>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Faculty Evaluation Section -->
-    <div class="flex w-full flex-col mt-8">
-      <div class="divider divider-neutral divider-end">Faculty Evaluation Overview</div>
-    </div>
-
-    <div class="bg-base-200 rounded-lg shadow-lg w-full mt-3">
-      <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
-        <h2 class="text-xl font-bold">Faculty Evaluation Ratings</h2>
-      </div>
-      
-      <div class="p-6">
-        <!-- Filters at the top -->
-        <div class="flex gap-4 mb-6">
-          <select 
-            [(ngModel)]="selectedAcademicYear"
-            (change)="onEvaluationFilterChange()"
-            class="select select-bordered w-full max-w-xs">
-            <option *ngFor="let year of academicYears" [value]="year">
-              {{ year }}
-            </option>
-          </select>
-
-          <select 
-            [(ngModel)]="selectedSemester"
-            (change)="onEvaluationFilterChange()"
-            class="select select-bordered w-full max-w-xs">
-            <option *ngFor="let sem of semesters" [value]="sem">
-              {{ sem }}
-            </option>
-          </select>
+      <!-- Academic Ranks Section -->
+      <div *ngIf="section.id === 'academic-ranks' && section.visible">
+        <div class="flex w-full flex-col mt-8">
+          <div class="divider divider-neutral divider-end">Academic Ranks Distribution</div>
         </div>
 
-        <!-- Chart and Buttons in a simpler layout -->
-        <div class="grid grid-cols-2 gap-6">
-          <!-- Chart on the left -->
-          <div>
-            <h3 class="chart-title">Evaluation Ratings Distribution</h3>
-            <div class="chart-wrapper">
+        <div class="bg-base-200 rounded-lg shadow-lg w-full mt-3">
+          <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
+            <h2 class="text-xl font-bold">Academic Ranks</h2>
+          </div>
+          
+          <div class="p-6">
+            <div class="chart-wrapper academic-ranks-chart">
               <canvas baseChart
-                [data]="evaluationRatingChartData"
-                [options]="evaluationRatingChartOptions"
-                [type]="'pie'">
+                      [data]="academicRankChartData"
+                      [options]="academicRankChartOptions"
+                      [type]="'bar'">
               </canvas>
             </div>
           </div>
-
-          <!-- Buttons directly on the right -->
-          <div class="flex flex-col gap-3">
-            <h3 class="chart-title">View Faculty Members by Rating</h3>
-            <button *ngFor="let rating of ['Outstanding', 'Very Satisfactory', 'Satisfactory', 'Fair', 'Poor']"
-                    class="btn w-full transition-all duration-300 bg-maroon text-white hover:bg-black"
-                    (click)="viewFacultiesByRating(rating)">
-              <div class="flex justify-between items-center w-full">
-                <div>
-                  <i class="fas fa-users mr-2"></i>
-                  View {{ rating }} Faculty
-                </div>
-                <i class="fas fa-arrow-right"></i>
-              </div>
-            </button>
-          </div>
         </div>
       </div>
-    </div>
-
-    <!-- Academic Ranks Distribution -->
-    <div class="flex w-full flex-col mt-8">
-      <div class="divider divider-neutral divider-end">Academic Ranks Distribution</div>
-    </div>
-
-    <div class="bg-base-200 rounded-lg shadow-lg w-full mt-3">
-      <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
-        <h2 class="text-xl font-bold">Academic Ranks</h2>
-      </div>
-      
-      <div class="p-6">
-        <div class="auto-grid">
-          <div *ngFor="let rank of academicRanks" 
-               class="card bg-gradient-to-r from-orange-400 to-red-600 text-white p-6 rounded-lg shadow-lg">
-            <h3 class="text-2xl font-bold border-b border-white/20 pb-2">{{rank.Rank}}</h3>
-            <p class="text-5xl font-extrabold flex-1 flex items-center justify-center">{{rank.count}}</p>
-            <span class="text-white text-[14px]">Faculty Members</span>
-          </div>
-        </div>
-      </div>
-    </div>
+    </ng-container>
   </ng-container>
 
   <ng-template #personalView>
@@ -343,6 +357,42 @@
 
       <div class="modal-action">
         <button class="btn" (click)="closeFacultyList()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add this modal for dashboard settings -->
+  <div *ngIf="showDashboardSettings" class="modal modal-open">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg mb-4">Dashboard Settings</h3>
+      
+      <div class="space-y-4">
+        <!-- Settings for each section -->
+        <div *ngFor="let section of dashboardSections" 
+             class="flex items-center justify-between p-2 border-b">
+          <span class="font-medium">{{ section.title }}</span>
+          <div class="flex items-center gap-4">
+            <label class="cursor-pointer flex items-center gap-2">
+              <input type="checkbox" 
+                     [checked]="section.visible"
+                     (change)="toggleSectionVisibility(section)"
+                     class="checkbox checkbox-sm">
+              <span>Show</span>
+            </label>
+            <select 
+              [ngModel]="section.order"
+              (ngModelChange)="updateSectionOrder(section, $event)"
+              class="select select-bordered select-sm">
+              <option [value]="0">First</option>
+              <option [value]="1">Second</option>
+              <option [value]="2">Third</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-action">
+        <button class="btn" (click)="showDashboardSettings = false">Close</button>
       </div>
     </div>
   </div>
