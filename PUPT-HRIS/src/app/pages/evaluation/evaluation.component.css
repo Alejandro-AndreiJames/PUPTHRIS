@@ -294,3 +294,35 @@ select:focus {
 .btn-cancel:hover {
   background-color: #e5e7eb;
 }
+
+/* Toast Styles */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    min-width: 250px;
+    max-width: 400px;
+}
+
+.alert {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 500;
+}
+
+.success {
+    background-color: #22c55e;
+}
+
+.error {
+    background-color: #dc2626;
+}
+
+.warning {
+    background-color: #f59e0b;
+}
