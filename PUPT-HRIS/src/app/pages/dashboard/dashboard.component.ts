@@ -37,6 +37,14 @@ const ALL_ACADEMIC_RANKS = [
   'Professor I', 'Professor II', 'Professor III', 'Professor IV', 'Professor V', 'Professor VI'
 ];
 
+// Add these interfaces and properties
+interface DashboardSection {
+  id: string;
+  title: string;
+  visible: boolean;
+  order: number;
+}
+
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
@@ -209,33 +217,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
   public academicRankChartOptions: ChartOptions<'bar'> = {
     responsive: true,
     maintainAspectRatio: false,
-    indexAxis: 'y', // Makes it a horizontal bar chart
+    indexAxis: 'y',
     plugins: {
       legend: {
         display: false
       }
     },
     scales: {
-      x: {
-        beginAtZero: true,
-        grid: {
-          display: true,     // Show grid lines
-          color: '#e5e5e5',  // Light gray color
-          drawTicks: true,   // Show ticks
-          lineWidth: 1       // Thin lines
-        },
-        border: {
-          display: false     // Don't show border
-        },
-        ticks: {
-          stepSize: 1, // Force whole number steps
-          precision: 0  // Remove decimal places
-        },
-        min: 0
-      },
       y: {
-        grid: {
-          display: false
+        ticks: {
+          autoSkip: false,
+          padding: 10
         }
       }
     }
@@ -284,6 +276,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   modalItemsPerPage: number = 10;
   modalTotalPages: number = 1;
   paginatedFacultiesList: any[] = [];
+
+  // Add these properties
+  showDashboardSettings = false;
+  dashboardSections: DashboardSection[] = [
+    { id: 'faculty-evaluation', title: 'Faculty Evaluation', visible: true, order: 0 },
+    { id: 'charts', title: 'Charts', visible: true, order: 1 },
+    { id: 'academic-ranks', title: 'Academic Ranks', visible: true, order: 2 }
+  ];
 
   constructor(
     private dashboardService: DashboardService,
@@ -349,6 +349,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Set default academic year based on current date
     this.selectedAcademicYear = `${startYear}-${startYear + 1}`;
     this.selectedSemester = currentMonth > 5 ? 'First Semester' : 'Second Semester';
+
+    this.loadDashboardPreferences();
   }
 
   ngOnDestroy(): void {
@@ -796,5 +798,29 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const endIndex = startIndex + this.modalItemsPerPage;
     this.paginatedFacultiesList = this.facultiesList.slice(startIndex, endIndex);
     this.modalTotalPages = Math.ceil(this.facultiesList.length / this.modalItemsPerPage);
+  }
+
+  // Add these methods
+  toggleSectionVisibility(section: DashboardSection): void {
+    section.visible = !section.visible;
+    this.saveDashboardPreferences();
+  }
+
+  updateSectionOrder(section: DashboardSection, newOrder: number): void {
+    section.order = newOrder;
+    this.dashboardSections.sort((a, b) => a.order - b.order);
+    this.saveDashboardPreferences();
+  }
+
+  private saveDashboardPreferences(): void {
+    localStorage.setItem('dashboardPreferences', JSON.stringify(this.dashboardSections));
+  }
+
+  private loadDashboardPreferences(): void {
+    const saved = localStorage.getItem('dashboardPreferences');
+    if (saved) {
+      this.dashboardSections = JSON.parse(saved);
+      this.dashboardSections.sort((a, b) => a.order - b.order);
+    }
   }
 }
