@@ -25,6 +25,10 @@ export class CoordinatorManagementComponent implements OnInit, OnDestroy {
   selectedDepartment: Department | null = null;
   campusId: number | null = null;
   private campusSubscription: Subscription | undefined;
+  searchTerm: string = '';
+  filteredDepartments: Department[] = [];
+  facultySearchTerm: string = '';
+  filteredFacultyUsers: User[] = [];
 
   constructor(
     private coordinatorService: CoordinatorService,
@@ -61,6 +65,7 @@ export class CoordinatorManagementComponent implements OnInit, OnDestroy {
       next: (departments) => {
         console.log('Received departments:', JSON.stringify(departments, null, 2));
         this.departments = departments;
+        this.filteredDepartments = [...departments];
       },
       error: (error) => {
         console.error('Error fetching departments:', error);
@@ -79,6 +84,7 @@ export class CoordinatorManagementComponent implements OnInit, OnDestroy {
         this.facultyUsers = users.filter(user => 
           user.Roles.some(role => role.RoleName.toLowerCase() === 'faculty') && user.isActive
         );
+        this.filteredFacultyUsers = [...this.facultyUsers];
       },
       error: (error) => {
         console.error('Error fetching active faculty users:', error);
@@ -90,6 +96,8 @@ export class CoordinatorManagementComponent implements OnInit, OnDestroy {
   openAssignModal(department: Department): void {
     this.selectedDepartment = department;
     this.showAssignModal = true;
+    this.facultySearchTerm = '';
+    this.filteredFacultyUsers = [...this.facultyUsers];
   }
 
   closeAssignModal(): void {
@@ -157,5 +165,34 @@ export class CoordinatorManagementComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.showToast = false;
     }, 3000);
+  }
+
+  onSearch(): void {
+    if (!this.searchTerm.trim()) {
+      this.filteredDepartments = [...this.departments];
+      return;
+    }
+
+    const searchTermLower = this.searchTerm.toLowerCase();
+    this.filteredDepartments = this.departments.filter(dept => 
+      dept.DepartmentName.toLowerCase().includes(searchTermLower) ||
+      (dept.Coordinator && 
+        (`${dept.Coordinator.FirstName} ${dept.Coordinator.Surname}`
+          .toLowerCase()
+          .includes(searchTermLower))
+      )
+    );
+  }
+
+  onFacultySearch(): void {
+    if (!this.facultySearchTerm.trim()) {
+      this.filteredFacultyUsers = [...this.facultyUsers];
+      return;
+    }
+
+    const searchTermLower = this.facultySearchTerm.toLowerCase();
+    this.filteredFacultyUsers = this.facultyUsers.filter(user => 
+      `${user.FirstName} ${user.Surname}`.toLowerCase().includes(searchTermLower)
+    );
   }
 }

@@ -4,6 +4,20 @@
   </div>
 
   <div class="p-6 space-y-6">
+    <div class="px-4">
+      <div class="relative">
+        <input type="text" 
+               [(ngModel)]="searchTerm" 
+               (input)="onSearch()"
+               placeholder="Search department or coordinator.." 
+               class="w-full py-2 pl-10 pr-4 text-sm rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-maroon"
+        >
+        <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+          <i class="fas fa-search"></i>
+        </span>
+      </div>
+    </div>
+
     <div *ngIf="departments.length > 0" class="px-4 pb-4">
       <table class="table table-zebra w-full border-separate border-spacing-0">
         <thead>
@@ -15,7 +29,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let department of departments; let i = index" class="hover:bg-gray-100">
+          <tr *ngFor="let department of filteredDepartments; let i = index" class="hover:bg-gray-100">
             <td class="p-4 text-center">{{ i + 1 }}</td>
             <td class="p-4">{{ department.DepartmentName }}</td>
             <td class="p-4">
@@ -52,6 +66,21 @@
   <div class="modal-content">
     <h2 class="modal-title">Assign Coordinator for {{ selectedDepartment?.DepartmentName }}</h2>
     <div class="modal-body">
+      <!-- Add search bar for faculty users -->
+      <div class="mb-4">
+        <div class="relative">
+          <input type="text" 
+                 [(ngModel)]="facultySearchTerm" 
+                 (input)="onFacultySearch()"
+                 placeholder="Search faculty name..." 
+                 class="w-full py-2 pl-10 pr-4 text-sm rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-maroon"
+          >
+          <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+            <i class="fas fa-search"></i>
+          </span>
+        </div>
+      </div>
+
       <table class="table table-zebra w-full">
         <thead>
           <tr class="bg-maroon text-white">
@@ -60,7 +89,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let user of facultyUsers" class="hover:bg-gray-100">
+          <tr *ngFor="let user of filteredFacultyUsers" class="hover:bg-gray-100">
             <td class="p-3">{{ user.FirstName }} {{ user.Surname }}</td>
             <td class="p-3">
               <button class="btn btn-assign btn-sm" (click)="assignCoordinator(selectedDepartment!, user.UserID)">Assign</button>
