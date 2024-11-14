@@ -137,20 +137,35 @@ export class PdsComponent implements OnInit {
   viewPds(): void {
     if (this.userId) {
       this.isLoading = true;
-      this.pdsService.downloadPDS().subscribe(
-        (pdfBlob: Blob) => {
-          this.currentPdfBlob = pdfBlob;
-          const pdfUrl = URL.createObjectURL(pdfBlob);
-          this.pdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(pdfUrl);
-          this.showPdfViewer = true;
+      this.missingDetailsMessage = null;
+      this.showPdfViewer = true;
+      
+      this.pdsService.downloadPDS().subscribe({
+        next: (response: Blob | { message: string }) => {
           this.isLoading = false;
+          if ('message' in response) {
+            this.missingDetailsMessage = response.message;
+            this.pdfUrl = null;
+            this.currentPdfBlob = null;
+            
+            this.showToastNotification(response.message, 'warning');
+          } else {
+            this.currentPdfBlob = response;
+            const pdfUrl = URL.createObjectURL(response);
+            this.pdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(pdfUrl);
+            this.missingDetailsMessage = null;
+          }
         },
-        (error) => {
+        error: (error) => {
           console.error('Error generating PDS', error);
           this.isLoading = false;
-          this.showToastNotification('Failed to generate PDS. Please try again.', 'error');
+          this.missingDetailsMessage = 'There was a problem generating your PDS. Please ensure all required information is complete and try again.';
+          this.pdfUrl = null;
+          this.currentPdfBlob = null;
+          
+          this.showToastNotification(this.missingDetailsMessage, 'error');
         }
-      );
+      });
     }
   }
 
