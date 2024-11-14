@@ -52,52 +52,52 @@
       <div class="divider divider-neutral divider-end">Charts</div>
     </div>
 
-    <!-- Inside your admin view -->
+    <!-- Charts Container -->
     <div class="bg-base-200 rounded-lg shadow-lg w-full mt-3">
       <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
         <h2 class="text-xl font-bold">Charts</h2>
       </div>
       
-      <div class="grid grid-cols-2 gap-6 p-6">
+      <div class="charts-container p-6">
         <!-- Employment Types Chart -->
-        <div class="form-control w-full">
-          <label class="label">
-            <span class="label-text font-bold">Employment Types</span>
-          </label>
+        <div class="chart-section">
+          <h3 class="chart-title">Employment Types</h3>
           <div class="chart-wrapper">
             <canvas baseChart
-                    [data]="barChartData"
-                    [options]="barChartOptions"
-                    [type]="'bar'">
+              [data]="barChartData"
+              [options]="barChartOptions"
+              [type]="'bar'">
             </canvas>
           </div>
         </div>
 
         <!-- Instructor per Department Chart -->
-        <div class="form-control w-full">
-          <label class="label">
-            <span class="label-text font-bold">Instructor per Department</span>
-          </label>
+        <div class="chart-section">
+          <h3 class="chart-title">Instructor per Department</h3>
           <div class="chart-wrapper">
             <canvas baseChart
-                    [data]="pieChartData"
-                    [options]="pieChartOptions"
-                    [type]="'pie'">
+              [data]="pieChartData"
+              [options]="pieChartOptions"
+              [type]="'pie'">
             </canvas>
           </div>
         </div>
-
-        <!-- Academic Ranks Chart -->
       </div>
+    </div>
 
-      <!-- Add this new chart -->
-      <div class="form-control w-full">
-        <label class="label">
-          <span class="label-text font-bold">Faculty Evaluation Ratings</span>
-        </label>
-        
-        <!-- Add filters -->
-        <div class="flex gap-4 mb-4">
+    <!-- Faculty Evaluation Section -->
+    <div class="flex w-full flex-col mt-8">
+      <div class="divider divider-neutral divider-end">Faculty Evaluation Overview</div>
+    </div>
+
+    <div class="bg-base-200 rounded-lg shadow-lg w-full mt-3">
+      <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
+        <h2 class="text-xl font-bold">Faculty Evaluation Ratings</h2>
+      </div>
+      
+      <div class="p-6">
+        <!-- Filters at the top -->
+        <div class="flex gap-4 mb-6">
           <select 
             [(ngModel)]="selectedAcademicYear"
             (change)="onEvaluationFilterChange()"
@@ -117,27 +117,39 @@
           </select>
         </div>
 
-        <div class="flex flex-col">
-          <div class="chart-container">
-            <canvas baseChart
-              [data]="evaluationRatingChartData"
-              [options]="evaluationRatingChartOptions"
-              [type]="'pie'">
-            </canvas>
+        <!-- Chart and Buttons in a simpler layout -->
+        <div class="grid grid-cols-2 gap-6">
+          <!-- Chart on the left -->
+          <div>
+            <h3 class="chart-title">Evaluation Ratings Distribution</h3>
+            <div class="chart-wrapper">
+              <canvas baseChart
+                [data]="evaluationRatingChartData"
+                [options]="evaluationRatingChartOptions"
+                [type]="'pie'">
+              </canvas>
+            </div>
           </div>
-          
-          <!-- Add buttons below the chart -->
-          <div class="mt-4 flex flex-wrap gap-2">
+
+          <!-- Buttons directly on the right -->
+          <div class="flex flex-col gap-3">
+            <h3 class="chart-title">View Faculty Members by Rating</h3>
             <button *ngFor="let rating of ['Outstanding', 'Very Satisfactory', 'Satisfactory', 'Fair', 'Poor']"
-                    class="btn btn-sm"
-                    [class.btn-primary]="rating === selectedRating"
+                    class="btn w-full transition-all duration-300 bg-maroon text-white hover:bg-black"
                     (click)="viewFacultiesByRating(rating)">
-              View {{ rating }}
+              <div class="flex justify-between items-center w-full">
+                <div>
+                  <i class="fas fa-users mr-2"></i>
+                  View {{ rating }} Faculty
+                </div>
+                <i class="fas fa-arrow-right"></i>
+              </div>
             </button>
           </div>
         </div>
       </div>
     </div>
+
     <!-- Academic Ranks Distribution -->
     <div class="flex w-full flex-col mt-8">
       <div class="divider divider-neutral divider-end">Academic Ranks Distribution</div>
@@ -188,9 +200,9 @@
       </div>
       
       <div class="grid grid-cols-2 gap-8 p-6">
-        <!-- Left side: Chart (Original Format) -->
-        <div class="profile-completion-container pl-8">
-          <h2 class="text-2xl font-bold mb-4">Your Activities</h2>
+        <!-- Left side: Chart -->
+        <div class="chart-section">
+          <h3 class="chart-title">Your Activities</h3>
           <div class="chart-wrapper">
             <canvas baseChart
                     [data]="userActivityChartData"
@@ -200,37 +212,39 @@
           </div>
         </div>
 
-        <!-- Right side: Profile Completion (Original Format) -->
-        <div class="profile-completion-container pl-8">
-          <h2 class="text-2xl font-bold mb-4">Profile Completion</h2>
-          <div class="flex items-center">
-            <ngx-gauge [type]="gaugeType"
-                      [value]="gaugeValue"
-                      [append]="gaugeAppendText"
-                      [thick]="gaugeThick"
-                      cap="round"
-                      [size]="gaugeSize"
-                      foregroundColor="#800000"
-                      [label]="''">
-            </ngx-gauge>
-            <div class="ml-4">
-              <p class="font-bold text-lg">{{ getProfileMessage().title }}</p>
-              <p class="text-sm">{{ getProfileMessage().description }}</p>
-              <p class="text-sm text-black mt-2">Please complete your profile to generate PDS</p>
+        <!-- Right side: Profile Completion -->
+        <div class="chart-section">
+          <h3 class="chart-title">Profile Completion</h3>
+          <div class="profile-completion-container">
+            <div class="flex items-center">
+              <ngx-gauge [type]="gaugeType"
+                        [value]="gaugeValue"
+                        [append]="gaugeAppendText"
+                        [thick]="gaugeThick"
+                        cap="round"
+                        [size]="gaugeSize"
+                        foregroundColor="#800000"
+                        [label]="''">
+              </ngx-gauge>
+              <div class="ml-4">
+                <p class="font-bold text-lg">{{ getProfileMessage().title }}</p>
+                <p class="text-sm">{{ getProfileMessage().description }}</p>
+                <p class="text-sm text-black mt-2">Please complete your profile to generate PDS</p>
+              </div>
             </div>
-          </div>
 
-          <!-- Added divider -->
-          <div class="border-t border-gray-200 my-4"></div>
+            <!-- Added divider -->
+            <div class="border-t border-gray-200 my-4"></div>
 
-          <div class="tasks">
-            <!-- First 3 Tasks (Always Visible) -->
-            <div *ngFor="let task of (showAllTasks ? incompleteTasks : incompleteTasks.slice(0, 3))" 
-                 class="task-item p-3 bg-maroon text-white rounded-lg shadow-sm mb-2 cursor-pointer transition-all duration-200 hover:bg-black"
-                 (click)="navigateToTask(task)">
-              <div class="flex items-center justify-between">
-                <span>{{ task }}</span>
-                <span class="text-white">→</span>
+            <div class="tasks">
+              <!-- First 3 Tasks (Always Visible) -->
+              <div *ngFor="let task of (showAllTasks ? incompleteTasks : incompleteTasks.slice(0, 3))" 
+                   class="task-item p-3 bg-maroon text-white rounded-lg shadow-sm mb-2 cursor-pointer transition-all duration-200 hover:bg-black"
+                   (click)="navigateToTask(task)">
+                <div class="flex items-center justify-between">
+                  <span>{{ task }}</span>
+                  <span class="text-white">→</span>
+                </div>
               </div>
             </div>
           </div>
@@ -278,7 +292,6 @@
             {{ selectedAcademicYear }} - {{ selectedSemester }}
           </div>
         </h3>
-        <button class="btn btn-sm btn-circle btn-ghost" (click)="closeFacultyList()">✕</button>
       </div>
       
       <div class="overflow-x-auto">
@@ -303,6 +316,28 @@
             </tr>
           </tbody>
         </table>
+
+        <!-- Add pagination controls -->
+        <div class="pagination-controls mt-4">
+          <button 
+            (click)="previousModalPage()" 
+            [disabled]="modalCurrentPage === 1" 
+            class="btn">Previous</button>
+
+          <span *ngFor="let page of getModalPageArray(); let i = index">
+            <button 
+              (click)="setModalPage(i + 1)" 
+              [class.active]="i + 1 === modalCurrentPage" 
+              class="btn">
+              {{ i + 1 }}
+            </button>
+          </span>
+
+          <button 
+            (click)="nextModalPage()" 
+            [disabled]="modalCurrentPage === modalTotalPages" 
+            class="btn">Next</button>
+        </div>
       </div>
 
       <div class="modal-action">

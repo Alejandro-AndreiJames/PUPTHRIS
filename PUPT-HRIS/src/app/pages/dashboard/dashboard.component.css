@@ -84,10 +84,29 @@
 
 .charts-container {
   display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 2rem;
-  min-height: 400px;
+  padding: 2rem;
+}
+
+.chart-wrapper {
+  background: white;
+  border-radius: 8px;
   padding: 1.5rem;
-  margin-bottom: 3rem;
+  height: 400px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.chart-wrapper canvas {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain;
 }
 
 .charts-container h2 {
@@ -236,18 +255,6 @@ canvas {
   margin-bottom: 1rem;
 }
 
-.chart-wrapper {
-  background: white; 
-  border-radius: 8px;
-  padding: 1.5rem;
-  height: 500px;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); 
-}
-
 .label-text {
   font-weight: bold;
   color: #333;
@@ -327,4 +334,293 @@ canvas {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     max-width: 100%;
   }
+}
+
+.btn-outline {
+  border: 2px solid #e5e7eb;
+  background: white;
+  color: #374151;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.btn-outline:hover {
+  border-color: #800000;
+  color: white;
+}
+
+.btn-outline.bg-maroon {
+  border-color: #800000;
+  background-color: #800000;
+  color: white;
+}
+
+/* Update the chart-wrapper class */
+.chart-wrapper {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  min-height: 400px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+}
+
+/* Add specific styles for faculty evaluation section */
+.faculty-evaluation-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.faculty-evaluation-chart {
+  height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.rating-buttons-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  height: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .faculty-evaluation-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .faculty-evaluation-chart {
+    height: 350px;
+  }
+}
+
+/* Update canvas styles */
+canvas {
+  max-width: 100%;
+  height: 100% !important;
+  max-height: 400px;
+}
+
+/* Add these new styles */
+.chart-section {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.chart-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #800000;
+  margin-bottom: 0.5rem;
+}
+
+.btn-outline {
+  background-color: white;
+  color: #800000;
+  border: 2px solid #800000;
+}
+
+.btn-outline:hover, .btn-outline.active {
+  background-color: #800000;
+  color: white;
+  border-color: #800000;
+}
+
+.select-bordered {
+  border-color: #800000;
+}
+
+.select-bordered:focus {
+  border-color: #800000;
+  box-shadow: 0 0 0 1px #800000;
+}
+
+/* Remove the previous button styles and add these */
+.btn {
+  border: none;
+}
+
+.btn:hover {
+  border: none;
+}
+
+.chart-wrapper {
+  flex: 1;
+  min-height: 300px;
+  margin-bottom: 0;
+}
+
+.flex.flex-col.gap-3 {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.flex.flex-col.gap-3 .chart-title {
+  flex: 0 0 auto;
+}
+
+.flex.flex-col.gap-3 .btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.flex.flex-col.gap-3 .btn:last-child {
+  margin-bottom: 0;
+}
+
+/* Add these new modal styles */
+.modal {
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.modal-box {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Modal header styling */
+.modal-box h3 {
+  color: #800000;
+  font-size: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #800000;
+  margin-bottom: 1.5rem;
+}
+
+/* Table styling */
+.table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+
+.table thead tr {
+  background-color: #800000;
+  color: white;
+}
+
+.table th {
+  padding: 1rem;
+  font-weight: 600;
+}
+
+.table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Table styling with darker zebra stripes */
+.table tbody tr:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.05); /* Increased from 0.02 to 0.05 for darker grey */
+}
+
+.table tbody tr:nth-child(odd) {
+  background-color: white;
+}
+
+/* Hover effect */
+.table tbody tr:hover {
+  background-color: rgba(128, 0, 0, 0.1);
+}
+
+/* Modal actions */
+.modal-action {
+  margin-top: 1rem;
+}
+
+.modal-action .btn {
+  min-width: 120px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background-color: #800000;
+  color: white;
+}
+
+.modal-action .btn:hover {
+  background-color: #000000;
+  color: white;
+}
+
+/* Close button in header */
+.btn-circle {
+  background-color: #f3f4f6;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-circle:hover {
+  background-color: #800000;
+  color: white;
+  transform: rotate(90deg);
+}
+
+/* Pagination controls */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.pagination-controls .btn {
+  min-width: 40px;
+  height: 40px;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #800000;
+  color: white;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.pagination-controls .btn:hover:not([disabled]) {
+  background-color: #000000;
+}
+
+.pagination-controls .btn.active {
+  background-color: #000000;
+}
+
+.pagination-controls .btn.active:hover {
+  background-color: #600000;
+}
+
+.pagination-controls .btn[disabled] {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
 }

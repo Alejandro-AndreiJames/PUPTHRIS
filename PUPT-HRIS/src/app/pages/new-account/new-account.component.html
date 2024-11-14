@@ -6,9 +6,32 @@
   </div>
   
   <div class="p-6 space-y-8">
+    <!-- Roles Section -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="border-b border-gray-200 pb-2 mb-4">
+        <h2 class="text-xl font-semibold text-maroon">Roles</h2>
+      </div>
+      <div class="form-control">
+        <label class="label-text mb-3">Select Roles <span class="text-red-500">*</span></label>
+        <div class="roles-container">
+          <div *ngFor="let role of roles" class="role-checkbox">
+            <input 
+              type="checkbox" 
+              [value]="role.RoleID" 
+              (change)="onRoleCheckboxChange($event)" 
+              [checked]="newAccountForm.value.Roles.includes(role.RoleID)"
+            />
+            <span class="role-label">{{ role.RoleName }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Basic Information -->
     <div class="bg-white rounded-lg shadow-md p-6">
-      <h2 class="text-xl font-semibold mb-4 text-maroon">Basic Information</h2>
+      <div class="border-b border-gray-200 pb-2 mb-4">
+        <h2 class="text-xl font-semibold text-maroon">Basic Information</h2>
+      </div>
       <div class="grid grid-cols-2 gap-4">
         <div class="form-control">
           <label class="label-text" for="Fcode">Fcode <span class="text-red-500">*</span></label>
@@ -44,7 +67,9 @@
 
     <!-- Account Details -->
     <div class="bg-white rounded-lg shadow-md p-6">
-      <h2 class="text-xl font-semibold mb-4 text-maroon">Account Details</h2>
+      <div class="border-b border-gray-200 pb-2 mb-4">
+        <h2 class="text-xl font-semibold text-maroon">Account Details</h2>
+      </div>
       <div class="grid grid-cols-2 gap-4">
         <div class="form-control">
           <label class="label-text" for="EmploymentType">Employment Type <span class="text-red-500">*</span></label>
@@ -79,25 +104,6 @@
             <option value="" disabled selected>- Please Select Option -</option>
             <option *ngFor="let campus of collegeCampuses" [value]="campus.CollegeCampusID">{{ campus.Name }}</option>
           </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- Roles Section -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-      <h2 class="text-xl font-semibold mb-4 text-maroon">Roles</h2>
-      <div class="form-control">
-        <label class="label-text mb-3">Select Roles <span class="text-red-500">*</span></label>
-        <div class="roles-container">
-          <div *ngFor="let role of roles" class="role-checkbox">
-            <input 
-              type="checkbox" 
-              [value]="role.RoleID" 
-              (change)="onRoleCheckboxChange($event)" 
-              [checked]="newAccountForm.value.Roles.includes(role.RoleID)"
-            />
-            <span class="role-label">{{ role.RoleName }}</span>
-          </div>
         </div>
       </div>
     </div>

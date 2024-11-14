@@ -92,6 +92,14 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   showErrorModal = false;
   errorMessage = '';
 
+  showDeleteConfirmModal = false;
+  evaluationToDelete: number | null = null;
+
+  toastVisible = false;
+  toastMessage = '';
+  toastType: 'success' | 'error' | 'warning' = 'success';
+  private toastTimeout: any;
+
   constructor(
     private campusContextService: CampusContextService,
     private userService: UserService,
@@ -187,10 +195,12 @@ export class EvaluationComponent implements OnInit, OnDestroy {
 
   applyFilters(): void {
     this.filteredUsers = this.users.filter(user => {
-      const matchesSearch = !this.searchTerm.trim() || 
-        `${user.FirstName} ${user.MiddleName} ${user.Surname} ${user.NameExtension}`
+      // Search by name or Fcode
+      const searchText = this.searchTerm.toLowerCase().trim();
+      const matchesSearch = !searchText || 
+        `${user.FirstName} ${user.MiddleName} ${user.Surname} ${user.NameExtension} ${user.Fcode}`
           .toLowerCase()
-          .includes(this.searchTerm.toLowerCase());
+          .includes(searchText);
 
       const matchesDepartment = !this.selectedDepartment || 
         user.Department?.DepartmentName === this.departments.find(d => 
@@ -199,15 +209,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
 
       const matchesEmploymentType = !this.selectedEmploymentType || 
         user.EmploymentType?.toLowerCase() === this.selectedEmploymentType.toLowerCase();
-
-      console.log('Department matching:', {
-        userDeptName: user.Department?.DepartmentName,
-        selectedDeptId: this.selectedDepartment,
-        selectedDeptName: this.departments.find(d => 
-          d.DepartmentID.toString() === this.selectedDepartment
-        )?.DepartmentName,
-        matches: matchesDepartment
-      });
 
       return matchesSearch && matchesDepartment && matchesEmploymentType;
     });
@@ -274,19 +275,24 @@ export class EvaluationComponent implements OnInit, OnDestroy {
 
   submitEvaluation() {
     if (!this.selectedUser || !this.isFormValid()) {
-      this.errorMessage = 'Please fill in all required fields with valid scores (0-100).';
-      this.showErrorModal = true;
+      this.showToast('Please fill in all required fields with valid scores (0-100).', 'error');
       return;
     }
     
     const evaluationData = this.prepareEvaluationData();
-    console.log('Submitting evaluation data:', evaluationData);
     
     if (this.isEditMode && this.currentEvaluationId) {
+      // Check for unsaved changes
+      const originalEvaluation = this.evaluationHistory.find(e => e.EvaluationID === this.currentEvaluationId);
+      if (!originalEvaluation || !this.hasUnsavedChanges(evaluationData, originalEvaluation)) {
+        this.showToast('No unsaved changes to update', 'warning');
+        return;
+      }
+
       this.evaluationService.updateEvaluation(this.currentEvaluationId, evaluationData).subscribe({
         next: (response) => {
           console.log('Update successful:', response);
-          alert('Evaluation updated successfully');
+          this.showToast('Evaluation updated successfully', 'success');
           this.closeEvaluationModal();
           if (this.showEvaluationHistory && this.selectedUser) {
             this.viewEvaluationHistory(this.selectedUser);
@@ -294,19 +300,18 @@ export class EvaluationComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Update failed:', error);
-          this.errorMessage = `An error occurred while updating the evaluation: ${error.message}`;
-          this.showErrorModal = true;
+          this.showToast('Failed to update evaluation. Please try again.', 'error');
         }
       });
     } else {
       this.evaluationService.submitEvaluation(evaluationData).subscribe({
         next: (response) => {
-          alert('Evaluation submitted successfully');
+          this.showToast('Evaluation submitted successfully', 'success');
           this.closeEvaluationModal();
         },
         error: (error) => {
-          this.errorMessage = 'An error occurred while submitting the evaluation. Please try again.';
-          this.showErrorModal = true;
+          console.error('Submission failed:', error);
+          this.showToast('Failed to submit evaluation. Please try again.', 'error');
         }
       });
     }
@@ -342,9 +347,11 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   }
 
   viewEvaluationHistory(user: User): void {
+    console.log('View history clicked for user:', user);
     this.selectedUser = user;
     this.evaluationService.getFacultyEvaluationHistory(user.UserID).subscribe({
       next: (history) => {
+        console.log('Received history:', history);
         this.evaluationHistory = history;
         this.showEvaluationHistory = true;
         // Wait for the modal to be shown before creating the chart
@@ -352,17 +359,29 @@ export class EvaluationComponent implements OnInit, OnDestroy {
           this.createOrUpdateChart();
         }, 100);
       },
-      error: (error) => console.error('Error fetching evaluation history:', error)
+      error: (error) => {
+        console.error('Error fetching evaluation history:', error);
+        // Optionally show an error message to the user
+        alert('Failed to load evaluation history. Please try again.');
+      }
     });
   }
 
   private createOrUpdateChart(): void {
+    if (!this.chartCanvas) {
+      console.error('Chart canvas not found');
+      return;
+    }
+
     if (this.chart) {
       this.chart.destroy();
     }
 
-    const ctx = this.chartCanvas?.nativeElement?.getContext('2d');
-    if (!ctx) return;
+    const ctx = this.chartCanvas.nativeElement.getContext('2d');
+    if (!ctx) {
+      console.error('Could not get chart context');
+      return;
+    }
 
     this.chart = new Chart(ctx, {
       type: 'line',
@@ -371,9 +390,10 @@ export class EvaluationComponent implements OnInit, OnDestroy {
         datasets: [{
           label: 'Total Score',
           data: this.evaluationHistory.map(d => d.TotalScore),
-          borderColor: 'rgb(75, 192, 192)',
+          borderColor: '#800000',
+          backgroundColor: 'rgba(128, 0, 0, 0.1)',
           tension: 0.1,
-          fill: false
+          fill: true
         }]
       },
       options: {
@@ -382,7 +402,10 @@ export class EvaluationComponent implements OnInit, OnDestroy {
         scales: {
           y: {
             beginAtZero: true,
-            max: 100
+            max: 100,
+            ticks: {
+              stepSize: 20
+            }
           }
         },
         plugins: {
@@ -391,7 +414,8 @@ export class EvaluationComponent implements OnInit, OnDestroy {
           },
           title: {
             display: true,
-            text: 'Evaluation Scores Over Time'
+            text: 'Evaluation Scores Over Time',
+            color: '#800000'
           }
         }
       }
@@ -439,28 +463,31 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   }
 
   confirmDeleteEvaluation(evaluationId: number) {
-    if (confirm('Are you sure you want to delete this evaluation? This action cannot be undone.')) {
-      this.deleteEvaluation(evaluationId);
-    }
+    this.evaluationToDelete = evaluationId;
+    this.showDeleteConfirmModal = true;
   }
 
-  deleteEvaluation(evaluationId: number) {
-    this.evaluationService.deleteEvaluation(evaluationId).subscribe({
+  deleteEvaluation() {
+    if (!this.evaluationToDelete) return;
+    
+    this.evaluationService.deleteEvaluation(this.evaluationToDelete).subscribe({
       next: () => {
         // Remove the deleted evaluation from the history array
         this.evaluationHistory = this.evaluationHistory.filter(
-          evaluation => evaluation.EvaluationID !== evaluationId
+          evaluation => evaluation.EvaluationID !== this.evaluationToDelete
         );
         
         // Refresh the chart
         this.createOrUpdateChart();
         
-        // Show success message
-        alert('Evaluation deleted successfully');
+        // Show success message and close modal
+        this.showToast('Evaluation deleted successfully', 'success');
+        this.showDeleteConfirmModal = false;
+        this.evaluationToDelete = null;
       },
       error: (error) => {
         console.error('Error deleting evaluation:', error);
-        alert('Failed to delete evaluation. Please try again.');
+        this.showToast('Failed to delete evaluation. Please try again.', 'error');
       }
     });
   }
@@ -571,5 +598,42 @@ export class EvaluationComponent implements OnInit, OnDestroy {
 
   formatScore(score: number | string): string {
     return Number(score).toFixed(4);
+  }
+
+  private showToast(message: string, type: 'success' | 'error' | 'warning' = 'success') {
+    // Clear any existing timeout
+    if (this.toastTimeout) {
+        clearTimeout(this.toastTimeout);
+    }
+
+    // Set new toast
+    this.toastMessage = message;
+    this.toastType = type;
+    this.toastVisible = true;
+
+    // Auto hide after 3 seconds
+    this.toastTimeout = setTimeout(() => {
+        this.toastVisible = false;
+        this.toastTimeout = null;
+    }, 3000);
+  }
+
+  // Add this method to check for changes
+  private hasUnsavedChanges(currentData: any, originalData: any): boolean {
+    // Check if number of respondents or course section changed
+    if (currentData.numberOfRespondents !== originalData.NumberOfRespondents ||
+        currentData.courseSection !== originalData.CourseSection) {
+      return true;
+    }
+
+    // Check if scores changed
+    for (const score of originalData.EvaluationScores) {
+      const category = this.evaluationCategories.find(c => c.criteriaId === score.CriteriaID);
+      if (category && this.ratings[category.id] !== score.Score) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }
