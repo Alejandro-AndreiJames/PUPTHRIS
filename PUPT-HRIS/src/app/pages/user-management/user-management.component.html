@@ -44,11 +44,13 @@
                 </span>
               </td>
               <td class="p-4">
-                <select class="select select-bordered select-sm w-full max-w-xs" [(ngModel)]="user.EmploymentType">
+                <select 
+                  class="select select-bordered select-sm w-full max-w-xs" 
+                  [(ngModel)]="user.EmploymentType"
+                  (ngModelChange)="onEmploymentTypeChange(user)">
                   <option value="fulltime">Fulltime</option>
                   <option value="parttime">Part-time</option>
                   <option value="temporary">Temporary</option>
-                  <option value="designee">Designee</option>
                 </select>
               </td>
               <td class="p-4">
@@ -73,7 +75,12 @@
                 </div>
               </td>
               <td class="p-4 flex justify-center space-x-2">
-                <button class="btn btn-save btn-sm" (click)="saveUserDetails(user)">Save</button>
+                <button 
+                  class="btn btn-save btn-sm" 
+                  (click)="saveUserDetails(user)"
+                  [disabled]="!hasUserChanges(user)">
+                  Save
+                </button>
                 <button class="btn btn-sm" 
                         [ngClass]="{'btn-error': user.isActive, 'btn-success': !user.isActive}"
                         (click)="toggleUserActiveStatus(user)">

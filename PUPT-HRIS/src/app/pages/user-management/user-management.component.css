@@ -70,12 +70,21 @@
   }
   
   .btn-save {
-    background-color: #3b82f6;
+    background-color: #0d6efd;
     color: white;
+    border: none;
+    transition: background-color 0.2s;
   }
   
-  .btn-save:hover {
-    background-color: #2563eb;
+  .btn-save:hover:not(:disabled) {
+    background-color: #0b5ed7;
+  }
+  
+  .btn-save:disabled {
+    background-color: #e2e8f0;
+    color: #94a3b8;
+    cursor: not-allowed;
+    border: none;
   }
   
   .btn-error {
@@ -307,4 +316,21 @@
 
   .modal-content {
     animation: slideDown 0.2s ease-out;
+  }
+
+  .btn-save:disabled {
+    border: 1px solid #cbd5e1;
+  }
+
+
+  .modal-overlay {
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  .modal-content {
+    animation: slideDown 0.2s ease-out;
+  }
+
+  .btn-save:disabled {
+    border: 1px solid #cbd5e1;
   }

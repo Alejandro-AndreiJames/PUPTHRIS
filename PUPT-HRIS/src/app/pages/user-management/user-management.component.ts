@@ -35,6 +35,9 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   displayedUsers: User[] = [];
 
+  originalUserStates: Map<number, { roles: number[], employmentType: string }> = new Map();
+  modifiedUsers: Set<number> = new Set();
+
   constructor(
     private userManagementService: UserManagementService,
     private campusContextService: CampusContextService
@@ -78,15 +81,21 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       console.error('Campus ID is null, cannot fetch users');
       return;
     }
-    console.log('Fetching users for campus ID:', this.campusId);
+    
     this.userManagementService.getAllUsers(this.campusId).subscribe({
       next: (users) => {
-        console.log('Received users:', users);
-        console.log('Number of users received:', users.length);
         this.users = users.filter(user => user.CollegeCampusID === this.campusId);
         this.filteredUsers = this.users;
-        this.initializePagination(); // Replace updatePaginatedData() with this
-        console.log('Number of users after filtering:', this.users.length);
+        
+        this.originalUserStates.clear();
+        this.users.forEach(user => {
+          this.originalUserStates.set(user.UserID, {
+            roles: user.Roles.map(role => role.RoleID),
+            employmentType: user.EmploymentType
+          });
+        });
+        
+        this.initializePagination();
       },
       error: (error) => {
         console.error('Error fetching users:', error);
@@ -123,11 +132,43 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         user.Roles.push(roleToAdd);
       }
     }
+    this.checkForChanges(user);
+  }
+
+  onEmploymentTypeChange(user: User): void {
+    this.checkForChanges(user);
+  }
+
+  private checkForChanges(user: User): void {
+    const originalState = this.originalUserStates.get(user.UserID);
+    if (!originalState) return;
+
+    const currentRoles = user.Roles.map(role => role.RoleID).sort().toString();
+    const originalRoles = originalState.roles.sort().toString();
+    const hasChanges = 
+      currentRoles !== originalRoles || 
+      user.EmploymentType !== originalState.employmentType;
+
+    if (hasChanges) {
+      this.modifiedUsers.add(user.UserID);
+    } else {
+      this.modifiedUsers.delete(user.UserID);
+    }
+  }
+
+  hasUserChanges(user: User): boolean {
+    return this.modifiedUsers.has(user.UserID);
   }
 
   saveUserDetails(user: User): void {
     this.saveEmploymentType(user);
     this.saveUserRoles(user);
+    
+    this.originalUserStates.set(user.UserID, {
+      roles: user.Roles.map(role => role.RoleID),
+      employmentType: user.EmploymentType
+    });
+    this.modifiedUsers.delete(user.UserID);
   }
 
   saveEmploymentType(user: User): void {
