@@ -55,6 +55,8 @@ export class PdsComponent implements OnInit {
   selectedDepartment: string = '';
   departments: any[] = [];
 
+  selectedUser: any = null;
+
   constructor(
     private pdsService: PdsService, 
     private userService: UserService, 
@@ -135,6 +137,7 @@ export class PdsComponent implements OnInit {
   }
 
   viewPds(): void {
+    this.selectedUser = null;
     if (this.userId) {
       this.isLoading = true;
       this.missingDetailsMessage = null;
@@ -170,8 +173,13 @@ export class PdsComponent implements OnInit {
   }
 
   viewUserPds(userId: number): void {
+    const user = this.users.find(u => u.UserID === userId);
+    this.selectedUser = user;
+    
     this.isLoading = true;
-    this.missingDetailsMessage = null; // Reset the message
+    this.missingDetailsMessage = null;
+    this.showPdfViewer = true;
+    
     this.pdsService.downloadPDSForUser(userId).subscribe(
       (response: Blob | { message: string }) => {
         this.isLoading = false;
@@ -196,12 +204,19 @@ export class PdsComponent implements OnInit {
 
   downloadCurrentPdf(): void {
     if (this.currentPdfBlob) {
+      const user = this.selectedUser || this.users.find(u => u.UserID === this.userId);
+      
+      let fileName = 'PDS.pdf';
+      if (user) {
+        fileName = `${user.Surname.toUpperCase()}_${user.FirstName.toUpperCase()}.pdf`;
+      }
+
       const url = window.URL.createObjectURL(this.currentPdfBlob);
       const a = document.createElement('a');
       document.body.appendChild(a);
       a.setAttribute('style', 'display: none');
       a.href = url;
-      a.download = 'PDS.pdf';
+      a.download = fileName;
       a.click();
       window.URL.revokeObjectURL(url);
       a.remove();
