@@ -164,23 +164,34 @@ export class DepartmentManagementComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Check if there are any changes by comparing with original values
+    const originalDepartment = this.departments.find(d => d.DepartmentID === this.currentDepartmentId);
+    const formValues = this.editForm.value;
+    
+    if (originalDepartment && 
+        originalDepartment.DepartmentName === formValues.DepartmentName && 
+        originalDepartment.Description === formValues.Description) {
+      this.showToastNotification('No changes to be saved', 'warning');
+      return;
+    }
+
     const department: Department = {
       ...this.editForm.value,
       CollegeCampusID: this.currentCampusId
     };
 
     if (this.currentDepartmentId !== null) {
-      this.departmentService.updateDepartment(this.currentDepartmentId, department).subscribe(
-        () => {
+      this.departmentService.updateDepartment(this.currentDepartmentId, department).subscribe({
+        next: () => {
           this.loadDepartments();
           this.closeEditModal();
           this.showToastNotification('Department updated successfully', 'success');
         },
-        (error) => {
+        error: (error) => {
           this.showToastNotification('Error updating department', 'error');
           console.error('Error updating department', error);
         }
-      );
+      });
     }
   }
 }

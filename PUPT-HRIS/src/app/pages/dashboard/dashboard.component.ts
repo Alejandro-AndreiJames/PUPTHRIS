@@ -243,6 +243,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   selectedRating: string = '';
   facultiesList: any[] = [];
 
+  // Add these properties
+  modalCurrentPage: number = 1;
+  modalItemsPerPage: number = 10;
+  modalTotalPages: number = 1;
+  paginatedFacultiesList: any[] = [];
+
   constructor(
     private dashboardService: DashboardService,
     private cdr: ChangeDetectorRef,
@@ -641,6 +647,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         next: (faculties) => {
           this.facultiesList = faculties;
           this.showFacultyList = true;
+          this.modalCurrentPage = 1;
+          this.updateModalPagination();
         },
         error: (error) => {
           console.error('Error fetching faculties:', error);
@@ -653,5 +661,36 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.showFacultyList = false;
     this.selectedRating = '';
     this.facultiesList = [];
+  }
+
+  // Add pagination methods for modal
+  previousModalPage(): void {
+    if (this.modalCurrentPage > 1) {
+      this.modalCurrentPage--;
+      this.updateModalPagination();
+    }
+  }
+
+  nextModalPage(): void {
+    if (this.modalCurrentPage < this.modalTotalPages) {
+      this.modalCurrentPage++;
+      this.updateModalPagination();
+    }
+  }
+
+  setModalPage(page: number): void {
+    this.modalCurrentPage = page;
+    this.updateModalPagination();
+  }
+
+  getModalPageArray(): number[] {
+    return Array(this.modalTotalPages).fill(0);
+  }
+
+  updateModalPagination(): void {
+    const startIndex = (this.modalCurrentPage - 1) * this.modalItemsPerPage;
+    const endIndex = startIndex + this.modalItemsPerPage;
+    this.paginatedFacultiesList = this.facultiesList.slice(startIndex, endIndex);
+    this.modalTotalPages = Math.ceil(this.facultiesList.length / this.modalItemsPerPage);
   }
 }

@@ -100,11 +100,12 @@ export class LoginComponent implements OnInit, OnDestroy {
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
       
-      this.isLoading = true;
       this.loginSuccess = false;
 
       this.authService.login(email, password).pipe(
         switchMap(response => {
+          this.isLoading = true;
+          
           console.log('Login successful, token:', response.token);
           localStorage.setItem('token', response.token);
           
@@ -142,6 +143,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.isLoading = false;
+          this.loginSuccess = false;
           console.error('Login process failed:', error);
           if (error.message === 'No user ID found in token') {
             this.errorMessage = 'Authentication failed. Please try again.';
