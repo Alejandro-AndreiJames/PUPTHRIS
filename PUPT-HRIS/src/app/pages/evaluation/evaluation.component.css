@@ -217,6 +217,7 @@
   background: #f8fafc;
   max-height: 90vh;
   overflow-y: auto;
+  padding-top: 24px !important;
 }
 
 .modal-box::-webkit-scrollbar {
@@ -325,4 +326,59 @@ select:focus {
 
 .warning {
     background-color: #f59e0b;
+}
+
+.close-btn {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #666;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+
+.close-btn:hover {
+    color: #800000;
+}
+
+/* Sticky Header Styles */
+.sticky-header {
+  position: sticky;
+  top: -24px; /* Matches the modal padding */
+  background-color: #800000;
+  color: white;
+  padding: 1rem;
+  margin: -24px -24px 24px -24px;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  z-index: 50;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Update the close button styles */
+.modal-close-btn {
+  color: white;
+  font-size: 2.5rem;  /* Increased from 2xl */
+  font-weight: bold;
+  padding: 0 12px;    /* Added horizontal padding */
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close-btn:hover {
+  color: #f3f4f6;
 }

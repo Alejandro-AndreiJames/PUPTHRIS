@@ -118,11 +118,10 @@
 <!-- Evaluation Modal -->
 <div *ngIf="isEvaluationModalOpen" class="modal modal-open">
   <div class="modal-box max-w-4xl">
-    <!-- Header -->
-    <div class="bg-red-900 text-white p-4 -m-6 mb-6 rounded-t-lg">
-      <h3 class="font-bold text-xl">
-        {{ isEditMode ? 'Edit Faculty Evaluation' : 'Faculty Evaluation Form' }}
-      </h3>
+    <!-- Maroon Header with X button -->
+    <div class="bg-red-900 text-white p-4 -m-6 mb-6 rounded-t-lg flex justify-between items-center sticky-header">
+      <h2 class="text-xl font-bold">Faculty Evaluation Form</h2>
+      <button class="modal-close-btn" (click)="closeEvaluationModal()">×</button>
     </div>
     
     <!-- Faculty Information Card -->
@@ -239,15 +238,19 @@
   </div>
 </div>
 
-<!-- Evaluation History Modal -->
+<!-- View History Modal -->
 <div *ngIf="showEvaluationHistory" class="modal modal-open">
   <div class="modal-box max-w-4xl">
-    <!-- Header -->
-    <div class="bg-red-900 text-white p-4 -m-6 mb-6 rounded-t-lg">
-      <h3 class="font-bold text-xl">
-        Evaluation History for {{ selectedUser?.FirstName }} {{ selectedUser?.Surname }}
-      </h3>
+    <!-- Maroon Header with X button -->
+    <div class="bg-red-900 text-white p-4 -m-6 mb-6 rounded-t-lg flex justify-between items-center sticky-header">
+      <h2 class="text-xl font-bold">Evaluation History</h2>
+      <button class="modal-close-btn" (click)="showEvaluationHistory = false">×</button>
     </div>
+
+    <!-- Add employee name here -->
+    <h3 class="text-xl font-semibold mb-4">
+      Evaluation History of {{ selectedUser?.FirstName }} {{ selectedUser?.MiddleName }} {{ selectedUser?.Surname }}
+    </h3>
 
     <!-- Faculty Info -->
     <div class="bg-gray-50 p-6 rounded-lg mb-6 border border-gray-200">
@@ -315,14 +318,6 @@
           </tbody>
         </table>
       </div>
-    </div>
-
-    <!-- Close button -->
-    <div class="flex justify-end space-x-4 mt-6 pt-4 border-t border-gray-200">
-      <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors" 
-              (click)="showEvaluationHistory = false">
-        Close
-      </button>
     </div>
   </div>
 </div>
