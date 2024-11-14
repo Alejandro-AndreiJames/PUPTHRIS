@@ -308,3 +308,14 @@
   .modal-content {
     animation: slideDown 0.2s ease-out;
   }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .btn-save:disabled {
+    background-color: #d1d5db;
+    border-color: #d1d5db;
+  }
