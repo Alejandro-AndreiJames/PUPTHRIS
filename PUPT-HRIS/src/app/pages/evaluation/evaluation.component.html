@@ -70,10 +70,12 @@
           <td style="width: 15%">{{ user.EmploymentType }}</td>
           <td style="width: 20%">
             <div class="flex gap-2">
-              <button class="btn btn-primary btn-sm" (click)="openEvaluationModal(user)">
+              <button class="px-3 py-1 bg-red-900 text-white rounded hover:bg-red-800 transition-colors" 
+                      (click)="openEvaluationModal(user)">
                 Evaluate
               </button>
-              <button class="btn btn-dark btn-sm" (click)="viewEvaluationHistory(user)">
+              <button class="px-3 py-1 bg-gray-800 text-white rounded hover:bg-gray-700 transition-colors" 
+                      (click)="viewEvaluationHistory(user)">
                 View History
               </button>
             </div>
@@ -116,93 +118,119 @@
 <!-- Evaluation Modal -->
 <div *ngIf="isEvaluationModalOpen" class="modal modal-open">
   <div class="modal-box max-w-4xl">
-    <h3 class="font-bold text-lg mb-4">
-      {{ isEditMode ? 'Edit Faculty Evaluation' : 'Faculty Evaluation Form' }}
-    </h3>
+    <!-- Header -->
+    <div class="bg-red-900 text-white p-4 -m-6 mb-6 rounded-t-lg">
+      <h3 class="font-bold text-xl">
+        {{ isEditMode ? 'Edit Faculty Evaluation' : 'Faculty Evaluation Form' }}
+      </h3>
+    </div>
     
-    <!-- Faculty Information -->
-    <div class="bg-gray-100 p-4 rounded-lg mb-6">
-      <p><strong>Faculty Name:</strong> {{ selectedUser?.FirstName }} {{ selectedUser?.Surname }}</p>
-      <p><strong>Department:</strong> {{ selectedUser?.Department?.DepartmentName }}</p>
-      <p><strong>Employment Type:</strong> {{ selectedUser?.EmploymentType }}</p>
+    <!-- Faculty Information Card -->
+    <div class="bg-gray-50 p-6 rounded-lg mb-6 border border-gray-200">
+      <div class="grid grid-cols-3 gap-4">
+        <div>
+          <label class="text-sm text-gray-600">Faculty Name:</label>
+          <p class="font-semibold">{{ selectedUser?.FirstName }} {{ selectedUser?.Surname }}</p>
+        </div>
+        <div>
+          <label class="text-sm text-gray-600">Department:</label>
+          <p class="font-semibold">{{ selectedUser?.Department?.DepartmentName }}</p>
+        </div>
+        <div>
+          <label class="text-sm text-gray-600">Employment Type:</label>
+          <p class="font-semibold">{{ selectedUser?.EmploymentType }}</p>
+        </div>
+      </div>
     </div>
 
     <form (ngSubmit)="submitEvaluation()" #evaluationForm="ngForm">
-      <!-- Academic Year and Semester -->
-      <div class="grid grid-cols-2 gap-4 mb-6">
-        <div>
-          <label class="block text-sm font-medium mb-2">Academic Year</label>
-          <select [(ngModel)]="currentAcademicYear" 
-                  name="academicYear"
-                  required
-                  class="select select-bordered w-full">
-            <option *ngFor="let year of academicYears" [value]="year">
-              {{ year }}
-            </option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-2">Semester</label>
-          <select [(ngModel)]="currentSemester" 
-                  name="semester"
-                  required
-                  class="select select-bordered w-full">
-            <option value="First Semester">First Semester</option>
-            <option value="Second Semester">Second Semester</option>
-          </select>
+      <!-- Academic Details Section -->
+      <div class="bg-white rounded-lg p-6 mb-6 border border-gray-200">
+        <h4 class="font-semibold text-lg mb-4 text-red-900">Academic Information</h4>
+        <div class="grid grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Academic Year</label>
+            <select [(ngModel)]="currentAcademicYear" 
+                    name="academicYear"
+                    required
+                    class="w-full p-2 border border-gray-300 rounded-md focus:border-red-900 focus:ring focus:ring-red-200">
+              <option *ngFor="let year of academicYears" [value]="year">
+                {{ year }}
+              </option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Semester</label>
+            <select [(ngModel)]="currentSemester" 
+                    name="semester"
+                    required
+                    class="w-full p-2 border border-gray-300 rounded-md focus:border-red-900 focus:ring focus:ring-red-200">
+              <option value="First Semester">First Semester</option>
+              <option value="Second Semester">Second Semester</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      <!-- Respondents Information -->
-      <div class="grid grid-cols-2 gap-4 mb-6">
-        <div>
-          <label class="block text-sm font-medium mb-2">Number of Respondents</label>
-          <input type="number" 
-                 [(ngModel)]="numberOfRespondents" 
-                 name="numberOfRespondents"
-                 required
-                 class="input input-bordered w-full">
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-2">Course, Year and Section</label>
-          <input type="text" 
-                 [(ngModel)]="courseYearSection" 
-                 name="courseYearSection"
-                 required
-                 class="input input-bordered w-full">
+      <!-- Respondents Section -->
+      <div class="bg-white rounded-lg p-6 mb-6 border border-gray-200">
+        <h4 class="font-semibold text-lg mb-4 text-red-900">Class Information</h4>
+        <div class="grid grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Number of Respondents</label>
+            <input type="number" 
+                   [(ngModel)]="numberOfRespondents" 
+                   name="numberOfRespondents"
+                   required
+                   class="w-full p-2 border border-gray-300 rounded-md focus:border-red-900 focus:ring focus:ring-red-200">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Course, Year and Section</label>
+            <input type="text" 
+                   [(ngModel)]="courseYearSection" 
+                   name="courseYearSection"
+                   required
+                   class="w-full p-2 border border-gray-300 rounded-md focus:border-red-900 focus:ring focus:ring-red-200">
+          </div>
         </div>
       </div>
 
       <!-- Evaluation Categories -->
-      <div class="space-y-6">
-        <div *ngFor="let category of evaluationCategories" class="bg-gray-50 p-4 rounded-lg">
-          <h4 class="font-medium mb-2">{{ category.name }}</h4>
-          <p class="text-sm text-gray-600 mb-4">{{ category.description }}</p>
-          <div class="flex items-center space-x-4">
-            <input type="text" 
-                   [(ngModel)]="ratings[category.id]"
-                   (input)="validateScore($event, category.id)"
-                   [name]="category.id"
-                   required
-                   class="input input-bordered w-32"
-            >
-            <span class="text-sm" *ngIf="ratings[category.id]">
-              {{ calculateRatingDescription(ratings[category.id]).description }}
-              ({{ ratings[category.id] }})
-            </span>
+      <div class="bg-white rounded-lg p-6 border border-gray-200">
+        <h4 class="font-semibold text-lg mb-4 text-red-900">Evaluation Criteria</h4>
+        <div class="space-y-6">
+          <div *ngFor="let category of evaluationCategories" 
+               class="p-4 rounded-lg border border-gray-200 hover:border-red-900 transition-colors">
+            <div class="flex justify-between items-start mb-3">
+              <div>
+                <h5 class="font-medium text-gray-900">{{ category.name }}</h5>
+                <p class="text-sm text-gray-600">{{ category.description }}</p>
+              </div>
+              <div class="flex items-center space-x-4 min-w-[200px]">
+                <input type="text" 
+                       [(ngModel)]="ratings[category.id]"
+                       (input)="validateScore($event, category.id)"
+                       [name]="category.id"
+                       required
+                       class="w-20 p-2 border border-gray-300 rounded-md text-center focus:border-red-900 focus:ring focus:ring-red-200">
+                <span class="text-sm font-medium" *ngIf="ratings[category.id]">
+                  {{ calculateRatingDescription(ratings[category.id]).description }}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Action Buttons -->
-      <div class="modal-action mt-6">
+      <div class="flex justify-end space-x-4 mt-6 pt-4 border-t border-gray-200">
         <button type="button" 
-                class="btn btn-ghost" 
+                class="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
                 (click)="closeEvaluationModal()">
           Cancel
         </button>
         <button type="submit" 
-                class="btn btn-primary"
+                class="px-4 py-2 bg-red-900 text-white rounded-md hover:bg-red-800 transition-colors disabled:bg-gray-300"
                 [disabled]="!evaluationForm.form.valid">
           {{ isEditMode ? 'Update' : 'Submit' }} Evaluation
         </button>
@@ -214,56 +242,87 @@
 <!-- Evaluation History Modal -->
 <div *ngIf="showEvaluationHistory" class="modal modal-open">
   <div class="modal-box max-w-4xl">
-    <h3 class="font-bold text-lg mb-4">
-      Evaluation History for {{ selectedUser?.FirstName }} {{ selectedUser?.Surname }}
-    </h3>
+    <!-- Header -->
+    <div class="bg-red-900 text-white p-4 -m-6 mb-6 rounded-t-lg">
+      <h3 class="font-bold text-xl">
+        Evaluation History for {{ selectedUser?.FirstName }} {{ selectedUser?.Surname }}
+      </h3>
+    </div>
+
+    <!-- Faculty Info -->
+    <div class="bg-gray-50 p-6 rounded-lg mb-6 border border-gray-200">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm text-gray-600">Department:</label>
+          <p class="font-semibold">{{ selectedUser?.Department?.DepartmentName }}</p>
+        </div>
+        <div>
+          <label class="text-sm text-gray-600">Employment Type:</label>
+          <p class="font-semibold">{{ selectedUser?.EmploymentType }}</p>
+        </div>
+      </div>
+    </div>
 
     <!-- Chart Container -->
-    <div class="chart-container mb-6">
-      <canvas #evaluationChart></canvas>
+    <div class="bg-white p-6 rounded-lg mb-6 border border-gray-200">
+      <h4 class="font-semibold text-lg mb-4 text-red-900">Performance Trend</h4>
+      <div class="chart-container" style="height: 300px;">
+        <canvas #evaluationChart></canvas>
+      </div>
     </div>
 
     <!-- History Table -->
-    <div class="overflow-x-auto">
-      <table class="table w-full">
-        <thead>
-          <tr>
-            <th>Academic Year</th>
-            <th>Semester</th>
-            <th>Total Score</th>
-            <th>Rating</th>
-            <th>Course Section</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let eval of evaluationHistory">
-            <td>{{ eval.AcademicYear }}</td>
-            <td>{{ eval.Semester }}</td>
-            <td>{{ formatScore(eval.TotalScore) }}</td>
-            <td>{{ eval.QualitativeRating }}</td>
-            <td>{{ eval.CourseSection }}</td>
-            <td>
-              <div class="flex gap-2">
-                <button class="btn btn-info btn-sm" 
-                        (click)="editEvaluation(eval)">
-                  Edit
-                </button>
-                <button *ngIf="canDeleteEvaluation()" 
-                        class="btn btn-error btn-sm" 
-                        (click)="confirmDeleteEvaluation(eval.EvaluationID)">
-                  Delete
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="bg-white p-6 rounded-lg border border-gray-200">
+      <h4 class="font-semibold text-lg mb-4 text-red-900">Evaluation Records</h4>
+      <div class="overflow-x-auto">
+        <table class="table w-full">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="px-4 py-3 text-left">Academic Year</th>
+              <th class="px-4 py-3 text-left">Semester</th>
+              <th class="px-4 py-3 text-left">Total Score</th>
+              <th class="px-4 py-3 text-left">Rating</th>
+              <th class="px-4 py-3 text-left">Course Section</th>
+              <th class="px-4 py-3 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let eval of evaluationHistory" class="border-b border-gray-200">
+              <td class="px-4 py-3">{{ eval.AcademicYear }}</td>
+              <td class="px-4 py-3">{{ eval.Semester }}</td>
+              <td class="px-4 py-3">{{ formatScore(eval.TotalScore) }}</td>
+              <td class="px-4 py-3">{{ eval.QualitativeRating }}</td>
+              <td class="px-4 py-3">{{ eval.CourseSection }}</td>
+              <td class="px-4 py-3">
+                <div class="flex gap-2">
+                  <button class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors" 
+                          (click)="editEvaluation(eval)">
+                    Edit
+                  </button>
+                  <button *ngIf="canDeleteEvaluation()" 
+                          class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors" 
+                          (click)="confirmDeleteEvaluation(eval.EvaluationID)">
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="!evaluationHistory?.length">
+              <td colspan="6" class="px-4 py-3 text-center text-gray-500">
+                No evaluation history found
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Close button -->
-    <div class="modal-action">
-      <button class="btn" (click)="showEvaluationHistory = false">Close</button>
+    <div class="flex justify-end space-x-4 mt-6 pt-4 border-t border-gray-200">
+      <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors" 
+              (click)="showEvaluationHistory = false">
+        Close
+      </button>
     </div>
   </div>
 </div>

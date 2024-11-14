@@ -211,3 +211,86 @@
   color: #9ca3af;
   cursor: not-allowed;
 }
+
+/* Modal Styles */
+.modal-box {
+  background: #f8fafc;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-box::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-box::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.modal-box::-webkit-scrollbar-thumb {
+  background: #800000;
+  border-radius: 4px;
+}
+
+.modal-box::-webkit-scrollbar-thumb:hover {
+  background: #600000;
+}
+
+/* Form Controls */
+input[type="text"],
+input[type="number"],
+select {
+  transition: all 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+  border-color: #800000;
+  box-shadow: 0 0 0 2px rgba(128, 0, 0, 0.1);
+}
+
+/* Category Cards */
+.evaluation-category {
+  transition: all 0.2s ease;
+}
+
+.evaluation-category:hover {
+  border-color: #800000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Rating Input Styles */
+.rating-input {
+  width: 80px;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Button Styles */
+.btn-submit {
+  background-color: #800000;
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background-color: #600000;
+  transform: translateY(-1px);
+}
+
+.btn-submit:disabled {
+  background-color: #d1d5db;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel:hover {
+  background-color: #e5e7eb;
+}

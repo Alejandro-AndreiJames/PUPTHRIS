@@ -335,9 +335,11 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   }
 
   viewEvaluationHistory(user: User): void {
+    console.log('View history clicked for user:', user);
     this.selectedUser = user;
     this.evaluationService.getFacultyEvaluationHistory(user.UserID).subscribe({
       next: (history) => {
+        console.log('Received history:', history);
         this.evaluationHistory = history;
         this.showEvaluationHistory = true;
         // Wait for the modal to be shown before creating the chart
@@ -345,17 +347,29 @@ export class EvaluationComponent implements OnInit, OnDestroy {
           this.createOrUpdateChart();
         }, 100);
       },
-      error: (error) => console.error('Error fetching evaluation history:', error)
+      error: (error) => {
+        console.error('Error fetching evaluation history:', error);
+        // Optionally show an error message to the user
+        alert('Failed to load evaluation history. Please try again.');
+      }
     });
   }
 
   private createOrUpdateChart(): void {
+    if (!this.chartCanvas) {
+      console.error('Chart canvas not found');
+      return;
+    }
+
     if (this.chart) {
       this.chart.destroy();
     }
 
-    const ctx = this.chartCanvas?.nativeElement?.getContext('2d');
-    if (!ctx) return;
+    const ctx = this.chartCanvas.nativeElement.getContext('2d');
+    if (!ctx) {
+      console.error('Could not get chart context');
+      return;
+    }
 
     this.chart = new Chart(ctx, {
       type: 'line',
@@ -364,9 +378,10 @@ export class EvaluationComponent implements OnInit, OnDestroy {
         datasets: [{
           label: 'Total Score',
           data: this.evaluationHistory.map(d => d.TotalScore),
-          borderColor: 'rgb(75, 192, 192)',
+          borderColor: '#800000',
+          backgroundColor: 'rgba(128, 0, 0, 0.1)',
           tension: 0.1,
-          fill: false
+          fill: true
         }]
       },
       options: {
@@ -375,7 +390,10 @@ export class EvaluationComponent implements OnInit, OnDestroy {
         scales: {
           y: {
             beginAtZero: true,
-            max: 100
+            max: 100,
+            ticks: {
+              stepSize: 20
+            }
           }
         },
         plugins: {
@@ -384,7 +402,8 @@ export class EvaluationComponent implements OnInit, OnDestroy {
           },
           title: {
             display: true,
-            text: 'Evaluation Scores Over Time'
+            text: 'Evaluation Scores Over Time',
+            color: '#800000'
           }
         }
       }
