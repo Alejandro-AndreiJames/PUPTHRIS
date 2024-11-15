@@ -73,6 +73,18 @@ exports.getUsers = async (req, res) => {
     }
 
     const users = await User.findAll({
+      attributes: [
+        'UserID',
+        'Fcode',
+        'FirstName',
+        'MiddleName',
+        'Surname',
+        'NameExtension',
+        'Email',
+        'EmploymentType',
+        'isActive',
+        'CollegeCampusID'
+      ],
       where: whereClause,
       include: [
         {

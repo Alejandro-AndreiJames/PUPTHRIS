@@ -15,6 +15,7 @@ export class UserService {
 
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
+    console.log('Token for headers:', token ? 'Present' : 'Not found');
     return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
@@ -38,9 +39,10 @@ export class UserService {
 
 
   getCurrentUserCampus(userId: number): Observable<any> {
+    console.log('Fetching current campus for user:', userId);
     return this.http.get<any>(`${this.apiUrl}/${userId}/current-campus`, { headers: this.getHeaders() })
       .pipe(
-        tap(),
+        tap(campus => console.log('Current campus fetched:', campus)),
         catchError(error => {
           console.error('Error fetching current campus:', error);
           throw error;
