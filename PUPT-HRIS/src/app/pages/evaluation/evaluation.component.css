@@ -257,11 +257,6 @@ select:focus {
   transition: all 0.2s ease;
 }
 
-.evaluation-category:hover {
-  border-color: #800000;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
 /* Rating Input Styles */
 .rating-input {
   width: 80px;
@@ -381,4 +376,20 @@ select:focus {
 
 .modal-close-btn:hover {
   color: #f3f4f6;
+}
+
+/* Add styles for input hover within the evaluation criteria */
+.input-bordered {
+  transition: all 0.2s ease;
+  border: 1px solid #e5e7eb;
+}
+
+.input-bordered:hover {
+  border-color: #800000;
+}
+
+.input-bordered:focus {
+  border-color: #800000;
+  box-shadow: 0 0 0 2px rgba(128, 0, 0, 0.1);
+  outline: none;
 }
