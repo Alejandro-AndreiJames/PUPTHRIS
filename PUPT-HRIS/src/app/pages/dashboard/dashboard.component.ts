@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ChangeDetectorRef, ViewChild, OnInit, OnDestroy } from '@angular/core';
+import { Component, AfterViewInit, ChangeDetectorRef, ViewChild, OnInit, OnDestroy, ViewChildren, QueryList } from '@angular/core';
 import { ChartOptions, ChartType, ChartData } from 'chart.js';
 import { NgChartsModule, BaseChartDirective } from 'ng2-charts';
 import { DashboardService } from '../../services/dashboard.service';
@@ -59,9 +59,12 @@ interface DashboardSection {
   standalone: true,
   imports: [NgChartsModule, CommonModule, NgxGaugeModule, FormsModule, DragDropModule]
 })
-export class DashboardComponent implements OnInit, OnDestroy {
+export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
-  @ViewChild(BaseChartDirective) chart: BaseChartDirective | undefined;
+  @ViewChild(BaseChartDirective) chart!: BaseChartDirective | undefined;
+
+  // Add ViewChildren to track all charts
+  @ViewChildren(BaseChartDirective) charts!: QueryList<BaseChartDirective>;
 
   public totalFemale: number = 0;
   public totalMale: number = 0;
@@ -369,12 +372,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    setTimeout(() => {
-      if (this.chart && this.chart.chart) {
-        this.chart.chart.update();
+    // Initial render of charts
+    this.renderCharts();
+    
+    // Watch for changes in section visibility and order
+    this.dashboardSections.forEach(section => {
+      if (section.visible) {
+        setTimeout(() => {
+          this.renderCharts();
+        }, 250); // Increased timeout to ensure DOM is ready
       }
-      this.cdr.detectChanges();
-    }, 0);
+    });
+  }
+
+  private renderCharts() {
+    if (this.charts) {
+      this.charts.forEach(chart => {
+        if (chart && chart.chart) {
+          chart.chart.update();
+        }
+      });
+    }
   }
 
   loadAdminDashboardData(campusId: number): void {
@@ -822,11 +840,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   toggleSectionVisibility(section: DashboardSection): void {
     section.visible = !section.visible;
     this.saveDashboardPreferences();
+    
+    // Re-render charts after visibility change
     setTimeout(() => {
-      if (this.chart) {
-        this.chart.render();
-      }
-    }, 100);
+      this.renderCharts();
+    }, 250);
   }
 
   updateSectionOrder(section: DashboardSection, newOrder: SectionOrder): void {
@@ -860,14 +878,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
       try {
         this.dashboardSections = JSON.parse(saved);
         this.dashboardSections.sort((a, b) => a.order - b.order);
+        
+        // Add timeout to ensure charts are rendered after layout
         setTimeout(() => {
-          if (this.chart) {
-            this.chart.render();
-          }
-        }, 100);
+          this.renderCharts();
+        }, 250);
       } catch (error) {
         console.error('Error parsing dashboard preferences:', error);
-        // Keep default settings if there's an error
       }
     }
   }
@@ -879,11 +896,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   onDragDrop(event: CdkDragDrop<DashboardSection[]>) {
     moveItemInArray(this.dashboardSections, event.previousIndex, event.currentIndex);
     
-    // Update order values after drag
     this.dashboardSections.forEach((section, index) => {
       section.order = index;
     });
     
     this.saveDashboardPreferences();
+    
+    // Re-render charts after order change
+    setTimeout(() => {
+      this.renderCharts();
+    }, 250);
   }
 }
