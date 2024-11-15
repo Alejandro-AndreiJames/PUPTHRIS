@@ -15,6 +15,7 @@ import { DashboardStateService } from '../../services/dashboard-state.service';
 import { AcademicRank, AcademicRankCount } from '../../model/academicRank.model';
 import { EvaluationService, EvaluationRatingCount } from '../../services/evaluation.service';
 import { FormsModule } from '@angular/forms';
+import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 
 type NgxGaugeType = 'full' | 'semi' | 'arch';
 
@@ -37,7 +38,13 @@ const ALL_ACADEMIC_RANKS = [
   'Professor I', 'Professor II', 'Professor III', 'Professor IV', 'Professor V', 'Professor VI'
 ];
 
-// Add these interfaces and properties
+// Define the enum at the top level
+export enum SectionOrder {
+  First = 0,
+  Second = 1,
+  Third = 2
+}
+
 interface DashboardSection {
   id: string;
   title: string;
@@ -50,7 +57,7 @@ interface DashboardSection {
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
   standalone: true,
-  imports: [NgChartsModule, CommonModule, NgxGaugeModule, FormsModule]
+  imports: [NgChartsModule, CommonModule, NgxGaugeModule, FormsModule, DragDropModule]
 })
 export class DashboardComponent implements OnInit, OnDestroy {
 
@@ -277,13 +284,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   modalTotalPages: number = 1;
   paginatedFacultiesList: any[] = [];
 
-  // Add these properties
-  showDashboardSettings = false;
-  dashboardSections: DashboardSection[] = [
+  // Make enum available to template
+  SectionOrder = SectionOrder;
+
+  public dashboardSections: DashboardSection[] = [
     { id: 'faculty-evaluation', title: 'Faculty Evaluation', visible: true, order: 0 },
     { id: 'charts', title: 'Charts', visible: true, order: 1 },
     { id: 'academic-ranks', title: 'Academic Ranks', visible: true, order: 2 }
   ];
+  public showDashboardSettings = false;
 
   constructor(
     private dashboardService: DashboardService,
@@ -812,22 +821,69 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   toggleSectionVisibility(section: DashboardSection): void {
     section.visible = !section.visible;
+    this.saveDashboardPreferences();
+    setTimeout(() => {
+      if (this.chart) {
+        this.chart.render();
+      }
+    }, 100);
   }
 
-  updateSectionOrder(section: DashboardSection, newOrder: number): void {
-    section.order = newOrder;
-    this.dashboardSections.sort((a, b) => a.order - b.order);
+  updateSectionOrder(section: DashboardSection, newOrder: SectionOrder): void {
+    const sectionAtNewPosition = this.dashboardSections.find(s => s.order === newOrder);
+    
+    if (sectionAtNewPosition && section !== sectionAtNewPosition) {
+      const oldOrder = section.order;
+      sectionAtNewPosition.order = oldOrder;
+      section.order = newOrder;
+      
+      this.dashboardSections.sort((a, b) => a.order - b.order);
+      this.saveDashboardPreferences();
+    }
+  }
+
+  getAvailableOrders(currentSection: DashboardSection): number[] {
+    const totalSections = this.dashboardSections.length;
+    return Array.from({ length: totalSections }, (_, i) => i);
   }
 
   private saveDashboardPreferences(): void {
-    localStorage.setItem('dashboardPreferences', JSON.stringify(this.dashboardSections));
+    const storageKey = `dashboardPreferences_${this.userID}`;
+    localStorage.setItem(storageKey, JSON.stringify(this.dashboardSections));
   }
 
   private loadDashboardPreferences(): void {
-    const saved = localStorage.getItem('dashboardPreferences');
+    const storageKey = `dashboardPreferences_${this.userID}`;
+    const saved = localStorage.getItem(storageKey);
+    
     if (saved) {
-      this.dashboardSections = JSON.parse(saved);
-      this.dashboardSections.sort((a, b) => a.order - b.order);
+      try {
+        this.dashboardSections = JSON.parse(saved);
+        this.dashboardSections.sort((a, b) => a.order - b.order);
+        setTimeout(() => {
+          if (this.chart) {
+            this.chart.render();
+          }
+        }, 100);
+      } catch (error) {
+        console.error('Error parsing dashboard preferences:', error);
+        // Keep default settings if there's an error
+      }
     }
+  }
+
+  getOrderLabel(order: SectionOrder): string {
+    return SectionOrder[order];
+  }
+
+  onDragDrop(event: CdkDragDrop<DashboardSection[]>) {
+    moveItemInArray(this.dashboardSections, event.previousIndex, event.currentIndex);
+    
+    // Update order values after drag
+    this.dashboardSections.forEach((section, index) => {
+      section.order = index;
+    });
+    
+    this.saveDashboardPreferences();
   }
 }
