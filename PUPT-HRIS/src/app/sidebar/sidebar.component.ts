@@ -26,9 +26,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
   isSuperAdmin: boolean = false;
   isMaintenanceDropdownOpen: boolean = false;
   isMaintenanceActive: boolean = false;
-  showLogoutModal: boolean = false;
-  isLoggingOut: boolean = false;
-  showSuccessMessage: boolean = false;
 
   constructor(
     private router: Router,
@@ -210,37 +207,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   logout() {
-    this.showLogoutModal = true;
-  }
-
-  cancelLogout() {
-    this.showLogoutModal = false;
-  }
-
-  async confirmLogout() {
-    this.isLoggingOut = true;
-    
-    try {
-      // Simulate logout process
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      localStorage.removeItem('token');
-      this.showLogoutModal = false;
-      this.isLoggingOut = false;
-      
-      // Show success modal
-      this.showSuccessMessage = true;
-      
-      // Navigate after showing message
-      setTimeout(() => {
-        this.showSuccessMessage = false;
-        this.router.navigate(['/login']);
-      }, 1500);
-      
-    } catch (error) {
-      this.isLoggingOut = false;
-      console.error('Logout error:', error);
-    }
+    localStorage.removeItem('token');
+    this.router.navigate(['/login']);
   }
 
   get canManageCoordinators(): boolean {

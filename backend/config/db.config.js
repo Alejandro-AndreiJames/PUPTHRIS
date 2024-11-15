@@ -7,21 +7,57 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, proces
   host: process.env.DB_HOST,
   dialect: 'mysql',
   pool: {
-    max: 10,
-    min: 0,          
-    acquire: 60000,   
-    idle: 10000,     
+    max: 20,
+    min: 5,
+    acquire: 60000,
+    idle: 30000
   },
   dialectOptions: {
-    connectTimeout: 60000,
-    // Add query timeout
-    options: {
-      requestTimeout: 30000
-    }
+    connectTimeout: 60000
   },
   retry: {
-    max: 3 
-  }
+    max: 5,
+    timeout: 30000
+  },
+  logging: false
 });
 
-module.exports = sequelize;
+// Enhanced connection management
+let isConnected = false;
+
+const checkConnection = async () => {
+  try {
+    await sequelize.authenticate();
+    isConnected = true;
+    return true;
+  } catch (error) {
+    console.error('Connection check failed:', error);
+    isConnected = false;
+    return false;
+  }
+};
+
+// Initial connection
+const initializeConnection = async () => {
+  try {
+    await sequelize.authenticate();
+    isConnected = true;
+    console.log('Database connection established successfully.');
+  } catch (error) {
+    console.error('Unable to connect to the database:', error);
+    isConnected = false;
+    process.exit(1);
+  }
+};
+
+// Periodic connection check
+setInterval(checkConnection, 30000);
+
+// Initialize connection
+initializeConnection();
+
+module.exports = {
+  sequelize,
+  checkConnection,
+  isConnected
+};

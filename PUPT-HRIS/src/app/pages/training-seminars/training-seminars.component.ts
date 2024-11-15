@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { TrainingSeminar } from '../../model/training-seminars.model';
 import { TrainingSeminarsService } from '../../services/training-seminars.service';
 import { AuthService } from '../../services/auth.service';
@@ -40,12 +40,16 @@ export class TrainingSeminarsComponent implements OnInit {
   showDeletePrompt: boolean = false;
   pendingDeleteId: number | null = null;
 
+  today: string;
+
   constructor(
     private fb: FormBuilder,
     private trainingSeminarsService: TrainingSeminarsService,
     private authService: AuthService,
     private excelImportService: ExcelImportService
   ) {
+    this.today = new Date().toISOString().split('T')[0];
+
     const token = this.authService.getToken();
     if (token) {
       const decoded: any = jwtDecode(token);
@@ -55,20 +59,27 @@ export class TrainingSeminarsComponent implements OnInit {
     }
 
     this.trainingForm = this.fb.group({
-      Title: [''],
-      Classification: [''],
+      Title: ['', Validators.required],
+      Classification: ['', Validators.required],
       Nature: [''],
       Budget: [''],
       SourceOfFund: [''],
       Organizer: [''],
       Level: [''],
       Venue: [''],
-      DateFrom: [''],
-      DateTo: [''],
-      NumberOfHours: [''],
+      DateFrom: ['', [Validators.required, this.dateValidator()]],
+      DateTo: ['', [Validators.required, this.dateValidator(), this.dateRangeValidator()]],
+      NumberOfHours: ['', [Validators.min(1)]],
       SupportingDocuments: [''],
       Proof: [''],
       ProofType: ['file']
+    });
+
+    this.trainingForm.get('DateFrom')?.valueChanges.subscribe(value => {
+      const toControl = this.trainingForm.get('DateTo');
+      if (toControl) {
+        toControl.updateValueAndValidity();
+      }
     });
   }
 
@@ -135,7 +146,13 @@ export class TrainingSeminarsComponent implements OnInit {
   editTraining(id: number): void {
     const training = this.trainingData.find(t => t.TrainingID === id);
     if (training) {
-      this.trainingForm.patchValue(training);
+      const formData = {
+        ...training,
+        DateFrom: training.DateFrom ? new Date(training.DateFrom).toISOString().split('T')[0] : '',
+        DateTo: training.DateTo ? new Date(training.DateTo).toISOString().split('T')[0] : ''
+      };
+      
+      this.trainingForm.patchValue(formData);
       this.currentTrainingId = id;
       this.isEditing = true;
     }
@@ -143,7 +160,20 @@ export class TrainingSeminarsComponent implements OnInit {
 
   onSubmit(): void {
     if (this.trainingForm.invalid) {
-      this.showToastNotification('Please fill in all required fields.', 'warning');
+      if (this.trainingForm.get('DateFrom')?.errors?.['futureDate'] || 
+          this.trainingForm.get('DateTo')?.errors?.['futureDate']) {
+        this.showToastNotification('Dates cannot be in the future.', 'warning');
+        return;
+      }
+      if (this.trainingForm.get('DateTo')?.errors?.['invalidDateRange']) {
+        this.showToastNotification('End date cannot be before start date.', 'warning');
+        return;
+      }
+      if (this.trainingForm.get('NumberOfHours')?.errors?.['min']) {
+        this.showToastNotification('Number of hours must be greater than 0.', 'warning');
+        return;
+      }
+      this.showToastNotification('Please fill in all required fields correctly.', 'warning');
       return;
     }
 
@@ -304,5 +334,43 @@ export class TrainingSeminarsComponent implements OnInit {
 
   formatValue(value: any): string {
     return value === null || value === 'null' || value === '' ? '' : value;
+  }
+
+  private dateValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) return null;
+
+      const selectedDate = new Date(control.value);
+      const today = new Date();
+      
+      today.setHours(0, 0, 0, 0);
+      selectedDate.setHours(0, 0, 0, 0);
+
+      if (selectedDate > today) {
+        return { futureDate: true };
+      }
+      return null;
+    };
+  }
+
+  private dateRangeValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) return null;
+
+      const toDate = new Date(control.value);
+      const fromDate = this.trainingForm?.get('DateFrom')?.value;
+      
+      if (!fromDate) return null;
+
+      const fromDateTime = new Date(fromDate);
+      
+      toDate.setHours(0, 0, 0, 0);
+      fromDateTime.setHours(0, 0, 0, 0);
+
+      if (toDate < fromDateTime) {
+        return { invalidDateRange: true };
+      }
+      return null;
+    };
   }
 }

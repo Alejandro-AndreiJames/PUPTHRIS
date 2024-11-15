@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ChangeDetectorRef, ViewChild, OnInit, OnDestroy } from '@angular/core';
+import { Component, AfterViewInit, ChangeDetectorRef, ViewChild, OnInit, OnDestroy, ViewChildren, QueryList } from '@angular/core';
 import { ChartOptions, ChartType, ChartData } from 'chart.js';
 import { NgChartsModule, BaseChartDirective } from 'ng2-charts';
 import { DashboardService } from '../../services/dashboard.service';
@@ -15,6 +15,7 @@ import { DashboardStateService } from '../../services/dashboard-state.service';
 import { AcademicRank, AcademicRankCount } from '../../model/academicRank.model';
 import { EvaluationService, EvaluationRatingCount } from '../../services/evaluation.service';
 import { FormsModule } from '@angular/forms';
+import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 
 type NgxGaugeType = 'full' | 'semi' | 'arch';
 
@@ -37,7 +38,13 @@ const ALL_ACADEMIC_RANKS = [
   'Professor I', 'Professor II', 'Professor III', 'Professor IV', 'Professor V', 'Professor VI'
 ];
 
-// Add these interfaces and properties
+// Define the enum at the top level
+export enum SectionOrder {
+  First = 0,
+  Second = 1,
+  Third = 2
+}
+
 interface DashboardSection {
   id: string;
   title: string;
@@ -50,11 +57,14 @@ interface DashboardSection {
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
   standalone: true,
-  imports: [NgChartsModule, CommonModule, NgxGaugeModule, FormsModule]
+  imports: [NgChartsModule, CommonModule, NgxGaugeModule, FormsModule, DragDropModule]
 })
-export class DashboardComponent implements OnInit, OnDestroy {
+export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
-  @ViewChild(BaseChartDirective) chart: BaseChartDirective | undefined;
+  @ViewChild(BaseChartDirective) chart!: BaseChartDirective | undefined;
+
+  // Add ViewChildren to track all charts
+  @ViewChildren(BaseChartDirective) charts!: QueryList<BaseChartDirective>;
 
   public totalFemale: number = 0;
   public totalMale: number = 0;
@@ -277,13 +287,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   modalTotalPages: number = 1;
   paginatedFacultiesList: any[] = [];
 
-  // Add these properties
-  showDashboardSettings = false;
-  dashboardSections: DashboardSection[] = [
+  // Make enum available to template
+  SectionOrder = SectionOrder;
+
+  public dashboardSections: DashboardSection[] = [
     { id: 'faculty-evaluation', title: 'Faculty Evaluation', visible: true, order: 0 },
     { id: 'charts', title: 'Charts', visible: true, order: 1 },
     { id: 'academic-ranks', title: 'Academic Ranks', visible: true, order: 2 }
   ];
+  public showDashboardSettings = false;
 
   constructor(
     private dashboardService: DashboardService,
@@ -315,16 +327,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Subscribe to campus changes and load data accordingly
     this.campusSubscription = this.campusContextService.getCampusId().subscribe(
       campusId => {
-        console.log('Dashboard - Received campus ID:', campusId);
         if (campusId !== null) {
           if (this.isAdminView && (this.userRole === 'admin' || this.userRole === 'superadmin')) {
-            console.log('Dashboard - Loading admin data for campus:', campusId);
             this.loadAdminDashboardData(campusId);
           } else {
             this.loadUserDashboardData();
           }
-        } else {
-          console.warn('Dashboard - No campus ID available');
         }
       },
       error => console.error('Dashboard - Error getting campus ID:', error)
@@ -360,18 +368,31 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    setTimeout(() => {
-      if (this.chart && this.chart.chart) {
-        this.chart.chart.update();
+    // Initial render of charts
+    this.renderCharts();
+    
+    // Watch for changes in section visibility and order
+    this.dashboardSections.forEach(section => {
+      if (section.visible) {
+        setTimeout(() => {
+          this.renderCharts();
+        }, 250); // Increased timeout to ensure DOM is ready
       }
-      this.cdr.detectChanges();
-    }, 0);
+    });
+  }
+
+  private renderCharts() {
+    if (this.charts) {
+      this.charts.forEach(chart => {
+        if (chart && chart.chart) {
+          chart.chart.update();
+        }
+      });
+    }
   }
 
   loadAdminDashboardData(campusId: number): void {
     this.dashboardService.getDashboardData(campusId).subscribe(data => {
-      console.log('Dashboard Data:', data);
-  
       this.totalFemale = data.totalFemale;
       this.totalMale = data.totalMale;
       this.partTime = data.partTime;
@@ -387,7 +408,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
           Department: dept.DepartmentName,
           count: dept.count,
         }));
-        console.log('Departments Data:', departments);
   
         this.pieChartLabels = departments.map(dept => dept.Department);
   
@@ -408,8 +428,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   
         // Process academic rank data
         if (data.academicRanks && Array.isArray(data.academicRanks)) {
-          console.log('Incoming academic ranks:', data.academicRanks);
-
           // Create a map of existing ranks and their counts
           const rankCountMap = new Map<string, number>();
           
@@ -478,8 +496,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
           if (this.chart) {
             this.chart.update();
           }
-
-          console.log('Processed academic ranks:', this.academicRanks);
         }
 
         this.updateCharts();
@@ -528,7 +544,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loadUpcomingBirthdays(): void {
     this.dashboardService.getUpcomingBirthdays().subscribe({
       next: (birthdays: UpcomingBirthday[]) => {
-        console.log('Upcoming birthdays:', birthdays);
         this.upcomingBirthdays = birthdays;
         this.cdr.detectChanges();
       },
@@ -619,7 +634,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.profileCompletionPercentage = data.completionPercentage;
         this.gaugeValue = Math.round(this.profileCompletionPercentage);
         this.incompleteTasks = data.incompleteSections; // Store incomplete tasks
-        console.log('Profile Completion:', this.gaugeValue);
       },
       error: (error) => {
         console.error('Error loading profile completion:', error);
@@ -801,26 +815,83 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   // Add these methods
+  openDashboardSettings(): void {
+    this.showDashboardSettings = true;
+  }
+
+  closeDashboardSettings(): void {
+    this.showDashboardSettings = false;
+    this.saveDashboardPreferences();
+  }
+
   toggleSectionVisibility(section: DashboardSection): void {
     section.visible = !section.visible;
     this.saveDashboardPreferences();
+    
+    // Re-render charts after visibility change
+    setTimeout(() => {
+      this.renderCharts();
+    }, 250);
   }
 
-  updateSectionOrder(section: DashboardSection, newOrder: number): void {
-    section.order = newOrder;
-    this.dashboardSections.sort((a, b) => a.order - b.order);
-    this.saveDashboardPreferences();
+  updateSectionOrder(section: DashboardSection, newOrder: SectionOrder): void {
+    const sectionAtNewPosition = this.dashboardSections.find(s => s.order === newOrder);
+    
+    if (sectionAtNewPosition && section !== sectionAtNewPosition) {
+      const oldOrder = section.order;
+      sectionAtNewPosition.order = oldOrder;
+      section.order = newOrder;
+      
+      this.dashboardSections.sort((a, b) => a.order - b.order);
+      this.saveDashboardPreferences();
+    }
+  }
+
+  getAvailableOrders(currentSection: DashboardSection): number[] {
+    const totalSections = this.dashboardSections.length;
+    return Array.from({ length: totalSections }, (_, i) => i);
   }
 
   private saveDashboardPreferences(): void {
-    localStorage.setItem('dashboardPreferences', JSON.stringify(this.dashboardSections));
+    const storageKey = `dashboardPreferences_${this.userID}`;
+    localStorage.setItem(storageKey, JSON.stringify(this.dashboardSections));
   }
 
   private loadDashboardPreferences(): void {
-    const saved = localStorage.getItem('dashboardPreferences');
+    const storageKey = `dashboardPreferences_${this.userID}`;
+    const saved = localStorage.getItem(storageKey);
+    
     if (saved) {
-      this.dashboardSections = JSON.parse(saved);
-      this.dashboardSections.sort((a, b) => a.order - b.order);
+      try {
+        this.dashboardSections = JSON.parse(saved);
+        this.dashboardSections.sort((a, b) => a.order - b.order);
+        
+        // Add timeout to ensure charts are rendered after layout
+        setTimeout(() => {
+          this.renderCharts();
+        }, 250);
+      } catch (error) {
+        console.error('Error parsing dashboard preferences:', error);
+      }
     }
+  }
+
+  getOrderLabel(order: SectionOrder): string {
+    return SectionOrder[order];
+  }
+
+  onDragDrop(event: CdkDragDrop<DashboardSection[]>) {
+    moveItemInArray(this.dashboardSections, event.previousIndex, event.currentIndex);
+    
+    this.dashboardSections.forEach((section, index) => {
+      section.order = index;
+    });
+    
+    this.saveDashboardPreferences();
+    
+    // Re-render charts after order change
+    setTimeout(() => {
+      this.renderCharts();
+    }, 250);
   }
 }

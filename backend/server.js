@@ -2,8 +2,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const sequelize = require('./config/db.config');
+const { sequelize } = require('./config/db.config');
 require('./utils/databaseCleanup');
+const checkDatabaseConnection = require('./middleware/databaseConnectionCheck');
 
 
 const educationRoutes = require('./routes/educationRoutes');
@@ -48,6 +49,8 @@ const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(bodyParser.json());
+
+app.use(checkDatabaseConnection);
 
 app.use('/api/basic-details', basicDetailsRoutes);
 app.use('/api/personaldetails', personalDetailsRoutes);

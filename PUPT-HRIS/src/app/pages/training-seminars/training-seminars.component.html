@@ -92,8 +92,11 @@
             <h2 class="text-xl font-semibold mb-4 text-maroon">Training Information</h2>
             <div class="grid grid-cols-2 gap-4">
               <div class="form-control">
-                <label for="Title" class="label-text">Title <span class="text-red-500">*</span></label>
-                <input id="Title" formControlName="Title" class="input input-bordered w-full" placeholder="Enter the title of the training">
+                <label class="label-text">Title <span class="text-red-500">*</span></label>
+                <input formControlName="Title" class="input input-bordered w-full" [ngClass]="{'input-error': trainingForm.get('Title')?.invalid && trainingForm.get('Title')?.touched}">
+                <div *ngIf="trainingForm.get('Title')?.invalid && trainingForm.get('Title')?.touched" class="text-red-500 text-sm mt-1">
+                  Title is required
+                </div>
               </div>
               <div class="form-control">
                 <label for="Classification" class="label-text">Classification <span class="text-red-500">*</span></label>
@@ -112,12 +115,42 @@
                 <input id="Nature" formControlName="Nature" class="input input-bordered w-full" placeholder="Enter the nature of the training">
               </div>
               <div class="form-control">
-                <label for="DateFrom" class="label-text">Date From <span class="text-red-500">*</span></label>
-                <input id="DateFrom" type="date" formControlName="DateFrom" class="input input-bordered w-full">
+                <label class="label-text">Date From <span class="text-red-500">*</span></label>
+                <input 
+                  formControlName="DateFrom" 
+                  class="input input-bordered w-full" 
+                  type="date"
+                  [max]="today">
+                <div *ngIf="trainingForm.get('DateFrom')?.invalid && trainingForm.get('DateFrom')?.touched" 
+                     class="text-red-500 text-sm mt-1">
+                  <div *ngIf="trainingForm.get('DateFrom')?.errors?.['required']">
+                    Start date is required
+                  </div>
+                  <div *ngIf="trainingForm.get('DateFrom')?.errors?.['futureDate']">
+                    Date cannot be in the future
+                  </div>
+                </div>
               </div>
               <div class="form-control">
-                <label for="DateTo" class="label-text">Date To <span class="text-red-500">*</span></label>
-                <input id="DateTo" type="date" formControlName="DateTo" class="input input-bordered w-full">
+                <label class="label-text">Date To <span class="text-red-500">*</span></label>
+                <input 
+                  formControlName="DateTo" 
+                  class="input input-bordered w-full" 
+                  type="date"
+                  [min]="trainingForm.get('DateFrom')?.value"
+                  [max]="today">
+                <div *ngIf="trainingForm.get('DateTo')?.invalid && trainingForm.get('DateTo')?.touched" 
+                     class="text-red-500 text-sm mt-1">
+                  <div *ngIf="trainingForm.get('DateTo')?.errors?.['required']">
+                    End date is required
+                  </div>
+                  <div *ngIf="trainingForm.get('DateTo')?.errors?.['futureDate']">
+                    Date cannot be in the future
+                  </div>
+                  <div *ngIf="trainingForm.get('DateTo')?.errors?.['invalidDateRange']">
+                    End date must be after start date
+                  </div>
+                </div>
               </div>
               <div class="form-control">
                 <label for="NumberOfHours" class="label-text">Number of Hours</label>

@@ -1,5 +1,5 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../config/db.config');
+const { sequelize } = require('../config/db.config');
 
 const SpecialSkill = sequelize.define('specialskills', {
   SpecialSkillsID: {

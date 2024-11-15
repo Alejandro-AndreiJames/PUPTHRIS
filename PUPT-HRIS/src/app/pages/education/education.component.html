@@ -73,14 +73,27 @@
         <div class="grid grid-cols-2 gap-4">
           <div class="form-control">
             <label class="label-text">Level <span class="text-red-500">*</span></label>
-            <select formControlName="Level" class="select select-bordered w-full">
-              <option value="">Select education level...</option>
+            <select formControlName="Level" class="select select-bordered w-full" 
+                    [ngClass]="{'select-error': educationForm.get('Level')?.invalid && educationForm.get('Level')?.touched}">
+              <option value="">Select Level</option>
               <option *ngFor="let level of levels" [value]="level">{{ level }}</option>
             </select>
+            <div *ngIf="educationForm.get('Level')?.invalid && educationForm.get('Level')?.touched" 
+                 class="text-red-500 text-sm mt-1">
+              Level is required
+            </div>
           </div>
           <div class="form-control">
             <label class="label-text">Name of School <span class="text-red-500">*</span></label>
-            <input formControlName="NameOfSchool" class="input input-bordered w-full" type="text" placeholder="Enter school name">
+            <input formControlName="NameOfSchool" 
+                   class="input input-bordered w-full" 
+                   [ngClass]="{'input-error': educationForm.get('NameOfSchool')?.invalid && educationForm.get('NameOfSchool')?.touched}"
+                   type="text" 
+                   placeholder="Enter school name">
+            <div *ngIf="educationForm.get('NameOfSchool')?.invalid && educationForm.get('NameOfSchool')?.touched" 
+                 class="text-red-500 text-sm mt-1">
+              Name of School is required
+            </div>
           </div>
           <div class="form-control">
             <label class="label-text">Course/Degree</label>
@@ -88,11 +101,20 @@
           </div>
           <div class="form-control">
             <label class="label-text">Period of Attendance From</label>
-            <input formControlName="PeriodOfAttendanceFrom" class="input input-bordered w-full" type="date">
+            <input 
+              formControlName="PeriodOfAttendanceFrom"
+              class="input input-bordered w-full" 
+              type="date"
+              [max]="today">
           </div>
           <div class="form-control">
             <label class="label-text">Period of Attendance To</label>
-            <input formControlName="PeriodOfAttendanceTo" class="input input-bordered w-full" type="date">
+            <input 
+              formControlName="PeriodOfAttendanceTo"
+              class="input input-bordered w-full" 
+              type="date"
+              [min]="educationForm.get('PeriodOfAttendanceFrom')?.value"
+              [max]="today">
           </div>
           <div class="form-control">
             <label class="label-text">Highest Level/Units Earned</label>

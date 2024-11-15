@@ -68,7 +68,8 @@
               [ngClass]="{'border-red-500': contactDetailsForm.get('MobileNumber')?.invalid && submitted}"
               required>
             <div *ngIf="contactDetailsForm.get('MobileNumber')?.invalid && submitted" class="text-red-500 text-sm mt-1">
-              Mobile Number is required.
+              <div *ngIf="contactDetailsForm.get('MobileNumber')?.errors?.['required']">Mobile Number is required.</div>
+              <div *ngIf="contactDetailsForm.get('MobileNumber')?.errors?.['pattern']">Mobile Number must be exactly 11 digits.</div>
             </div>
           </div>
 

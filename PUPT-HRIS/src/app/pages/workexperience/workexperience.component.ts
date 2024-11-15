@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { WorkExperience } from '../../model/work.model';
 import { WorkService } from '../../services/work.service';
 import { CommonModule } from '@angular/common';
@@ -34,7 +34,11 @@ export class WorkExperienceComponent implements OnInit {
   showDeletePrompt: boolean = false;
   pendingDeleteId: number | null = null;
 
+  today: string;
+
   constructor(private fb: FormBuilder, private workService: WorkService, private authService: AuthService) {
+    this.today = new Date().toISOString().split('T')[0];
+
     const token = this.authService.getToken();
     if (token) {
       const decoded: any = jwtDecode(token);
@@ -44,14 +48,21 @@ export class WorkExperienceComponent implements OnInit {
     }
 
     this.workExperienceForm = this.fb.group({
-      InclusiveDatesFrom: [''],
-      InclusiveDatesTo: [''],
-      PositionTitle: [''],
-      DepartmentAgencyOfficeCompany: [''],
-      MonthlySalary: [''],
+      InclusiveDatesFrom: ['', [Validators.required, this.dateValidator()]],
+      InclusiveDatesTo: ['', [Validators.required, this.dateValidator(), this.dateRangeValidator()]],
+      PositionTitle: ['', Validators.required],
+      DepartmentAgencyOfficeCompany: ['', Validators.required],
+      MonthlySalary: ['', [Validators.required, Validators.min(0)]],
       SalaryJobPayGrade: [''],
-      StatusOfAppointment: [''],
-      GovtService: [false]
+      StatusOfAppointment: ['', Validators.required],
+      GovtService: [false, Validators.required]
+    });
+
+    this.workExperienceForm.get('InclusiveDatesFrom')?.valueChanges.subscribe(value => {
+      const toControl = this.workExperienceForm.get('InclusiveDatesTo');
+      if (toControl) {
+        toControl.updateValueAndValidity();
+      }
     });
   }
 
@@ -107,10 +118,17 @@ export class WorkExperienceComponent implements OnInit {
   editExperience(id: number): void {
     const experience = this.workExperienceData.find(ex => ex.WorkExperienceID === id);
     if (experience) {
-      this.workExperienceForm.patchValue(experience);
+      const formData = {
+        ...experience,
+        InclusiveDatesFrom: experience.InclusiveDatesFrom ? new Date(experience.InclusiveDatesFrom).toISOString().split('T')[0] : '',
+        InclusiveDatesTo: experience.InclusiveDatesTo ? new Date(experience.InclusiveDatesTo).toISOString().split('T')[0] : ''
+      };
+      
+      console.log('Setting form data:', formData);
+      this.workExperienceForm.patchValue(formData);
       this.currentExperienceId = id;
       this.isEditing = true;
-      this.initialFormValue = this.workExperienceForm.getRawValue(); // Store the initial form value
+      this.initialFormValue = this.workExperienceForm.getRawValue();
     }
   }
 
@@ -165,6 +183,24 @@ export class WorkExperienceComponent implements OnInit {
   }
 
   onSubmit(): void {
+    if (this.workExperienceForm.invalid) {
+      if (this.workExperienceForm.get('InclusiveDatesFrom')?.errors?.['futureDate'] || 
+          this.workExperienceForm.get('InclusiveDatesTo')?.errors?.['futureDate']) {
+        this.showToastNotification('Dates cannot be in the future.', 'warning');
+        return;
+      }
+      if (this.workExperienceForm.get('InclusiveDatesTo')?.errors?.['invalidDateRange']) {
+        this.showToastNotification('End date cannot be before start date.', 'warning');
+        return;
+      }
+      if (this.workExperienceForm.get('MonthlySalary')?.errors?.['min']) {
+        this.showToastNotification('Monthly salary cannot be negative.', 'warning');
+        return;
+      }
+      this.showToastNotification('Please fill in all required fields correctly.', 'warning');
+      return;
+    }
+
     if (!this.hasUnsavedChanges()) {
       this.showToastNotification('There are no current changes to be saved.', 'warning');
       return;
@@ -211,5 +247,43 @@ export class WorkExperienceComponent implements OnInit {
     setTimeout(() => {
       this.showToast = false;
     }, 3000); // Hide toast after 3 seconds
+  }
+
+  private dateValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) return null;
+
+      const selectedDate = new Date(control.value);
+      const today = new Date();
+      
+      today.setHours(0, 0, 0, 0);
+      selectedDate.setHours(0, 0, 0, 0);
+
+      if (selectedDate > today) {
+        return { futureDate: true };
+      }
+      return null;
+    };
+  }
+
+  private dateRangeValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) return null;
+
+      const toDate = new Date(control.value);
+      const fromDate = this.workExperienceForm?.get('InclusiveDatesFrom')?.value;
+      
+      if (!fromDate) return null;
+
+      const fromDateTime = new Date(fromDate);
+      
+      toDate.setHours(0, 0, 0, 0);
+      fromDateTime.setHours(0, 0, 0, 0);
+
+      if (toDate < fromDateTime) {
+        return { invalidDateRange: true };
+      }
+      return null;
+    };
   }
 }

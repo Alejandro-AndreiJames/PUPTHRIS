@@ -58,15 +58,15 @@ export class OtherInformationComponent implements OnInit {
     }
 
     this.specialSkillsForm = this.fb.group({
-      Skill: ['', Validators.required]
+      Skill: ['', [Validators.required, Validators.minLength(2)]]
     });
 
     this.nonAcademicForm = this.fb.group({
-      Distinction: ['', Validators.required]
+      Distinction: ['', [Validators.required, Validators.minLength(2)]]
     });
 
     this.membershipForm = this.fb.group({
-      Association: ['', Validators.required]
+      Association: ['', [Validators.required, Validators.minLength(2)]]
     });
   }
 
@@ -92,6 +92,11 @@ export class OtherInformationComponent implements OnInit {
   }
 
   onSubmitSkill(): void {
+    if (this.specialSkillsForm.invalid) {
+      this.showToastNotification('Please enter a valid skill (minimum 2 characters).', 'warning');
+      return;
+    }
+
     if (!this.hasUnsavedChanges(this.specialSkillsForm)) {
       this.showToastNotification('There are no current changes to be saved.', 'warning');
       return;
@@ -120,6 +125,11 @@ export class OtherInformationComponent implements OnInit {
   }
 
   onSubmitDistinction(): void {
+    if (this.nonAcademicForm.invalid) {
+      this.showToastNotification('Please enter a valid distinction (minimum 2 characters).', 'warning');
+      return;
+    }
+
     if (!this.hasUnsavedChanges(this.nonAcademicForm)) {
       this.showToastNotification('There are no current changes to be saved.', 'warning');
       return;
@@ -148,6 +158,11 @@ export class OtherInformationComponent implements OnInit {
   }
 
   onSubmitMembership(): void {
+    if (this.membershipForm.invalid) {
+      this.showToastNotification('Please enter a valid association name (minimum 2 characters).', 'warning');
+      return;
+    }
+
     if (!this.hasUnsavedChanges(this.membershipForm)) {
       this.showToastNotification('There are no current changes to be saved.', 'warning');
       return;

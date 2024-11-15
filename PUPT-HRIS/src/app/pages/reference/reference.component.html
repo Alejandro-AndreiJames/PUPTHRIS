@@ -71,15 +71,60 @@
           <div class="grid grid-cols-2 gap-4">
             <div class="form-control">
               <label class="label-text">Name <span class="text-red-500">*</span></label>
-              <input formControlName="Name" class="input input-bordered w-full" type="text" placeholder="Enter the full name of the reference person">
+              <input 
+                formControlName="Name" 
+                class="input input-bordered w-full" 
+                [ngClass]="{'border-red-500': referenceForm.get('Name')?.invalid && referenceForm.get('Name')?.touched}"
+                type="text" 
+                placeholder="Enter the full name of the reference person">
+              <div *ngIf="referenceForm.get('Name')?.invalid && referenceForm.get('Name')?.touched" 
+                   class="text-red-500 text-sm mt-1">
+                <div *ngIf="referenceForm.get('Name')?.errors?.['required']">
+                  Name is required
+                </div>
+                <div *ngIf="referenceForm.get('Name')?.errors?.['minlength']">
+                  Name must be at least 2 characters long
+                </div>
+              </div>
             </div>
             <div class="form-control">
               <label class="label-text">Address <span class="text-red-500">*</span></label>
-              <input formControlName="Address" class="input input-bordered w-full" type="text" placeholder="Enter the complete address of the reference person">
+              <input 
+                formControlName="Address" 
+                class="input input-bordered w-full" 
+                [ngClass]="{'border-red-500': referenceForm.get('Address')?.invalid && referenceForm.get('Address')?.touched}"
+                type="text" 
+                placeholder="Enter the complete address of the reference person">
+              <div *ngIf="referenceForm.get('Address')?.invalid && referenceForm.get('Address')?.touched" 
+                   class="text-red-500 text-sm mt-1">
+                <div *ngIf="referenceForm.get('Address')?.errors?.['required']">
+                  Address is required
+                </div>
+                <div *ngIf="referenceForm.get('Address')?.errors?.['minlength']">
+                  Address must be at least 5 characters long
+                </div>
+              </div>
             </div>
             <div class="form-control">
               <label class="label-text">Telephone Number <span class="text-red-500">*</span></label>
-              <input formControlName="TelephoneNumber" class="input input-bordered w-full" type="text" placeholder="Enter a valid telephone number">
+              <input 
+                formControlName="TelephoneNumber" 
+                class="input input-bordered w-full" 
+                [ngClass]="{'border-red-500': referenceForm.get('TelephoneNumber')?.invalid && referenceForm.get('TelephoneNumber')?.touched}"
+                type="text" 
+                placeholder="Enter a valid telephone number">
+              <div *ngIf="referenceForm.get('TelephoneNumber')?.invalid && referenceForm.get('TelephoneNumber')?.touched" 
+                   class="text-red-500 text-sm mt-1">
+                <div *ngIf="referenceForm.get('TelephoneNumber')?.errors?.['required']">
+                  Telephone number is required
+                </div>
+                <div *ngIf="referenceForm.get('TelephoneNumber')?.errors?.['pattern']">
+                  Please enter a valid telephone number
+                </div>
+                <div *ngIf="referenceForm.get('TelephoneNumber')?.errors?.['minlength']">
+                  Telephone number must be at least 7 characters long
+                </div>
+              </div>
             </div>
           </div>
           <div class="flex justify-end mt-6">

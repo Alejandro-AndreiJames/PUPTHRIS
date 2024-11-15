@@ -121,11 +121,43 @@
               </div>
               <div class="form-control">
                 <label for="InclusiveDatesFrom" class="label-text">Inclusive Dates From <span class="text-red-500">*</span></label>
-                <input id="InclusiveDatesFrom" type="date" formControlName="InclusiveDatesFrom" class="input input-bordered w-full">
+                <input 
+                  id="InclusiveDatesFrom" 
+                  type="date" 
+                  formControlName="InclusiveDatesFrom" 
+                  class="input input-bordered w-full"
+                  [max]="today">
+                <div *ngIf="membershipForm.get('InclusiveDatesFrom')?.invalid && membershipForm.get('InclusiveDatesFrom')?.touched" 
+                     class="text-red-500 text-sm mt-1">
+                  <div *ngIf="membershipForm.get('InclusiveDatesFrom')?.errors?.['required']">
+                    Start date is required
+                  </div>
+                  <div *ngIf="membershipForm.get('InclusiveDatesFrom')?.errors?.['futureDate']">
+                    Date cannot be in the future
+                  </div>
+                </div>
               </div>
               <div class="form-control">
                 <label for="InclusiveDatesTo" class="label-text">Inclusive Dates To <span class="text-red-500">*</span></label>
-                <input id="InclusiveDatesTo" type="date" formControlName="InclusiveDatesTo" class="input input-bordered w-full">
+                <input 
+                  id="InclusiveDatesTo" 
+                  type="date" 
+                  formControlName="InclusiveDatesTo" 
+                  class="input input-bordered w-full"
+                  [min]="membershipForm.get('InclusiveDatesFrom')?.value"
+                  [max]="today">
+                <div *ngIf="membershipForm.get('InclusiveDatesTo')?.invalid && membershipForm.get('InclusiveDatesTo')?.touched" 
+                     class="text-red-500 text-sm mt-1">
+                  <div *ngIf="membershipForm.get('InclusiveDatesTo')?.errors?.['required']">
+                    End date is required
+                  </div>
+                  <div *ngIf="membershipForm.get('InclusiveDatesTo')?.errors?.['futureDate']">
+                    Date cannot be in the future
+                  </div>
+                  <div *ngIf="membershipForm.get('InclusiveDatesTo')?.errors?.['invalidDateRange']">
+                    End date must be after start date
+                  </div>
+                </div>
               </div>
             </div>
           </div>
