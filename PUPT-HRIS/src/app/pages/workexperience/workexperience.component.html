@@ -85,11 +85,41 @@
         <div class="grid grid-cols-2 gap-4">
           <div class="form-control">
             <label class="label-text">Inclusive Dates From <span class="text-red-500">*</span></label>
-            <input formControlName="InclusiveDatesFrom" class="input input-bordered w-full" type="date">
+            <input 
+              formControlName="InclusiveDatesFrom" 
+              class="input input-bordered w-full" 
+              type="date"
+              [max]="today">
+            <div *ngIf="workExperienceForm.get('InclusiveDatesFrom')?.invalid && workExperienceForm.get('InclusiveDatesFrom')?.touched" 
+                 class="text-red-500 text-sm mt-1">
+              <div *ngIf="workExperienceForm.get('InclusiveDatesFrom')?.errors?.['required']">
+                Start date is required
+              </div>
+              <div *ngIf="workExperienceForm.get('InclusiveDatesFrom')?.errors?.['futureDate']">
+                Date cannot be in the future
+              </div>
+            </div>
           </div>
           <div class="form-control">
             <label class="label-text">Inclusive Dates To <span class="text-red-500">*</span></label>
-            <input formControlName="InclusiveDatesTo" class="input input-bordered w-full" type="date">
+            <input 
+              formControlName="InclusiveDatesTo" 
+              class="input input-bordered w-full" 
+              type="date"
+              [min]="workExperienceForm.get('InclusiveDatesFrom')?.value"
+              [max]="today">
+            <div *ngIf="workExperienceForm.get('InclusiveDatesTo')?.invalid && workExperienceForm.get('InclusiveDatesTo')?.touched" 
+                 class="text-red-500 text-sm mt-1">
+              <div *ngIf="workExperienceForm.get('InclusiveDatesTo')?.errors?.['required']">
+                End date is required
+              </div>
+              <div *ngIf="workExperienceForm.get('InclusiveDatesTo')?.errors?.['futureDate']">
+                Date cannot be in the future
+              </div>
+              <div *ngIf="workExperienceForm.get('InclusiveDatesTo')?.errors?.['invalidDateRange']">
+                End date must be after start date
+              </div>
+            </div>
           </div>
           <div class="form-control">
             <label class="label-text">Position Title <span class="text-red-500">*</span></label>
