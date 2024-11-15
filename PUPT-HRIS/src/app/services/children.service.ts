@@ -19,7 +19,7 @@ export class ChildrenService {
   }
 
   getChildren(userId: number): Observable<Children[]> {
-    return this.http.get<Children[]>(`${this.apiUrl}/children/${userId}`).pipe(
+    return this.http.get<Children[]>(`${this.apiUrl}/user/${userId}`).pipe(
       map(response => response || []),
       catchError(error => {
         if (error.status === 404) {
