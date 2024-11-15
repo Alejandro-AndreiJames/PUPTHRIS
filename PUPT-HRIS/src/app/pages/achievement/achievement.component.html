@@ -13,63 +13,65 @@
     </div>
 
     <ng-container *ngIf="!isEditing; else editForm">
-      <div class="card" *ngIf="paginatedAchievementAwards.length > 0">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Nature of Achievement</th>
-              <th>Classification</th>
-              <th>Level</th>
-              <th>Awarding Body</th>
-              <th>Inclusive Dates</th>
-              <th>Proof</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let award of paginatedAchievementAwards; let i = index">
-              <td>{{ i + 1 + (currentPage - 1) * itemsPerPage }}</td>
-              <td>
-                <ng-container *ngIf="award.NatureOfAchievement; else noInfo">{{ award.NatureOfAchievement }}</ng-container>
-              </td>
-              <td>
-                <ng-container *ngIf="award.Classification; else noInfo">{{ award.Classification }}</ng-container>
-              </td>
-              <td>
-                <ng-container *ngIf="award.Level; else noInfo">{{ award.Level }}</ng-container>
-              </td>
-              <td>
-                <ng-container *ngIf="award.AwardingBody; else noInfo">{{ award.AwardingBody }}</ng-container>
-              </td>
-              <td>
-                <ng-container *ngIf="award.InclusiveDates; else noInfo">{{ award.InclusiveDates }}</ng-container>
-              </td>
-              <td>
-                <ng-container *ngIf="award.Proof; else noInfo">
-                  <button *ngIf="award.ProofType === 'file'" (click)="openProofModal(award.Proof, award.SupportingDocument)" class="btn btn-link">View File</button>
-                  <a *ngIf="award.ProofType === 'link'" [href]="award.Proof" target="_blank" class="btn btn-link">View Link</a>
-                </ng-container>
-              </td>
-              <td>
-                <button class="btn btn-edit btn-sm" (click)="editAchievementAward(award.AchievementID!)">EDIT</button>
-                <button class="btn btn-delete btn-sm" (click)="deleteAchievementAward(award.AchievementID!)">DELETE</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <div class="content-wrapper">
+        <div class="card" *ngIf="paginatedAchievementAwards.length > 0">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nature of Achievement</th>
+                <th>Classification</th>
+                <th>Level</th>
+                <th>Awarding Body</th>
+                <th>Inclusive Dates</th>
+                <th>Proof</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let award of paginatedAchievementAwards; let i = index">
+                <td>{{ i + 1 + (currentPage - 1) * itemsPerPage }}</td>
+                <td>
+                  <ng-container *ngIf="award.NatureOfAchievement; else noInfo">{{ award.NatureOfAchievement }}</ng-container>
+                </td>
+                <td>
+                  <ng-container *ngIf="award.Classification; else noInfo">{{ award.Classification }}</ng-container>
+                </td>
+                <td>
+                  <ng-container *ngIf="award.Level; else noInfo">{{ award.Level }}</ng-container>
+                </td>
+                <td>
+                  <ng-container *ngIf="award.AwardingBody; else noInfo">{{ award.AwardingBody }}</ng-container>
+                </td>
+                <td>
+                  <ng-container *ngIf="award.InclusiveDates; else noInfo">{{ award.InclusiveDates }}</ng-container>
+                </td>
+                <td>
+                  <ng-container *ngIf="award.Proof; else noInfo">
+                    <button *ngIf="award.ProofType === 'file'" (click)="openProofModal(award.Proof, award.SupportingDocument)" class="btn btn-link">View File</button>
+                    <a *ngIf="award.ProofType === 'link'" [href]="award.Proof" target="_blank" class="btn btn-link">View Link</a>
+                  </ng-container>
+                </td>
+                <td>
+                  <button class="btn btn-edit btn-sm" (click)="editAchievementAward(award.AchievementID!)">EDIT</button>
+                  <button class="btn btn-delete btn-sm" (click)="deleteAchievementAward(award.AchievementID!)">DELETE</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-      <div class="pagination-controls">
-        <button [disabled]="currentPage === 1" (click)="previousPage()">Previous</button>
-        <button *ngFor="let page of totalPagesArray" [class.active]="page === currentPage" (click)="goToPage(page)">
-          {{ page }}
-        </button>
-        <button [disabled]="currentPage === totalPages" (click)="nextPage()">Next</button>
-      </div>
+        <div class="card empty-state" *ngIf="paginatedAchievementAwards.length === 0">
+          <p>No achievement awards information available.</p>
+        </div>
 
-      <div class="card empty-state" *ngIf="paginatedAchievementAwards.length === 0">
-        <p>No achievement awards information available.</p>
+        <div class="pagination-controls" *ngIf="totalPages > 0">
+          <button [disabled]="currentPage === 1" (click)="previousPage()">Previous</button>
+          <button *ngFor="let page of totalPagesArray" [class.active]="page === currentPage" (click)="goToPage(page)">
+            {{ page }}
+          </button>
+          <button [disabled]="currentPage === totalPages" (click)="nextPage()">Next</button>
+        </div>
       </div>
     </ng-container>
 

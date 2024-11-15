@@ -417,3 +417,23 @@ body {
   animation: fadeIn 0.3s ease-out forwards;
   opacity: 0;
 }
+
+.content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  margin-bottom: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pagination-controls {
+  margin-top: 20px;
+}

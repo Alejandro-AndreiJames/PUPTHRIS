@@ -71,19 +71,22 @@ export class OfficershipMembershipComponent implements OnInit {
   }
 
   loadMemberships(): void {
-    this.membershipService.getMembershipsByUserId(this.userId).subscribe(
-      (data) => {
-        this.memberships = data;
+    this.membershipService.getMembershipsByUserId(this.userId).subscribe({
+      next: (data) => {
+        this.memberships = data || [];
         this.totalPages = Math.ceil(this.memberships.length / this.itemsPerPage);
         this.updatePaginatedData();
       },
-      (error) => {
+      error: (error) => {
         if (error.status !== 404) {
           this.showToastNotification('Error fetching officership/membership data.', 'error');
+          console.error('Error fetching officership/membership data', error);
         }
-        console.error('Error fetching officership/membership data', error);
+        this.memberships = [];
+        this.paginatedMemberships = [];
+        this.totalPages = 0;
       }
-    );
+    });
   }
 
   updatePaginatedData(): void {

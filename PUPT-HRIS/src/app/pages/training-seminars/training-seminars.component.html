@@ -13,69 +13,71 @@
     </div>
 
     <ng-container *ngIf="!isEditing; else editForm">
-      <div class="card" *ngIf="paginatedTrainingData.length > 0">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Title</th>
-              <th>Classification</th>
-              <th>Nature</th>
-              <th>Date From</th>
-              <th>Date To</th>
-              <th>Organizer</th>
-              <th>Proof</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let training of paginatedTrainingData; let i = index">
-              <td>{{ i + 1 + (currentPage - 1) * itemsPerPage }}</td>
-              <td>
-                <ng-container *ngIf="formatValue(training.Title); else noInfo">{{ formatValue(training.Title) }}</ng-container>
-              </td>
-              <td>
-                <ng-container *ngIf="formatValue(training.Classification); else noInfo">{{ formatValue(training.Classification) }}</ng-container>
-              </td>
-              <td>
-                <ng-container *ngIf="formatValue(training.Nature); else noInfo">{{ formatValue(training.Nature) }}</ng-container>
-              </td>
-              <td>
-                <ng-container *ngIf="formatValue(training.DateFrom); else noInfo">{{ formatValue(training.DateFrom) | date }}</ng-container>
-              </td>
-              <td>
-                <ng-container *ngIf="formatValue(training.DateTo); else noInfo">{{ formatValue(training.DateTo) | date }}</ng-container>
-              </td>
-              <td>
-                <ng-container *ngIf="formatValue(training.Organizer); else noInfo">{{ formatValue(training.Organizer) }}</ng-container>
-              </td>
-              <td>
-                <ng-container *ngIf="training.Proof; else noInfo">
-                  <button *ngIf="training.ProofType === 'file'" (click)="openProofModal(training.Proof, training.SupportingDocuments)" class="btn btn-link">View File</button>
-                  <a *ngIf="training.ProofType === 'link'" [href]="training.Proof" target="_blank" class="btn btn-link">View Link</a>
-                </ng-container>
-              </td>
-              <td>
-                <div class="btn-container">
-                  <button (click)="editTraining(training.TrainingID!)" class="btn btn-edit btn-sm">EDIT</button>
-                  <button (click)="deleteTraining(training.TrainingID!)" class="btn btn-delete btn-sm">DELETE</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <div class="content-wrapper">
+        <div class="card" *ngIf="paginatedTrainingData.length > 0">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Title</th>
+                <th>Classification</th>
+                <th>Nature</th>
+                <th>Date From</th>
+                <th>Date To</th>
+                <th>Organizer</th>
+                <th>Proof</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let training of paginatedTrainingData; let i = index">
+                <td>{{ i + 1 + (currentPage - 1) * itemsPerPage }}</td>
+                <td>
+                  <ng-container *ngIf="formatValue(training.Title); else noInfo">{{ formatValue(training.Title) }}</ng-container>
+                </td>
+                <td>
+                  <ng-container *ngIf="formatValue(training.Classification); else noInfo">{{ formatValue(training.Classification) }}</ng-container>
+                </td>
+                <td>
+                  <ng-container *ngIf="formatValue(training.Nature); else noInfo">{{ formatValue(training.Nature) }}</ng-container>
+                </td>
+                <td>
+                  <ng-container *ngIf="formatValue(training.DateFrom); else noInfo">{{ formatValue(training.DateFrom) | date }}</ng-container>
+                </td>
+                <td>
+                  <ng-container *ngIf="formatValue(training.DateTo); else noInfo">{{ formatValue(training.DateTo) | date }}</ng-container>
+                </td>
+                <td>
+                  <ng-container *ngIf="formatValue(training.Organizer); else noInfo">{{ formatValue(training.Organizer) }}</ng-container>
+                </td>
+                <td>
+                  <ng-container *ngIf="training.Proof; else noInfo">
+                    <button *ngIf="training.ProofType === 'file'" (click)="openProofModal(training.Proof, training.SupportingDocuments)" class="btn btn-link">View File</button>
+                    <a *ngIf="training.ProofType === 'link'" [href]="training.Proof" target="_blank" class="btn btn-link">View Link</a>
+                  </ng-container>
+                </td>
+                <td>
+                  <div class="btn-container">
+                    <button (click)="editTraining(training.TrainingID!)" class="btn btn-edit btn-sm">EDIT</button>
+                    <button (click)="deleteTraining(training.TrainingID!)" class="btn btn-delete btn-sm">DELETE</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-      <div class="pagination-controls">
-        <button [disabled]="currentPage === 1" (click)="previousPage()">Previous</button>
-        <button *ngFor="let page of totalPagesArray" [class.active]="page === currentPage" (click)="goToPage(page)">
-          {{ page }}
-        </button>
-        <button [disabled]="currentPage === totalPages" (click)="nextPage()">Next</button>
-      </div>
+        <div class="card empty-state" *ngIf="paginatedTrainingData.length === 0">
+          <p>No training or seminar information available.</p>
+        </div>
 
-      <div class="card empty-state" *ngIf="paginatedTrainingData.length === 0">
-        <p>No training or seminar information available.</p>
+        <div class="pagination-controls" *ngIf="totalPages > 0">
+          <button [disabled]="currentPage === 1" (click)="previousPage()">Previous</button>
+          <button *ngFor="let page of totalPagesArray" [class.active]="page === currentPage" (click)="goToPage(page)">
+            {{ page }}
+          </button>
+          <button [disabled]="currentPage === totalPages" (click)="nextPage()">Next</button>
+        </div>
       </div>
     </ng-container>
 

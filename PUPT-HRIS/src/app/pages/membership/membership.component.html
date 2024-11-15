@@ -13,72 +13,74 @@
     </div>
 
     <ng-container *ngIf="!isEditing; else editForm">
-      <div class="card" *ngIf="paginatedMemberships.length > 0">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Organization Name</th>
-              <th>Position</th>
-              <th>Level</th>
-              <th>Classification</th>
-              <th>Inclusive Dates From</th>
-              <th>Inclusive Dates To</th>
-              <th>Proof</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let membership of paginatedMemberships; let i = index">
-              <td>{{ i + 1 + (currentPage - 1) * itemsPerPage }}</td>
-              <td>
-                <ng-container *ngIf="membership.OrganizationName; else noInfo">{{ membership.OrganizationName }}</ng-container>
-              </td>
-              <td>
-                <ng-container *ngIf="membership.Position; else noInfo">{{ membership.Position }}</ng-container>
-              </td>
-              <td>
-                <ng-container *ngIf="membership.Level; else noInfo">{{ membership.Level }}</ng-container>
-              </td>
-              <td>
-                <ng-container *ngIf="membership.Classification; else noInfo">{{ membership.Classification }}</ng-container>
-              </td>
-              <td>
-                <ng-container *ngIf="membership.InclusiveDatesFrom; else noInfo">{{ membership.InclusiveDatesFrom | date }}</ng-container>
-              </td>
-              <td>
-                <ng-container *ngIf="membership.InclusiveDatesTo; else noInfo">{{ membership.InclusiveDatesTo | date }}</ng-container>
-              </td>
-              <td>
-                <ng-container *ngIf="membership.Proof; else noProof">
-                  <button *ngIf="membership.ProofType === 'file'" (click)="openProofModal(membership.Proof, membership.SupportingDocument)" class="btn btn-link">View File</button>
-                  <a *ngIf="membership.ProofType === 'link'" [href]="membership.Proof" target="_blank" class="btn btn-link">View Link</a>
-                </ng-container>
-                <ng-template #noProof>
-                  <span>No Proof</span>
-                </ng-template>
-              </td>
-              <td>
-                <div class="btn-container">
-                  <button (click)="editMembership(membership.OfficershipMembershipID!)" class="btn btn-edit btn-sm">EDIT</button>
-                  <button (click)="deleteMembership(membership.OfficershipMembershipID!)" class="btn btn-delete btn-sm">DELETE</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <div class="content-wrapper">
+        <div class="card" *ngIf="paginatedMemberships.length > 0">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Organization Name</th>
+                <th>Position</th>
+                <th>Level</th>
+                <th>Classification</th>
+                <th>Inclusive Dates From</th>
+                <th>Inclusive Dates To</th>
+                <th>Proof</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let membership of paginatedMemberships; let i = index">
+                <td>{{ i + 1 + (currentPage - 1) * itemsPerPage }}</td>
+                <td>
+                  <ng-container *ngIf="membership.OrganizationName; else noInfo">{{ membership.OrganizationName }}</ng-container>
+                </td>
+                <td>
+                  <ng-container *ngIf="membership.Position; else noInfo">{{ membership.Position }}</ng-container>
+                </td>
+                <td>
+                  <ng-container *ngIf="membership.Level; else noInfo">{{ membership.Level }}</ng-container>
+                </td>
+                <td>
+                  <ng-container *ngIf="membership.Classification; else noInfo">{{ membership.Classification }}</ng-container>
+                </td>
+                <td>
+                  <ng-container *ngIf="membership.InclusiveDatesFrom; else noInfo">{{ membership.InclusiveDatesFrom | date }}</ng-container>
+                </td>
+                <td>
+                  <ng-container *ngIf="membership.InclusiveDatesTo; else noInfo">{{ membership.InclusiveDatesTo | date }}</ng-container>
+                </td>
+                <td>
+                  <ng-container *ngIf="membership.Proof; else noProof">
+                    <button *ngIf="membership.ProofType === 'file'" (click)="openProofModal(membership.Proof, membership.SupportingDocument)" class="btn btn-link">View File</button>
+                    <a *ngIf="membership.ProofType === 'link'" [href]="membership.Proof" target="_blank" class="btn btn-link">View Link</a>
+                  </ng-container>
+                  <ng-template #noProof>
+                    <span>No Proof</span>
+                  </ng-template>
+                </td>
+                <td>
+                  <div class="btn-container">
+                    <button (click)="editMembership(membership.OfficershipMembershipID!)" class="btn btn-edit btn-sm">EDIT</button>
+                    <button (click)="deleteMembership(membership.OfficershipMembershipID!)" class="btn btn-delete btn-sm">DELETE</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-      <div class="pagination-controls">
-        <button [disabled]="currentPage === 1" (click)="previousPage()">Previous</button>
-        <button *ngFor="let page of totalPagesArray" [class.active]="page === currentPage" (click)="goToPage(page)">
-          {{ page }}
-        </button>
-        <button [disabled]="currentPage === totalPages" (click)="nextPage()">Next</button>
-      </div>
+        <div class="card empty-state" *ngIf="paginatedMemberships.length === 0">
+          <p>No officership or membership information available.</p>
+        </div>
 
-      <div class="card empty-state" *ngIf="paginatedMemberships.length === 0">
-        <p>No officership or membership information available.</p>
+        <div class="pagination-controls" *ngIf="totalPages > 0">
+          <button [disabled]="currentPage === 1" (click)="previousPage()">Previous</button>
+          <button *ngFor="let page of totalPagesArray" [class.active]="page === currentPage" (click)="goToPage(page)">
+            {{ page }}
+          </button>
+          <button [disabled]="currentPage === totalPages" (click)="nextPage()">Next</button>
+        </div>
       </div>
     </ng-container>
 
