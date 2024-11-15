@@ -37,6 +37,9 @@ export class TrainingSeminarsComponent implements OnInit {
   itemsPerPage: number = 5;
   totalPages: number = 0;
 
+  showDeletePrompt: boolean = false;
+  pendingDeleteId: number | null = null;
+
   constructor(
     private fb: FormBuilder,
     private trainingSeminarsService: TrainingSeminarsService,
@@ -213,16 +216,34 @@ export class TrainingSeminarsComponent implements OnInit {
   }
 
   deleteTraining(id: number): void {
-    if (confirm('Are you sure you want to delete this record?')) {
-      this.trainingSeminarsService.deleteTraining(id).subscribe(
-        (response) => {
-          this.trainingData = this.trainingData.filter(training => training.TrainingID !== id);
+    this.pendingDeleteId = id;
+    this.showDeletePrompt = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeletePrompt = false;
+    this.pendingDeleteId = null;
+  }
+
+  confirmDelete(): void {
+    if (this.pendingDeleteId) {
+      this.trainingSeminarsService.deleteTraining(this.pendingDeleteId).subscribe(
+        response => {
+          this.trainingData = this.trainingData.filter(t => t.TrainingID !== this.pendingDeleteId);
+          this.totalPages = Math.ceil(this.trainingData.length / this.itemsPerPage);
+          if (this.currentPage > this.totalPages) {
+            this.currentPage = Math.max(1, this.totalPages);
+          }
           this.updatePaginatedData();
           this.showToastNotification('Training deleted successfully.', 'success');
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         },
-        (error) => {
-          this.showToastNotification('Error deleting training.', 'error');
+        error => {
+          this.showToastNotification('There is an error deleting the record.', 'error');
           console.error('Error deleting training', error);
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         }
       );
     }

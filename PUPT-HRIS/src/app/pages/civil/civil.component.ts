@@ -31,6 +31,9 @@ export class CivilComponent implements OnInit {
   toastMessage: string = '';
   toastType: 'success' | 'error' | 'warning' = 'success';
 
+  showDeletePrompt: boolean = false;
+  pendingDeleteId: number | null = null;
+
   constructor(
     private fb: FormBuilder,
     private civilServiceService: CivilServiceService,
@@ -119,24 +122,34 @@ export class CivilComponent implements OnInit {
   }
 
   deleteEligibility(id: number): void {
-    if (confirm('Are you sure you want to delete this record?')) {
-      this.civilServiceService.deleteCivilServiceEligibility(id).subscribe(
+    this.pendingDeleteId = id;
+    this.showDeletePrompt = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeletePrompt = false;
+    this.pendingDeleteId = null;
+  }
+
+  confirmDelete(): void {
+    if (this.pendingDeleteId) {
+      this.civilServiceService.deleteCivilServiceEligibility(this.pendingDeleteId).subscribe(
         response => {
-          // Remove the deleted item from the local array
-          this.civilServiceData = this.civilServiceData.filter(el => el.CivilServiceEligibilityID !== id);
-          
-          // Update pagination
+          this.civilServiceData = this.civilServiceData.filter(el => el.CivilServiceEligibilityID !== this.pendingDeleteId);
           this.totalPages = Math.ceil(this.civilServiceData.length / this.itemsPerPage);
           if (this.currentPage > this.totalPages) {
             this.currentPage = this.totalPages || 1;
           }
           this.updatePaginatedData();
-
           this.showToastNotification('Civil service eligibility deleted successfully.', 'success');
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         },
         error => {
           this.showToastNotification('There is an error deleting the record.', 'error');
           console.error('Error deleting civil service eligibility', error);
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         }
       );
     }

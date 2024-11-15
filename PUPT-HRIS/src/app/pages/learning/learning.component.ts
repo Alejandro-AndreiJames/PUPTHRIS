@@ -31,6 +31,9 @@ export class LearningComponent implements OnInit {
   toastMessage: string = '';
   toastType: 'success' | 'error' | 'warning' = 'success';
 
+  showDeletePrompt: boolean = false;
+  pendingDeleteId: number | null = null;
+
   constructor(private fb: FormBuilder, private learningService: LearningService, private authService: AuthService) {
     const token = this.authService.getToken();
     if (token) {
@@ -154,20 +157,34 @@ export class LearningComponent implements OnInit {
   }
 
   deleteLearning(id: number): void {
-    if (confirm('Are you sure you want to delete this record?')) {
-      this.learningService.deleteLearningDevelopment(id).subscribe(
+    this.pendingDeleteId = id;
+    this.showDeletePrompt = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeletePrompt = false;
+    this.pendingDeleteId = null;
+  }
+
+  confirmDelete(): void {
+    if (this.pendingDeleteId) {
+      this.learningService.deleteLearningDevelopment(this.pendingDeleteId).subscribe(
         response => {
-          this.learningData = this.learningData.filter(ld => ld.LearningDevelopmentID !== id);
+          this.learningData = this.learningData.filter(ld => ld.LearningDevelopmentID !== this.pendingDeleteId);
           this.totalPages = Math.ceil(this.learningData.length / this.itemsPerPage);
           if (this.currentPage > this.totalPages) {
             this.currentPage = Math.max(1, this.totalPages);
           }
           this.updatePaginatedData();
           this.showToastNotification('Learning development deleted successfully.', 'success');
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         },
         error => {
           this.showToastNotification('There is an error deleting the record.', 'error');
           console.error('Error deleting learning development', error);
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         }
       );
     }

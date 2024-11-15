@@ -32,6 +32,9 @@ export class VoluntaryWorkComponent implements OnInit {
   totalPages: number = 1;
   totalPagesArray: number[] = [];
 
+  showDeletePrompt: boolean = false;
+  pendingDeleteId: number | null = null;
+
   constructor(private fb: FormBuilder, private voluntaryWorkService: VoluntaryWorkService, private authService: AuthService) {
     const token = this.authService.getToken();
     if (token) {
@@ -153,16 +156,30 @@ export class VoluntaryWorkComponent implements OnInit {
   }
 
   deleteVoluntaryWork(id: number): void {
-    if (confirm('Are you sure you want to delete this record?')) {
-      this.voluntaryWorkService.deleteVoluntaryWork(id).subscribe(
+    this.pendingDeleteId = id;
+    this.showDeletePrompt = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeletePrompt = false;
+    this.pendingDeleteId = null;
+  }
+
+  confirmDelete(): void {
+    if (this.pendingDeleteId) {
+      this.voluntaryWorkService.deleteVoluntaryWork(this.pendingDeleteId).subscribe(
         response => {
-          this.voluntaryWorkData = this.voluntaryWorkData.filter(vw => vw.VoluntaryWorkID !== id);
-          this.showToastNotification('Voluntary work deleted successfully.', 'error');
-          this.calculatePagination(); // Recalculate pagination after deletion
+          this.voluntaryWorkData = this.voluntaryWorkData.filter(vw => vw.VoluntaryWorkID !== this.pendingDeleteId);
+          this.showToastNotification('Voluntary work deleted successfully.', 'success');
+          this.calculatePagination();
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         },
         error => {
           this.showToastNotification('There is an error deleting the record.', 'error');
           console.error('Error deleting voluntary work', error);
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         }
       );
     }

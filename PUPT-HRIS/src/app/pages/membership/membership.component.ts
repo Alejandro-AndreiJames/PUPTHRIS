@@ -35,6 +35,9 @@ export class OfficershipMembershipComponent implements OnInit {
   toastMessage: string = '';
   toastType: 'success' | 'error' | 'warning' = 'success';
 
+  showDeletePrompt: boolean = false;
+  pendingDeleteId: number | null = null;
+
   constructor(
     private fb: FormBuilder,
     private membershipService: OfficershipMembershipService,
@@ -183,28 +186,34 @@ export class OfficershipMembershipComponent implements OnInit {
   }
 
   deleteMembership(id: number): void {
-    if (confirm('Are you sure you want to delete this record?')) {
-      this.membershipService.deleteMembership(id).subscribe(
-        (response) => {
-          // Remove the deleted item from the main array
-          this.memberships = this.memberships.filter(membership => membership.OfficershipMembershipID !== id);
-          
-          // Recalculate total pages
+    this.pendingDeleteId = id;
+    this.showDeletePrompt = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeletePrompt = false;
+    this.pendingDeleteId = null;
+  }
+
+  confirmDelete(): void {
+    if (this.pendingDeleteId) {
+      this.membershipService.deleteMembership(this.pendingDeleteId).subscribe(
+        response => {
+          this.memberships = this.memberships.filter(m => m.OfficershipMembershipID !== this.pendingDeleteId);
           this.totalPages = Math.ceil(this.memberships.length / this.itemsPerPage);
-          
-          // Adjust current page if necessary
           if (this.currentPage > this.totalPages) {
-            this.currentPage = this.totalPages || 1;
+            this.currentPage = Math.max(1, this.totalPages);
           }
-          
-          // Update paginated data
           this.updatePaginatedData();
-          
           this.showToastNotification('Officership/Membership deleted successfully.', 'success');
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         },
-        (error) => {
+        error => {
           this.showToastNotification('Error deleting officership/membership.', 'error');
           console.error('Error deleting officership/membership', error);
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         }
       );
     }

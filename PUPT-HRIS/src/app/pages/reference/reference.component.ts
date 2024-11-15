@@ -30,6 +30,9 @@ export class ReferenceComponent implements OnInit {
   toastMessage: string = '';
   toastType: 'success' | 'error' | 'warning' = 'success';
 
+  showDeletePrompt: boolean = false;
+  pendingDeleteId: number | null = null;
+
   constructor(
     private fb: FormBuilder,
     private characterReferenceService: CharacterReferenceService,
@@ -146,18 +149,37 @@ export class ReferenceComponent implements OnInit {
     }
   }
 
-  delete(referenceId: number | undefined): void {
-    if (referenceId !== undefined) {
-        const confirmation = confirm('Are you sure you want to delete this reference?');
-        if (confirmation) {
-            this.characterReferenceService.deleteReference(referenceId).subscribe(
-                (response) => {
-                    this.getReferences();
-                    this.showToastNotification('Reference deleted successfully.', 'error');
-                },
-                (error) => this.showToastNotification('Error deleting reference.', 'error')
-            );
+  delete(referenceId: number): void {
+    this.pendingDeleteId = referenceId;
+    this.showDeletePrompt = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeletePrompt = false;
+    this.pendingDeleteId = null;
+  }
+
+  confirmDelete(): void {
+    if (this.pendingDeleteId) {
+      this.characterReferenceService.deleteReference(this.pendingDeleteId).subscribe(
+        response => {
+          this.referenceData = this.referenceData.filter(ref => ref.ReferenceID !== this.pendingDeleteId);
+          this.totalPages = Math.ceil(this.referenceData.length / this.itemsPerPage);
+          if (this.currentPage > this.totalPages) {
+            this.currentPage = Math.max(1, this.totalPages);
+          }
+          this.updatePaginatedData();
+          this.showToastNotification('Reference deleted successfully.', 'success');
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
+        },
+        error => {
+          this.showToastNotification('Error deleting reference.', 'error');
+          console.error('Error deleting reference', error);
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         }
+      );
     }
   }
 
