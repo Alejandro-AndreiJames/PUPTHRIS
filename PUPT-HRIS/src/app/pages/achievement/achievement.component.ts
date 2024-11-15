@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { AchievementAward } from '../../model/achievement-awards.model';
 import { AchievementAwardService } from '../../services/achievement-awards.service';
 import { AuthService } from '../../services/auth.service';
@@ -40,12 +40,16 @@ export class AchievementAwardComponent implements OnInit {
   showDeletePrompt: boolean = false;
   pendingDeleteId: number | null = null;
 
+  today: string;
+
   constructor(
     private fb: FormBuilder,
     private achievementAwardService: AchievementAwardService,
     private authService: AuthService,
     private excelImportService: ExcelImportService
   ) {
+    this.today = new Date().toISOString().split('T')[0];
+
     const token = this.authService.getToken();
     if (token) {
       const decoded: any = jwtDecode(token);
@@ -55,16 +59,20 @@ export class AchievementAwardComponent implements OnInit {
     }
 
     this.achievementAwardForm = this.fb.group({
-      NatureOfAchievement: [''],
-      Classification: [''],
-      Level: [''],
-      AwardingBody: [''],
+      NatureOfAchievement: ['', Validators.required],
+      Classification: ['', Validators.required],
+      Level: ['', Validators.required],
+      AwardingBody: ['', Validators.required],
       Venue: [''],
-      InclusiveDates: [''],
+      InclusiveDates: ['', [Validators.required, this.dateValidator()]],
       Remarks: [''],
-      SupportingDocument: [''], 
+      SupportingDocument: [''],
       Proof: [''],
       ProofType: ['file']
+    });
+
+    this.achievementAwardForm.valueChanges.subscribe(value => {
+      console.log('Form values changed:', value);
     });
   }
 
@@ -120,20 +128,93 @@ export class AchievementAwardComponent implements OnInit {
   }
 
   addNewAchievementAward(): void {
-    this.resetForm(false);
     this.isEditing = true;
+    this.currentAchievementId = null;
+    this.achievementAwardForm.reset();
+    this.selectedFileName = null;
   }
 
   editAchievementAward(id: number): void {
     const award = this.achievementAwards.find(a => a.AchievementID === id);
     if (award) {
+      console.log('Original award data:', award);
       this.isEditing = true;
       this.currentAchievementId = id;
-      this.achievementAwardForm.patchValue(award);
+      
+      let formattedDate = award.InclusiveDates;
+      if (award.InclusiveDates) {
+        try {
+          if (award.InclusiveDates.includes('-')) {
+            const [startDate] = award.InclusiveDates.split('-').map(d => d.trim());
+            const parsedDate = new Date(startDate);
+            if (!isNaN(parsedDate.getTime())) {
+              formattedDate = parsedDate.toISOString().split('T')[0];
+            }
+          } else {
+            const parsedDate = new Date(award.InclusiveDates);
+            if (!isNaN(parsedDate.getTime())) {
+              formattedDate = parsedDate.toISOString().split('T')[0];
+            }
+          }
+        } catch (error) {
+          console.error('Error parsing date:', error);
+          formattedDate = '';
+        }
+      }
+
+      const formData = {
+        NatureOfAchievement: award.NatureOfAchievement || '',
+        Classification: award.Classification || '',
+        Level: award.Level || '',
+        AwardingBody: award.AwardingBody || '',
+        Venue: award.Venue || '',
+        InclusiveDates: formattedDate || '',
+        Remarks: award.Remarks || '',
+        SupportingDocument: award.SupportingDocument || '',
+        Proof: award.Proof || '',
+        ProofType: award.ProofType || 'file'
+      };
+
+      console.log('Setting form data:', formData);
+      this.achievementAwardForm.patchValue(formData);
+      
+      if (award.Proof) {
+        this.selectedFileName = award.Proof.split('/').pop() || null;
+      }
     }
   }
 
+  private dateValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) return null;
+
+      const selectedDate = new Date(control.value);
+      const today = new Date();
+      
+      today.setHours(0, 0, 0, 0);
+      selectedDate.setHours(0, 0, 0, 0);
+
+      if (selectedDate > today) {
+        return { futureDate: true };
+      }
+      return null;
+    };
+  }
+
   onSubmit(): void {
+    if (this.achievementAwardForm.invalid) {
+      if (this.achievementAwardForm.get('InclusiveDates')?.errors?.['futureDate']) {
+        this.showToastNotification('Date cannot be in the future.', 'warning');
+        return;
+      }
+      if (this.achievementAwardForm.get('InclusiveDates')?.errors?.['required']) {
+        this.showToastNotification('Date is required.', 'warning');
+        return;
+      }
+      this.showToastNotification('Please fill in all required fields correctly.', 'warning');
+      return;
+    }
+
     const formData = new FormData();
 
     Object.keys(this.achievementAwardForm.value).forEach((key) => {

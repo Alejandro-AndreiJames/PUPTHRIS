@@ -120,7 +120,21 @@
               </div>
               <div class="form-control">
                 <label for="InclusiveDates" class="label-text">Inclusive Dates <span class="text-red-500">*</span></label>
-                <input id="InclusiveDates" formControlName="InclusiveDates" class="input input-bordered w-full" placeholder="Enter the inclusive dates">
+                <input 
+                  id="InclusiveDates" 
+                  type="date"
+                  formControlName="InclusiveDates" 
+                  class="input input-bordered w-full"
+                  [max]="today">
+                <div *ngIf="achievementAwardForm.get('InclusiveDates')?.invalid && achievementAwardForm.get('InclusiveDates')?.touched" 
+                     class="text-red-500 text-sm mt-1">
+                  <div *ngIf="achievementAwardForm.get('InclusiveDates')?.errors?.['required']">
+                    Date is required
+                  </div>
+                  <div *ngIf="achievementAwardForm.get('InclusiveDates')?.errors?.['futureDate']">
+                    Date cannot be in the future
+                  </div>
+                </div>
               </div>
               <div class="form-control">
                 <label for="Remarks" class="label-text">Remarks</label>
