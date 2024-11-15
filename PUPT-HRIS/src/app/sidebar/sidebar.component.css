@@ -58,4 +58,210 @@ li.active > a {
   background-color: #1c1b1b; /* Adjust as needed */
 }
 
+/* Enhanced Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 2.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 90%;
+  animation: slideIn 0.3s ease-out;
+  border-top: 4px solid #7B1F1F;
+}
+
+/* Modal animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { 
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to { 
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Enhanced button styles */
+.btn {
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.btn-outline {
+  background-color: white;
+  border: 2px solid #7B1F1F;
+  color: #7B1F1F;
+}
+
+.btn-outline:hover {
+  background-color: #f8f0f0;
+  transform: translateY(-1px);
+}
+
+.btn-danger {
+  background-color: #7B1F1F;
+  color: white;
+  border: 2px solid #7B1F1F;
+}
+
+.btn-danger:hover {
+  background-color: #641919;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(123, 31, 31, 0.3);
+}
+
+/* Modal text styles */
+.modal-content h2 {
+  color: #7B1F1F;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.modal-content p {
+  color: #4B5563;
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.flex.justify-end.gap-4 {
+  margin-top: 2rem;
+}
+
+/* Loading Spinner */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Success Message */
+.success-message {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #10B981;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1100;
+  animation: slideDown 0.3s ease-out;
+}
+
+.success-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.success-icon {
+  font-size: 1.25rem;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translate(-50%, -100%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+/* Disabled button styles */
+.btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-danger:disabled {
+  background-color: #9B2C2C;
+}
+
+.btn-outline:disabled {
+  border-color: #9B2C2C;
+  color: #9B2C2C;
+}
+
+/* Success Modal specific styles */
+.success-modal {
+  text-align: center;
+  padding: 2rem;
+}
+
+.success-icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.success-icon-container i {
+  font-size: 3rem;
+  color: #7B1F1F;
+  animation: scaleIn 0.3s ease-out;
+}
+
+@keyframes scaleIn {
+  from { 
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to { 
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.success-modal h2 {
+  margin-top: 1rem;
+  color: #7B1F1F;
+  animation: fadeIn 0.3s ease-out 0.2s both;
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 
