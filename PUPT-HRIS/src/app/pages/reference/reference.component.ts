@@ -47,9 +47,13 @@ export class ReferenceComponent implements OnInit {
     }
 
     this.referenceForm = this.fb.group({
-      Name: ['', Validators.required],
-      Address: [''],
-      TelephoneNumber: [''],
+      Name: ['', [Validators.required, Validators.minLength(2)]],
+      Address: ['', [Validators.required, Validators.minLength(5)]],
+      TelephoneNumber: ['', [
+        Validators.required, 
+        Validators.pattern('^[0-9-+()\\s]*$'),
+        Validators.minLength(7)
+      ]]
     });
   }
 
@@ -100,6 +104,29 @@ export class ReferenceComponent implements OnInit {
   }
 
   onSubmit(): void {
+    if (this.referenceForm.invalid) {
+      Object.keys(this.referenceForm.controls).forEach(key => {
+        const control = this.referenceForm.get(key);
+        if (control?.invalid) {
+          control.markAsTouched();
+        }
+      });
+
+      let errorMessage = 'Please fix the following errors:';
+      if (this.referenceForm.get('Name')?.invalid) {
+        errorMessage += '\n- Name is required (min. 2 characters)';
+      }
+      if (this.referenceForm.get('Address')?.invalid) {
+        errorMessage += '\n- Address is required (min. 5 characters)';
+      }
+      if (this.referenceForm.get('TelephoneNumber')?.invalid) {
+        errorMessage += '\n- Valid telephone number is required';
+      }
+
+      this.showToastNotification(errorMessage, 'warning');
+      return;
+    }
+
     if (!this.hasUnsavedChanges()) {
       this.showToastNotification('There are no current changes to be saved.', 'warning');
       return;
