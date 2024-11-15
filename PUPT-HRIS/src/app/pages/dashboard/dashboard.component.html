@@ -7,29 +7,30 @@
       </a>
     </div>
     
-    <div *ngIf="userRole === 'admin' || userRole === 'superadmin'" class="view-toggle-container">
-      <button 
-        [class]="isAdminView ? 'active' : ''" 
-        (click)="toggleDashboardView(true)"
-        class="toggle-btn">
-        <i class="fas fa-users-cog mr-2"></i>
-        Admin View
+    <div class="dashboard-controls">
+      <button *ngIf="(userRole === 'admin' || userRole === 'superadmin') && isAdminView"
+              (click)="showDashboardSettings = true"
+              class="settings-btn">
+        <i class="fas fa-cog text-xl"></i>
       </button>
-      <button 
-        [class]="!isAdminView ? 'active' : ''" 
-        (click)="toggleDashboardView(false)"
-        class="toggle-btn">
-        <i class="fas fa-user mr-2"></i>
-        Personal View
-      </button>
-    </div>
 
-    <!-- Add settings button -->
-    <button *ngIf="(userRole === 'admin' || userRole === 'superadmin') && isAdminView"
-            (click)="showDashboardSettings = true"
-            class="btn btn-ghost btn-circle">
-      <i class="fas fa-cog text-xl"></i>
-    </button>
+      <div *ngIf="userRole === 'admin' || userRole === 'superadmin'" class="view-toggle-container">
+        <button 
+          [class]="isAdminView ? 'active' : ''" 
+          (click)="toggleDashboardView(true)"
+          class="toggle-btn">
+          <i class="fas fa-users-cog mr-2"></i>
+          Admin View
+        </button>
+        <button 
+          [class]="!isAdminView ? 'active' : ''" 
+          (click)="toggleDashboardView(false)"
+          class="toggle-btn">
+          <i class="fas fa-user mr-2"></i>
+          Personal View
+        </button>
+      </div>
+    </div>
   </div>
 
   <div class="divider"></div>
