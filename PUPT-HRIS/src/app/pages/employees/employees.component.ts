@@ -516,4 +516,15 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     }
     return '../../../assets/default-avatar.jpg';
   }
+
+  formatUserName(user: User): string {
+    const nameParts = [
+      user.FirstName,
+      user.MiddleName,
+      user.Surname,
+      user.NameExtension
+    ].filter(part => part !== null && part !== undefined && part !== '');
+
+    return nameParts.length > 0 ? nameParts.join(' ') : 'No information entered';
+  }
 }

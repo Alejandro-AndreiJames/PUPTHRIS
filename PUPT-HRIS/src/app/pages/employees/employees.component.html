@@ -80,11 +80,7 @@
         <tr *ngFor="let user of paginatedUsers; let i = index">
           <th class="p-4">{{ (currentPage - 1) * itemsPerPage + i + 1 }}</th>
           <td class="p-4">{{ user.Fcode || 'No information entered' }}</td>
-          <td class="p-4">
-            {{ (user.FirstName || user.MiddleName || user.Surname || user.NameExtension) ? 
-               (user.FirstName + ' ' + user.MiddleName + ' ' + user.Surname + ' ' + user.NameExtension).trim() : 
-               'No information entered' }}
-          </td>
+          <td class="p-4">{{ formatUserName(user) }}</td>
           <td class="p-4">{{ getRoleName(user.Roles) || 'No information entered' }}</td>
           <td class="p-4">{{ user.Department?.DepartmentName || 'No information entered' }}</td>
           <td class="p-4">{{ user.EmploymentType || 'No information entered' }}</td>
