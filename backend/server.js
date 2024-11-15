@@ -82,6 +82,27 @@ app.use('/api/excel-import', excelImportRoutes);
 app.use('/api/college-campuses', collegeCampusRoutes);
 app.use('/api/evaluation', evaluationRoutes);
 
+app.use(async (err, req, res, next) => {
+  if (err.name === 'SequelizeConnectionError' || 
+      err.name === 'SequelizeConnectionRefusedError' || 
+      err.name === 'SequelizeHostNotFoundError' || 
+      err.name === 'SequelizeConnectionTimedOutError') {
+    
+    try {
+      await sequelize.authenticate();
+      // If reconnection successful, retry the original request
+      return next();
+    } catch (error) {
+      console.error('Failed to reconnect to database:', error);
+      return res.status(500).json({ 
+        error: 'Database connection error',
+        message: 'Please try again in a few moments'
+      });
+    }
+  }
+  next(err);
+});
+
 sequelize.sync().then(() => {
   console.log('Database synced successfully');
   
