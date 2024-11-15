@@ -36,6 +36,9 @@ export class EducationComponent implements OnInit {
     'DOCTORATE'
   ];
 
+  showDeletePrompt: boolean = false;
+  pendingDeleteId: number | null = null;
+
   constructor(private fb: FormBuilder, private educationService: EducationService, private authService: AuthService) {
     const token = this.authService.getToken();
     if (token) {
@@ -131,15 +134,29 @@ export class EducationComponent implements OnInit {
   }
 
   deleteEducation(id: number): void {
-    if (confirm('Are you sure you want to delete this record?')) {
-      this.educationService.deleteEducation(id).subscribe(
+    this.pendingDeleteId = id;
+    this.showDeletePrompt = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeletePrompt = false;
+    this.pendingDeleteId = null;
+  }
+
+  confirmDelete(): void {
+    if (this.pendingDeleteId) {
+      this.educationService.deleteEducation(this.pendingDeleteId).subscribe(
         response => {
           this.loadEducation();
           this.showToastNotification('Education record deleted successfully.', 'error');
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         },
         error => {
           this.showToastNotification('There is an error deleting the record.', 'error');
           console.error('Error deleting education', error);
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         }
       );
     }

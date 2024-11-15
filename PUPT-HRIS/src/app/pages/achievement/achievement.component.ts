@@ -37,6 +37,9 @@ export class AchievementAwardComponent implements OnInit {
   itemsPerPage: number = 5;
   totalPages: number = 0;
 
+  showDeletePrompt: boolean = false;
+  pendingDeleteId: number | null = null;
+
   constructor(
     private fb: FormBuilder,
     private achievementAwardService: AchievementAwardService,
@@ -181,28 +184,34 @@ export class AchievementAwardComponent implements OnInit {
   }
 
   deleteAchievementAward(id: number): void {
-    if (confirm('Are you sure you want to delete this record?')) {
-      this.achievementAwardService.deleteAchievement(id).subscribe(
-        (response) => {
-          // Remove the deleted item from the main array
-          this.achievementAwards = this.achievementAwards.filter(award => award.AchievementID !== id);
-          
-          // Recalculate total pages
+    this.pendingDeleteId = id;
+    this.showDeletePrompt = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeletePrompt = false;
+    this.pendingDeleteId = null;
+  }
+
+  confirmDelete(): void {
+    if (this.pendingDeleteId) {
+      this.achievementAwardService.deleteAchievement(this.pendingDeleteId).subscribe(
+        response => {
+          this.achievementAwards = this.achievementAwards.filter(award => award.AchievementID !== this.pendingDeleteId);
           this.totalPages = Math.ceil(this.achievementAwards.length / this.itemsPerPage);
-          
-          // Adjust current page if necessary
           if (this.currentPage > this.totalPages) {
-            this.currentPage = this.totalPages || 1;
+            this.currentPage = Math.max(1, this.totalPages);
           }
-          
-          // Update paginated data
           this.updatePaginatedData();
-          
           this.showToastNotification('Achievement award deleted successfully.', 'success');
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         },
-        (error) => {
-          this.showToastNotification('Error deleting achievement award.', 'error');
+        error => {
+          this.showToastNotification('There is an error deleting the record.', 'error');
           console.error('Error deleting achievement award', error);
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         }
       );
     }

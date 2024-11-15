@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable, throwError, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { OfficershipMembership } from '../model/officership-membership.model';
 
@@ -33,7 +33,15 @@ export class OfficershipMembershipService {
   // Get all memberships for a user
   getMembershipsByUserId(userId: number): Observable<OfficershipMembership[]> {
     return this.http.get<OfficershipMembership[]>(`${this.apiUrl}/user/${userId}`, { headers: this.getHeaders() })
-      .pipe(catchError(this.handleError));
+      .pipe(
+        map(response => response || []),
+        catchError(error => {
+          if (error.status === 404) {
+            return of([]);
+          }
+          return throwError(() => error);
+        })
+      );
   }
 
   // Delete membership

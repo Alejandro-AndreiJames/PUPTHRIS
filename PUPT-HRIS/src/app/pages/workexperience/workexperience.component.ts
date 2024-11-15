@@ -31,6 +31,9 @@ export class WorkExperienceComponent implements OnInit {
   toastMessage: string = '';
   toastType: 'success' | 'error' | 'warning' = 'success';
 
+  showDeletePrompt: boolean = false;
+  pendingDeleteId: number | null = null;
+
   constructor(private fb: FormBuilder, private workService: WorkService, private authService: AuthService) {
     const token = this.authService.getToken();
     if (token) {
@@ -112,20 +115,34 @@ export class WorkExperienceComponent implements OnInit {
   }
 
   deleteExperience(id: number): void {
-    if (confirm('Are you sure you want to delete this record?')) {
-      this.workService.deleteWorkExperience(id).subscribe(
+    this.pendingDeleteId = id;
+    this.showDeletePrompt = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeletePrompt = false;
+    this.pendingDeleteId = null;
+  }
+
+  confirmDelete(): void {
+    if (this.pendingDeleteId) {
+      this.workService.deleteWorkExperience(this.pendingDeleteId).subscribe(
         response => {
-          this.workExperienceData = this.workExperienceData.filter(ex => ex.WorkExperienceID !== id);
+          this.workExperienceData = this.workExperienceData.filter(ex => ex.WorkExperienceID !== this.pendingDeleteId);
           this.totalPages = Math.ceil(this.workExperienceData.length / this.itemsPerPage);
           if (this.currentPage > this.totalPages) {
             this.currentPage = Math.max(1, this.totalPages);
           }
           this.updatePaginatedData();
           this.showToastNotification('Work experience deleted successfully.', 'success');
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         },
         error => {
           this.showToastNotification('There is an error deleting the record.', 'error');
           console.error('Error deleting work experience', error);
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         }
       );
     }
