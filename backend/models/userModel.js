@@ -1,6 +1,6 @@
 // userModel.js
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../config/db.config');
+const { sequelize } = require('../config/db.config');
 const Department = require('./departmentModel');
 
 

@@ -41,7 +41,7 @@ export class ContactDetailsComponent implements OnInit {
 
     this.contactDetailsForm = this.fb.group({
       TelephoneNumber: [''],
-      MobileNumber: ['', Validators.required],
+      MobileNumber: ['', [Validators.required, Validators.pattern('^[0-9]{11}$')]],
       EmailAddress: ['', [Validators.required, Validators.email]],
       UserID: [this.userId]
     });

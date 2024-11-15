@@ -2,8 +2,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const sequelize = require('./config/db.config');
+const { sequelize } = require('./config/db.config');
 require('./utils/databaseCleanup');
+const checkDatabaseConnection = require('./middleware/databaseConnectionCheck');
 
 
 const educationRoutes = require('./routes/educationRoutes');
@@ -49,6 +50,8 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
+app.use(checkDatabaseConnection);
+
 app.use('/api/basic-details', basicDetailsRoutes);
 app.use('/api/personaldetails', personalDetailsRoutes);
 app.use('/api/trainings', trainingsRoutes);
@@ -81,27 +84,6 @@ app.use('/api/academic-ranks', academicRanksRoutes);
 app.use('/api/excel-import', excelImportRoutes);
 app.use('/api/college-campuses', collegeCampusRoutes);
 app.use('/api/evaluation', evaluationRoutes);
-
-app.use(async (err, req, res, next) => {
-  if (err.name === 'SequelizeConnectionError' || 
-      err.name === 'SequelizeConnectionRefusedError' || 
-      err.name === 'SequelizeHostNotFoundError' || 
-      err.name === 'SequelizeConnectionTimedOutError') {
-    
-    try {
-      await sequelize.authenticate();
-      // If reconnection successful, retry the original request
-      return next();
-    } catch (error) {
-      console.error('Failed to reconnect to database:', error);
-      return res.status(500).json({ 
-        error: 'Database connection error',
-        message: 'Please try again in a few moments'
-      });
-    }
-  }
-  next(err);
-});
 
 sequelize.sync().then(() => {
   console.log('Database synced successfully');

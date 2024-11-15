@@ -10,38 +10,54 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, proces
     max: 20,
     min: 5,
     acquire: 60000,
-    idle: 30000,
+    idle: 30000
   },
   dialectOptions: {
-    connectTimeout: 60000,
+    connectTimeout: 60000
   },
   retry: {
-    max: 3,
+    max: 5,
     timeout: 30000
   },
   logging: false
 });
 
-// Add connection error handling
-const maxRetries = 5;
-let retries = 0;
+// Enhanced connection management
+let isConnected = false;
 
-const connectWithRetry = async () => {
+const checkConnection = async () => {
   try {
     await sequelize.authenticate();
-    console.log('Database connection established successfully.');
-    retries = 0; // Reset retries on successful connection
-  } catch (err) {
-    console.error('Unable to connect to the database:', err);
-    if (retries < maxRetries) {
-      retries++;
-      console.log(`Retrying connection... Attempt ${retries} of ${maxRetries}`);
-      setTimeout(connectWithRetry, 5000); // Wait 5 seconds before retrying
-    }
+    isConnected = true;
+    return true;
+  } catch (error) {
+    console.error('Connection check failed:', error);
+    isConnected = false;
+    return false;
   }
 };
 
-// Initial connection attempt
-connectWithRetry();
+// Initial connection
+const initializeConnection = async () => {
+  try {
+    await sequelize.authenticate();
+    isConnected = true;
+    console.log('Database connection established successfully.');
+  } catch (error) {
+    console.error('Unable to connect to the database:', error);
+    isConnected = false;
+    process.exit(1);
+  }
+};
 
-module.exports = sequelize;
+// Periodic connection check
+setInterval(checkConnection, 30000);
+
+// Initialize connection
+initializeConnection();
+
+module.exports = {
+  sequelize,
+  checkConnection,
+  isConnected
+};

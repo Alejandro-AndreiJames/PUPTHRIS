@@ -1,4 +1,4 @@
-const sequelize = require('../config/db.config');
+const { sequelize } = require('../config/db.config');
 const User = require('../models/userModel');
 const Role = require('../models/roleModel');
 const Coordinator = require('../models/coordinatorModel');

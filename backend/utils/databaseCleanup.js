@@ -1,17 +1,22 @@
-const sequelize = require('../config/db.config');
+const { sequelize, isConnected } = require('../config/db.config');
 
 const cleanupConnections = async () => {
+  if (!isConnected) return;
+
   try {
-    if (sequelize.connectionManager.pool) {
-      await sequelize.connectionManager.pool.drain();
-      await sequelize.connectionManager.pool.clear();
-      console.log('Idle database connections cleaned up');
+    const [results] = await sequelize.query('SELECT COUNT(*) as count FROM information_schema.processlist WHERE command = "Sleep"');
+    const sleepingConnections = results[0].count;
+
+    if (sleepingConnections > 5) {
+      await sequelize.query('KILL CONNECTION_ID()');
+      console.log(`Cleaned up ${sleepingConnections - 5} idle connections`);
     }
   } catch (error) {
-    console.error('Error cleaning up connections:', error);
+    console.error('Error during connection cleanup:', error);
   }
 };
 
-setInterval(cleanupConnections, 60 * 60 * 1000);
+const cleanupInterval = 30 * 60 * 1000; // 30 minutes
+setInterval(cleanupConnections, cleanupInterval);
 
 module.exports = { cleanupConnections }; 
