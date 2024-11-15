@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TrainingSeminar } from '../../model/training-seminars.model';
 import { TrainingSeminarsService } from '../../services/training-seminars.service';
 import { AuthService } from '../../services/auth.service';
@@ -55,16 +55,16 @@ export class TrainingSeminarsComponent implements OnInit {
     }
 
     this.trainingForm = this.fb.group({
-      Title: [''],
-      Classification: [''],
+      Title: ['', Validators.required],
+      Classification: ['', Validators.required],
       Nature: [''],
       Budget: [''],
       SourceOfFund: [''],
       Organizer: [''],
       Level: [''],
       Venue: [''],
-      DateFrom: [''],
-      DateTo: [''],
+      DateFrom: ['', Validators.required],
+      DateTo: ['', Validators.required],
       NumberOfHours: [''],
       SupportingDocuments: [''],
       Proof: [''],
@@ -143,7 +143,7 @@ export class TrainingSeminarsComponent implements OnInit {
 
   onSubmit(): void {
     if (this.trainingForm.invalid) {
-      this.showToastNotification('Please fill in all required fields.', 'warning');
+      this.showToastNotification('Please fill in all required fields (Title, Classification, Date From, and Date To).', 'warning');
       return;
     }
 

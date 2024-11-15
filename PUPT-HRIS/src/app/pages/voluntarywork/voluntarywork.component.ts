@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { VoluntaryWorkService } from '../../services/voluntarywork.service';
 import { VoluntaryWork } from '../../model/voluntary-work.model';
 import { CommonModule } from '@angular/common';
@@ -45,11 +45,11 @@ export class VoluntaryWorkComponent implements OnInit {
     }
 
     this.voluntaryWorkForm = this.fb.group({
-      OrganizationNameAddress: [''],
-      InclusiveDatesFrom: [''],
-      InclusiveDatesTo: [''],
-      NumberOfHours: [''],
-      PositionNatureOfWork: ['']
+      OrganizationNameAddress: ['', Validators.required],
+      InclusiveDatesFrom: ['', Validators.required],
+      InclusiveDatesTo: ['', Validators.required],
+      NumberOfHours: ['', Validators.required],
+      PositionNatureOfWork: ['', Validators.required]
     });
   }
 
@@ -112,6 +112,11 @@ export class VoluntaryWorkComponent implements OnInit {
   }
 
   onSubmit(): void {
+    if (this.voluntaryWorkForm.invalid) {
+      this.showToastNotification('Please fill in all required fields.', 'warning');
+      return;
+    }
+
     if (!this.hasUnsavedChanges()) {
       this.showToastNotification('There are no current changes to be saved.', 'warning');
       return;

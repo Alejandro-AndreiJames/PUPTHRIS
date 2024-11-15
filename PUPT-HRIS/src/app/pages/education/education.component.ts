@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, AbstractControl, ValidatorFn, ValidationErrors } from '@angular/forms';
 import { EducationService } from '../../services/education.service';
 import { Education } from '../../model/education.model';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -39,6 +39,8 @@ export class EducationComponent implements OnInit {
   showDeletePrompt: boolean = false;
   pendingDeleteId: number | null = null;
 
+  today: string;
+
   constructor(private fb: FormBuilder, private educationService: EducationService, private authService: AuthService) {
     const token = this.authService.getToken();
     if (token) {
@@ -48,32 +50,44 @@ export class EducationComponent implements OnInit {
       this.userId = 0;
     }
 
+    this.today = new Date().toISOString().split('T')[0];
+
     this.educationForm = this.fb.group({
-      Level: [''],
-      NameOfSchool: [''],
+      Level: ['', Validators.required],
+      NameOfSchool: ['', Validators.required],
       BasicEducationDegreeCourse: [''],
-      PeriodOfAttendanceFrom: [''],
-      PeriodOfAttendanceTo: [''],
+      PeriodOfAttendanceFrom: ['', [Validators.required, this.dateValidator()]],
+      PeriodOfAttendanceTo: ['', [Validators.required, this.dateValidator()]],
       HighestLevelUnitsEarned: [''],
       YearGraduated: [''],
       AcademicHonors: ['']
     });
+
+    this.educationForm.get('PeriodOfAttendanceFrom')?.valueChanges.subscribe(value => {
+      const toControl = this.educationForm.get('PeriodOfAttendanceTo');
+      if (toControl?.value && value && toControl.value < value) {
+        toControl.setValue('');
+      }
+    });
   }
 
   ngOnInit(): void {
+    console.log('Component initialized');
     this.loadEducation();
   }
 
   loadEducation(): void {
-    this.educationService.getEducationByUser(this.userId).subscribe(
-      data => {
+    console.log('Loading education data for user:', this.userId);
+    this.educationService.getEducationByUser(this.userId).subscribe({
+      next: (data) => {
+        console.log('Received education data:', data);
         this.educationData = data;
       },
-      error => {
+      error: (error) => {
+        console.error('Error loading education:', error);
         this.showToastNotification('Error fetching education data.', 'error');
-        console.error('Error fetching education data', error);
       }
-    );
+    });
   }
 
   toggleForm(id?: number): void {
@@ -82,22 +96,43 @@ export class EducationComponent implements OnInit {
     if (this.isEditing && id) {
       const education = this.educationData.find(e => e.EducationID === id);
       if (education) {
-        this.educationForm.patchValue(education);
+        const formData = {
+          ...education,
+          PeriodOfAttendanceFrom: education.PeriodOfAttendanceFrom ? education.PeriodOfAttendanceFrom.toString().split('T')[0] : '',
+          PeriodOfAttendanceTo: education.PeriodOfAttendanceTo ? education.PeriodOfAttendanceTo.toString().split('T')[0] : ''
+        };
+        
+        console.log('Setting form data:', formData);
+        this.educationForm.patchValue(formData);
         this.currentEducationId = id;
-        this.initialFormValue = this.educationForm.getRawValue(); // Store the initial form value
+        this.initialFormValue = this.educationForm.getRawValue();
       }
     } else if (this.isEditing) {
       this.educationForm.reset();
       this.currentEducationId = null;
-      this.initialFormValue = this.educationForm.getRawValue(); // Store the initial form value for new form
+      this.initialFormValue = this.educationForm.getRawValue();
     } else {
-      if (this.hasUnsavedChanges()) { // Check for unsaved changes before canceling
+      if (this.hasUnsavedChanges()) {
         this.showToastNotification('The changes are not saved.', 'error');
       }
     }
   }
 
   onSubmit(): void {
+    if (this.educationForm.invalid) {
+      if (this.educationForm.errors?.['futureDate']) {
+        this.showToastNotification('Please select a date not later than today.', 'warning');
+        return;
+      }
+      if (this.educationForm.get('PeriodOfAttendanceTo')?.value < 
+          this.educationForm.get('PeriodOfAttendanceFrom')?.value) {
+        this.showToastNotification('End date cannot be earlier than start date.', 'warning');
+        return;
+      }
+      this.showToastNotification('Please fill in all required fields correctly.', 'warning');
+      return;
+    }
+
     if (!this.hasUnsavedChanges()) {
       this.showToastNotification('There are no current changes to be saved.', 'warning');
       return;
@@ -175,5 +210,21 @@ export class EducationComponent implements OnInit {
     setTimeout(() => {
       this.showToast = false;
     }, 3000); // Hide toast after 3 seconds
+  }
+
+  private dateValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const selectedDate = new Date(control.value);
+      const today = new Date();
+      
+      // Reset time part for accurate date comparison
+      today.setHours(0, 0, 0, 0);
+      selectedDate.setHours(0, 0, 0, 0);
+
+      if (selectedDate > today) {
+        return { futureDate: true };
+      }
+      return null;
+    };
   }
 }

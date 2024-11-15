@@ -75,7 +75,10 @@
           <div class="grid grid-cols-2 gap-4">
             <div class="form-control">
               <label class="label-text">Organization Name & Address <span class="text-red-500">*</span></label>
-              <input formControlName="OrganizationNameAddress" class="input input-bordered w-full" type="text" placeholder="Enter organization name and address">
+              <input formControlName="OrganizationNameAddress" class="input input-bordered w-full" [ngClass]="{'input-error': voluntaryWorkForm.get('OrganizationNameAddress')?.invalid && voluntaryWorkForm.get('OrganizationNameAddress')?.touched}">
+              <div *ngIf="voluntaryWorkForm.get('OrganizationNameAddress')?.invalid && voluntaryWorkForm.get('OrganizationNameAddress')?.touched" class="text-red-500 text-sm mt-1">
+                Organization Name & Address is required
+              </div>
             </div>
             <div class="form-control">
               <label class="label-text">Inclusive Dates From <span class="text-red-500">*</span></label>

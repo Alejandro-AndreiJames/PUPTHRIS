@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CivilServiceEligibility } from '../../model/civil-service.model';
 import { CivilServiceService } from '../../services/civil.service';
 import { CommonModule } from '@angular/common';
@@ -48,11 +48,11 @@ export class CivilComponent implements OnInit {
     }
 
     this.civilServiceForm = this.fb.group({
-      CareerService: [''],
-      Rating: [''],
+      CareerService: ['', Validators.required],
+      Rating: ['', Validators.required],
       DateOfExamination: [''],
       PlaceOfExamination: [''],
-      LicenseNumber: [''],
+      LicenseNumber: ['', Validators.required],
       LicenseValidityDate: ['']
     });
   }
@@ -172,6 +172,11 @@ export class CivilComponent implements OnInit {
   }
 
   onSubmit(): void {
+    if (this.civilServiceForm.invalid) {
+      this.showToastNotification('Please fill in all required fields (Career Service, Rating, and License Number).', 'warning');
+      return;
+    }
+
     if (!this.hasUnsavedChanges()) {
       this.showToastNotification('There are no current changes to be saved.', 'warning');
       return;
