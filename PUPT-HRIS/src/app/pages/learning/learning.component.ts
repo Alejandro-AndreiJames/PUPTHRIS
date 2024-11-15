@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { LearningService } from '../../services/learning.service';
 import { LearningDevelopment } from '../../model/learning-development.model';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -34,7 +34,11 @@ export class LearningComponent implements OnInit {
   showDeletePrompt: boolean = false;
   pendingDeleteId: number | null = null;
 
+  today: string;
+
   constructor(private fb: FormBuilder, private learningService: LearningService, private authService: AuthService) {
+    this.today = new Date().toISOString().split('T')[0];
+
     const token = this.authService.getToken();
     if (token) {
       const decoded: any = jwtDecode(token);
@@ -44,12 +48,19 @@ export class LearningComponent implements OnInit {
     }
 
     this.learningForm = this.fb.group({
-      TitleOfLearningDevelopment: [''],
-      InclusiveDatesFrom: [''],
-      InclusiveDatesTo: [''],
-      NumberOfHours: [''],
-      TypeOfLD: [''],
-      ConductedSponsoredBy: ['']
+      TitleOfLearningDevelopment: ['', Validators.required],
+      InclusiveDatesFrom: ['', [Validators.required, this.dateValidator()]],
+      InclusiveDatesTo: ['', [Validators.required, this.dateValidator(), this.dateRangeValidator()]],
+      NumberOfHours: ['', [Validators.required, Validators.min(1)]],
+      TypeOfLD: ['', Validators.required],
+      ConductedSponsoredBy: ['', Validators.required]
+    });
+
+    this.learningForm.get('InclusiveDatesFrom')?.valueChanges.subscribe(value => {
+      const toControl = this.learningForm.get('InclusiveDatesTo');
+      if (toControl) {
+        toControl.updateValueAndValidity();
+      }
     });
   }
 
@@ -113,6 +124,24 @@ export class LearningComponent implements OnInit {
   }
 
   onSubmit(): void {
+    if (this.learningForm.invalid) {
+      if (this.learningForm.get('InclusiveDatesFrom')?.errors?.['futureDate'] || 
+          this.learningForm.get('InclusiveDatesTo')?.errors?.['futureDate']) {
+        this.showToastNotification('Dates cannot be in the future.', 'warning');
+        return;
+      }
+      if (this.learningForm.get('InclusiveDatesTo')?.errors?.['invalidDateRange']) {
+        this.showToastNotification('End date cannot be before start date.', 'warning');
+        return;
+      }
+      if (this.learningForm.get('NumberOfHours')?.errors?.['min']) {
+        this.showToastNotification('Number of hours must be greater than 0.', 'warning');
+        return;
+      }
+      this.showToastNotification('Please fill in all required fields correctly.', 'warning');
+      return;
+    }
+
     if (!this.hasUnsavedChanges()) {
       this.showToastNotification('There are no current changes to be saved.', 'warning');
       return;
@@ -149,10 +178,17 @@ export class LearningComponent implements OnInit {
   editLearning(id: number): void {
     const learning = this.learningData.find(ld => ld.LearningDevelopmentID === id);
     if (learning) {
-      this.learningForm.patchValue(learning);
+      const formData = {
+        ...learning,
+        InclusiveDatesFrom: learning.InclusiveDatesFrom ? new Date(learning.InclusiveDatesFrom).toISOString().split('T')[0] : '',
+        InclusiveDatesTo: learning.InclusiveDatesTo ? new Date(learning.InclusiveDatesTo).toISOString().split('T')[0] : ''
+      };
+      
+      console.log('Setting form data:', formData);
+      this.learningForm.patchValue(formData);
       this.currentLearningId = id;
       this.isEditing = true;
-      this.initialFormValue = this.learningForm.getRawValue(); // Store the initial form value
+      this.initialFormValue = this.learningForm.getRawValue();
     }
   }
 
@@ -209,5 +245,43 @@ export class LearningComponent implements OnInit {
     setTimeout(() => {
       this.showToast = false;
     }, 3000); // Hide toast after 3 seconds
+  }
+
+  private dateValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) return null;
+
+      const selectedDate = new Date(control.value);
+      const today = new Date();
+      
+      today.setHours(0, 0, 0, 0);
+      selectedDate.setHours(0, 0, 0, 0);
+
+      if (selectedDate > today) {
+        return { futureDate: true };
+      }
+      return null;
+    };
+  }
+
+  private dateRangeValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) return null;
+
+      const toDate = new Date(control.value);
+      const fromDate = this.learningForm?.get('InclusiveDatesFrom')?.value;
+      
+      if (!fromDate) return null;
+
+      const fromDateTime = new Date(fromDate);
+      
+      toDate.setHours(0, 0, 0, 0);
+      fromDateTime.setHours(0, 0, 0, 0);
+
+      if (toDate < fromDateTime) {
+        return { invalidDateRange: true };
+      }
+      return null;
+    };
   }
 }
