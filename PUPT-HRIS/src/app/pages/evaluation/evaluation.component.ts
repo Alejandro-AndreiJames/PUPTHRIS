@@ -352,9 +352,22 @@ export class EvaluationComponent implements OnInit, OnDestroy {
     this.evaluationService.getFacultyEvaluationHistory(user.UserID).subscribe({
       next: (history) => {
         console.log('Received history:', history);
-        this.evaluationHistory = history;
+        this.evaluationHistory = history.sort((a: any, b: any) => {
+          // Parse academic years into comparable numbers
+          const yearA = parseInt(a.AcademicYear.split('-')[0]);
+          const yearB = parseInt(b.AcademicYear.split('-')[0]);
+          
+          // Compare years first
+          if (yearA !== yearB) {
+            return yearB - yearA; // Reverse the comparison for newest to oldest
+          }
+          
+          // If years are equal, compare semesters
+          // Second semester should come before first semester for the same year
+          return a.Semester === 'Second Semester' ? -1 : 1;
+        });
+        
         this.showEvaluationHistory = true;
-        // Wait for the modal to be shown before creating the chart
         setTimeout(() => {
           this.createOrUpdateChart();
         }, 100);
@@ -377,6 +390,17 @@ export class EvaluationComponent implements OnInit, OnDestroy {
       this.chart.destroy();
     }
 
+    // Sort evaluations chronologically (oldest to newest)
+    const sortedHistory = [...this.evaluationHistory].sort((a, b) => {
+      // First compare academic years
+      const yearA = parseInt(a.AcademicYear.split('-')[0]);
+      const yearB = parseInt(b.AcademicYear.split('-')[0]);
+      if (yearA !== yearB) return yearA - yearB;
+      
+      // If same year, compare semesters
+      return a.Semester === 'First Semester' ? -1 : 1;
+    });
+
     const ctx = this.chartCanvas.nativeElement.getContext('2d');
     if (!ctx) {
       console.error('Could not get chart context');
@@ -386,10 +410,10 @@ export class EvaluationComponent implements OnInit, OnDestroy {
     this.chart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: this.evaluationHistory.map(d => `${d.AcademicYear} ${d.Semester}`),
+        labels: sortedHistory.map(d => `${d.AcademicYear} ${d.Semester}`),
         datasets: [{
           label: 'Total Score',
-          data: this.evaluationHistory.map(d => d.TotalScore),
+          data: sortedHistory.map(d => d.TotalScore),
           borderColor: '#800000',
           backgroundColor: 'rgba(128, 0, 0, 0.1)',
           tension: 0.1,

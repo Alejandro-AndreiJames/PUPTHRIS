@@ -303,7 +303,7 @@ exports.getFacultyEvaluationHistory = async (req, res) => {
       }],
       order: [
         ['AcademicYear', 'DESC'],
-        ['Semester', 'ASC']
+        ['Semester', 'DESC']
       ]
     });
 
