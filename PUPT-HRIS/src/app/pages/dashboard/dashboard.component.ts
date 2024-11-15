@@ -801,15 +801,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   // Add these methods
+  openDashboardSettings(): void {
+    this.showDashboardSettings = true;
+  }
+
+  closeDashboardSettings(): void {
+    this.showDashboardSettings = false;
+    this.saveDashboardPreferences();
+  }
+
   toggleSectionVisibility(section: DashboardSection): void {
     section.visible = !section.visible;
-    this.saveDashboardPreferences();
   }
 
   updateSectionOrder(section: DashboardSection, newOrder: number): void {
     section.order = newOrder;
     this.dashboardSections.sort((a, b) => a.order - b.order);
-    this.saveDashboardPreferences();
   }
 
   private saveDashboardPreferences(): void {
