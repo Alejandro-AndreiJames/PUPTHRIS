@@ -84,8 +84,21 @@
             <input formControlName="Rating" class="input input-bordered w-full" type="text" placeholder="Enter rating">
           </div>
           <div class="form-control">
-            <label class="label-text">Date of Examination</label>
-            <input formControlName="DateOfExamination" class="input input-bordered w-full" type="date">
+            <label class="label-text">Date of Examination <span class="text-red-500">*</span></label>
+            <input 
+              formControlName="DateOfExamination" 
+              class="input input-bordered w-full" 
+              type="date"
+              [max]="today">
+            <div *ngIf="civilServiceForm.get('DateOfExamination')?.invalid && civilServiceForm.get('DateOfExamination')?.touched" 
+                 class="text-red-500 text-sm mt-1">
+              <div *ngIf="civilServiceForm.get('DateOfExamination')?.errors?.['required']">
+                Date of examination is required
+              </div>
+              <div *ngIf="civilServiceForm.get('DateOfExamination')?.errors?.['futureDate']">
+                Date cannot be in the future
+              </div>
+            </div>
           </div>
           <div class="form-control">
             <label class="label-text">Place of Examination</label>
@@ -97,7 +110,17 @@
           </div>
           <div class="form-control">
             <label class="label-text">License Validity Date</label>
-            <input formControlName="LicenseValidityDate" class="input input-bordered w-full" type="date">
+            <input 
+              formControlName="LicenseValidityDate" 
+              class="input input-bordered w-full" 
+              type="date"
+              [min]="civilServiceForm.get('DateOfExamination')?.value">
+            <div *ngIf="civilServiceForm.get('LicenseValidityDate')?.invalid && civilServiceForm.get('LicenseValidityDate')?.touched" 
+                 class="text-red-500 text-sm mt-1">
+              <div *ngIf="civilServiceForm.get('LicenseValidityDate')?.errors?.['validityBeforeExam']">
+                Validity date cannot be before examination date
+              </div>
+            </div>
           </div>
         </div>
         <div class="flex justify-end mt-6">

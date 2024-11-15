@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, AbstractControl, ValidatorFn, ValidationErrors } from '@angular/forms';
 import { CivilServiceEligibility } from '../../model/civil-service.model';
 import { CivilServiceService } from '../../services/civil.service';
 import { CommonModule } from '@angular/common';
@@ -34,11 +34,16 @@ export class CivilComponent implements OnInit {
   showDeletePrompt: boolean = false;
   pendingDeleteId: number | null = null;
 
+  today: string;
+
   constructor(
     private fb: FormBuilder,
     private civilServiceService: CivilServiceService,
     private authService: AuthService
   ) {
+    // Get today's date in YYYY-MM-DD format
+    this.today = new Date().toISOString().split('T')[0];
+
     const token = this.authService.getToken();
     if (token) {
       const decoded: any = jwtDecode(token);
@@ -50,10 +55,18 @@ export class CivilComponent implements OnInit {
     this.civilServiceForm = this.fb.group({
       CareerService: ['', Validators.required],
       Rating: ['', Validators.required],
-      DateOfExamination: [''],
+      DateOfExamination: ['', [Validators.required, this.dateValidator()]],
       PlaceOfExamination: [''],
       LicenseNumber: ['', Validators.required],
-      LicenseValidityDate: ['']
+      LicenseValidityDate: ['', [this.licenseValidityDateValidator()]]
+    });
+
+    // Add validator for LicenseValidityDate when DateOfExamination changes
+    this.civilServiceForm.get('DateOfExamination')?.valueChanges.subscribe(value => {
+      const validityControl = this.civilServiceForm.get('LicenseValidityDate');
+      if (validityControl) {
+        validityControl.updateValueAndValidity();
+      }
     });
   }
 
@@ -114,10 +127,18 @@ export class CivilComponent implements OnInit {
   editEligibility(id: number): void {
     const eligibility = this.civilServiceData.find(el => el.CivilServiceEligibilityID === id);
     if (eligibility) {
-      this.civilServiceForm.patchValue(eligibility);
+      // Format the dates before setting them in the form
+      const formData = {
+        ...eligibility,
+        DateOfExamination: eligibility.DateOfExamination ? new Date(eligibility.DateOfExamination).toISOString().split('T')[0] : '',
+        LicenseValidityDate: eligibility.LicenseValidityDate ? new Date(eligibility.LicenseValidityDate).toISOString().split('T')[0] : ''
+      };
+      
+      console.log('Setting form data:', formData);
+      this.civilServiceForm.patchValue(formData);
       this.currentEligibilityId = id;
       this.isEditing = true;
-      this.initialFormValue = this.civilServiceForm.getRawValue(); // Store the initial form value
+      this.initialFormValue = this.civilServiceForm.getRawValue();
     }
   }
 
@@ -173,7 +194,15 @@ export class CivilComponent implements OnInit {
 
   onSubmit(): void {
     if (this.civilServiceForm.invalid) {
-      this.showToastNotification('Please fill in all required fields (Career Service, Rating, and License Number).', 'warning');
+      if (this.civilServiceForm.get('DateOfExamination')?.errors?.['futureDate']) {
+        this.showToastNotification('Examination date cannot be in the future.', 'warning');
+        return;
+      }
+      if (this.civilServiceForm.get('LicenseValidityDate')?.errors?.['validityBeforeExam']) {
+        this.showToastNotification('License validity date cannot be before examination date.', 'warning');
+        return;
+      }
+      this.showToastNotification('Please fill in all required fields correctly.', 'warning');
       return;
     }
 
@@ -224,5 +253,47 @@ export class CivilComponent implements OnInit {
     setTimeout(() => {
       this.showToast = false;
     }, 3000); // Hide toast after 3 seconds
+  }
+
+  // Custom validator for examination date
+  private dateValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) return null;
+
+      const selectedDate = new Date(control.value);
+      const today = new Date();
+      
+      // Reset time part for accurate date comparison
+      today.setHours(0, 0, 0, 0);
+      selectedDate.setHours(0, 0, 0, 0);
+
+      if (selectedDate > today) {
+        return { futureDate: true };
+      }
+      return null;
+    };
+  }
+
+  // Custom validator for license validity date
+  private licenseValidityDateValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) return null;
+
+      const validityDate = new Date(control.value);
+      const examDate = this.civilServiceForm?.get('DateOfExamination')?.value;
+      
+      if (!examDate) return null;
+
+      const examDateTime = new Date(examDate);
+      
+      // Reset time part for accurate date comparison
+      validityDate.setHours(0, 0, 0, 0);
+      examDateTime.setHours(0, 0, 0, 0);
+
+      if (validityDate < examDateTime) {
+        return { validityBeforeExam: true };
+      }
+      return null;
+    };
   }
 }
