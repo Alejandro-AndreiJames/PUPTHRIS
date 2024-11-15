@@ -76,8 +76,22 @@
       <h3 class="text-xl font-semibold mb-4">{{ currentSkillId ? 'Edit' : 'Add' }} Special Skill</h3>
       <form [formGroup]="specialSkillsForm" (ngSubmit)="onSubmitSkill()" class="space-y-4">
         <div class="form-control w-full">
-          <label for="Skill" class="label-text font-bold">Skill</label>
-          <textarea id="Skill" formControlName="Skill" class="textarea textarea-bordered w-full h-24" placeholder="Describe your special skill"></textarea>
+          <label for="Skill" class="label-text font-bold">Skill <span class="text-red-500">*</span></label>
+          <textarea 
+            id="Skill" 
+            formControlName="Skill" 
+            class="textarea textarea-bordered w-full h-24" 
+            [ngClass]="{'border-red-500': specialSkillsForm.get('Skill')?.invalid && specialSkillsForm.get('Skill')?.touched}"
+            placeholder="Describe your special skill"></textarea>
+          <div *ngIf="specialSkillsForm.get('Skill')?.invalid && specialSkillsForm.get('Skill')?.touched" 
+               class="text-red-500 text-sm mt-1">
+            <div *ngIf="specialSkillsForm.get('Skill')?.errors?.['required']">
+              Skill is required
+            </div>
+            <div *ngIf="specialSkillsForm.get('Skill')?.errors?.['minlength']">
+              Skill must be at least 2 characters long
+            </div>
+          </div>
         </div>
         <div class="flex justify-end space-x-2">
           <button type="submit" class="btn btn-save bg-black text-white">{{ currentSkillId ? 'Update' : 'Add' }} Skill</button>
@@ -91,8 +105,22 @@
       <h3 class="text-xl font-semibold mb-4">{{ currentDistinctionId ? 'Edit' : 'Add' }} Non-Academic Distinction</h3>
       <form [formGroup]="nonAcademicForm" (ngSubmit)="onSubmitDistinction()" class="space-y-4">
         <div class="form-control w-full">
-          <label for="Distinction" class="label-text font-bold">Distinction</label>
-          <textarea id="Distinction" formControlName="Distinction" class="textarea textarea-bordered w-full h-24" placeholder="Enter your non-academic distinction"></textarea>
+          <label for="Distinction" class="label-text font-bold">Distinction <span class="text-red-500">*</span></label>
+          <textarea 
+            id="Distinction" 
+            formControlName="Distinction" 
+            class="textarea textarea-bordered w-full h-24"
+            [ngClass]="{'border-red-500': nonAcademicForm.get('Distinction')?.invalid && nonAcademicForm.get('Distinction')?.touched}"
+            placeholder="Enter your non-academic distinction"></textarea>
+          <div *ngIf="nonAcademicForm.get('Distinction')?.invalid && nonAcademicForm.get('Distinction')?.touched" 
+               class="text-red-500 text-sm mt-1">
+            <div *ngIf="nonAcademicForm.get('Distinction')?.errors?.['required']">
+              Distinction is required
+            </div>
+            <div *ngIf="nonAcademicForm.get('Distinction')?.errors?.['minlength']">
+              Distinction must be at least 2 characters long
+            </div>
+          </div>
         </div>
         <div class="flex justify-end space-x-2">
           <button type="submit" class="btn btn-save bg-black text-white">{{ currentDistinctionId ? 'Update' : 'Add' }} Distinction</button>
@@ -106,8 +134,22 @@
       <h3 class="text-xl font-semibold mb-4">{{ currentMembershipId ? 'Edit' : 'Add' }} Membership</h3>
       <form [formGroup]="membershipForm" (ngSubmit)="onSubmitMembership()" class="space-y-4">
         <div class="form-control w-full">
-          <label for="Association" class="label-text font-bold">Association</label>
-          <textarea id="Association" formControlName="Association" class="textarea textarea-bordered w-full h-24" placeholder="Enter the name of the association or organization"></textarea>
+          <label for="Association" class="label-text font-bold">Association <span class="text-red-500">*</span></label>
+          <textarea 
+            id="Association" 
+            formControlName="Association" 
+            class="textarea textarea-bordered w-full h-24"
+            [ngClass]="{'border-red-500': membershipForm.get('Association')?.invalid && membershipForm.get('Association')?.touched}"
+            placeholder="Enter the name of the association or organization"></textarea>
+          <div *ngIf="membershipForm.get('Association')?.invalid && membershipForm.get('Association')?.touched" 
+               class="text-red-500 text-sm mt-1">
+            <div *ngIf="membershipForm.get('Association')?.errors?.['required']">
+              Association name is required
+            </div>
+            <div *ngIf="membershipForm.get('Association')?.errors?.['minlength']">
+              Association name must be at least 2 characters long
+            </div>
+          </div>
         </div>
         <div class="flex justify-end space-x-2">
           <button type="submit" class="btn btn-save bg-black text-white">{{ currentMembershipId ? 'Update' : 'Add' }} Membership</button>
