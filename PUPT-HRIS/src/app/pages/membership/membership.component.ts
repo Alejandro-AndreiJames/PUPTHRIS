@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { OfficershipMembershipService } from '../../services/officership-membership.service';
 import { AuthService } from '../../services/auth.service';
 import { ExcelImportService } from '../../services/excel-import.service';
@@ -38,6 +38,8 @@ export class OfficershipMembershipComponent implements OnInit {
   showDeletePrompt: boolean = false;
   pendingDeleteId: number | null = null;
 
+  today: string;
+
   constructor(
     private fb: FormBuilder,
     private membershipService: OfficershipMembershipService,
@@ -45,6 +47,8 @@ export class OfficershipMembershipComponent implements OnInit {
     private excelImportService: ExcelImportService,
     private cdr: ChangeDetectorRef
   ) {
+    this.today = new Date().toISOString().split('T')[0];
+
     const token = this.authService.getToken();
     if (token) {
       const decoded: any = jwtDecode(token);
@@ -54,20 +58,54 @@ export class OfficershipMembershipComponent implements OnInit {
     }
 
     this.membershipForm = this.fb.group({
-      OrganizationName: [''],
+      OrganizationName: ['', Validators.required],
       OrganizationAddress: [''],
-      Position: [''],
+      Position: ['', Validators.required],
       Level: ['Local'],
-      Classification: ['Learning and Development Interventions'],
-      InclusiveDatesFrom: [''],
-      InclusiveDatesTo: [''],
+      Classification: ['Learning and Development Interventions', Validators.required],
+      InclusiveDatesFrom: ['', [Validators.required, this.dateValidator()]],
+      InclusiveDatesTo: ['', [Validators.required, this.dateValidator(), this.dateRangeValidator()]],
       Remarks: [''],
       SupportingDocument: [''],
       Proof: [''],
       ProofType: ['file']
     });
+
+    this.membershipForm.get('InclusiveDatesFrom')?.valueChanges.subscribe(() => {
+      this.membershipForm.get('InclusiveDatesTo')?.updateValueAndValidity();
+    });
   }
 
+  private dateValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) return null;
+
+      const selectedDate = new Date(control.value);
+      const today = new Date();
+      
+      today.setHours(0, 0, 0, 0);
+      selectedDate.setHours(0, 0, 0, 0);
+
+      if (selectedDate > today) {
+        return { futureDate: true };
+      }
+      return null;
+    };
+  }
+
+  private dateRangeValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) return null;
+
+      const toDate = new Date(control.value);
+      const fromDate = new Date(this.membershipForm?.get('InclusiveDatesFrom')?.value);
+
+      if (fromDate && toDate < fromDate) {
+        return { invalidDateRange: true };
+      }
+      return null;
+    };
+  }
 
   ngOnInit(): void {
     this.loadMemberships();
@@ -133,11 +171,32 @@ export class OfficershipMembershipComponent implements OnInit {
     if (membership) {
       this.isEditing = true;
       this.currentMembershipId = id;
-      this.membershipForm.patchValue(membership);
+
+      const formData = {
+        ...membership,
+        InclusiveDatesFrom: membership.InclusiveDatesFrom ? new Date(membership.InclusiveDatesFrom).toISOString().split('T')[0] : '',
+        InclusiveDatesTo: membership.InclusiveDatesTo ? new Date(membership.InclusiveDatesTo).toISOString().split('T')[0] : ''
+      };
+
+      this.membershipForm.patchValue(formData);
     }
   }
 
   onSubmit(): void {
+    if (this.membershipForm.invalid) {
+      if (this.membershipForm.get('InclusiveDatesFrom')?.errors?.['futureDate'] || 
+          this.membershipForm.get('InclusiveDatesTo')?.errors?.['futureDate']) {
+        this.showToastNotification('Dates cannot be in the future.', 'warning');
+        return;
+      }
+      if (this.membershipForm.get('InclusiveDatesTo')?.errors?.['invalidDateRange']) {
+        this.showToastNotification('End date must be after start date.', 'warning');
+        return;
+      }
+      this.showToastNotification('Please fill in all required fields correctly.', 'warning');
+      return;
+    }
+
     const formData = new FormData();
 
     Object.keys(this.membershipForm.value).forEach((key) => {
