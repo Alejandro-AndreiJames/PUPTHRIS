@@ -327,16 +327,12 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     // Subscribe to campus changes and load data accordingly
     this.campusSubscription = this.campusContextService.getCampusId().subscribe(
       campusId => {
-        console.log('Dashboard - Received campus ID:', campusId);
         if (campusId !== null) {
           if (this.isAdminView && (this.userRole === 'admin' || this.userRole === 'superadmin')) {
-            console.log('Dashboard - Loading admin data for campus:', campusId);
             this.loadAdminDashboardData(campusId);
           } else {
             this.loadUserDashboardData();
           }
-        } else {
-          console.warn('Dashboard - No campus ID available');
         }
       },
       error => console.error('Dashboard - Error getting campus ID:', error)
@@ -397,8 +393,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   loadAdminDashboardData(campusId: number): void {
     this.dashboardService.getDashboardData(campusId).subscribe(data => {
-      console.log('Dashboard Data:', data);
-  
       this.totalFemale = data.totalFemale;
       this.totalMale = data.totalMale;
       this.partTime = data.partTime;
@@ -414,7 +408,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
           Department: dept.DepartmentName,
           count: dept.count,
         }));
-        console.log('Departments Data:', departments);
   
         this.pieChartLabels = departments.map(dept => dept.Department);
   
@@ -435,8 +428,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   
         // Process academic rank data
         if (data.academicRanks && Array.isArray(data.academicRanks)) {
-          console.log('Incoming academic ranks:', data.academicRanks);
-
           // Create a map of existing ranks and their counts
           const rankCountMap = new Map<string, number>();
           
@@ -505,8 +496,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
           if (this.chart) {
             this.chart.update();
           }
-
-          console.log('Processed academic ranks:', this.academicRanks);
         }
 
         this.updateCharts();
@@ -555,7 +544,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   loadUpcomingBirthdays(): void {
     this.dashboardService.getUpcomingBirthdays().subscribe({
       next: (birthdays: UpcomingBirthday[]) => {
-        console.log('Upcoming birthdays:', birthdays);
         this.upcomingBirthdays = birthdays;
         this.cdr.detectChanges();
       },
@@ -646,7 +634,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         this.profileCompletionPercentage = data.completionPercentage;
         this.gaugeValue = Math.round(this.profileCompletionPercentage);
         this.incompleteTasks = data.incompleteSections; // Store incomplete tasks
-        console.log('Profile Completion:', this.gaugeValue);
       },
       error: (error) => {
         console.error('Error loading profile completion:', error);

@@ -252,11 +252,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   private updateCurrentCampus(): void {
-    console.log('Current campus updated:', this.currentCampusId);
-    console.log('Default campus:', this.userDefaultCampusId);
-    console.log('Is Super Admin:', this.isSuperAdmin);
-    console.log('Can manage users:', this.canManageUsers);
-    // Implement any logic that depends on the current campus
   }
 
   get canAddNewAccount(): boolean {

@@ -12,7 +12,6 @@ export class CampusContextService {
   private readonly IS_DEFAULT_CAMPUS_KEY = 'isDefaultCampus';
 
   constructor(private injector: Injector) {
-    console.log('CampusContextService - Service initialized');
     this.initializeCampus();
   }
 
@@ -20,8 +19,6 @@ export class CampusContextService {
     const storedId = localStorage.getItem(this.CAMPUS_ID_KEY);
     if (storedId) {
       const campusId = parseInt(storedId, 10);
-      console.log('CampusContextService - Initializing with stored ID:', campusId);
-      // Ensure we emit the stored value immediately
       this.campusIdSubject.next(campusId);
     }
   }
@@ -57,8 +54,6 @@ export class CampusContextService {
   }
 
   setCampusId(id: number, isDefault: boolean = false): void {
-    console.log('CampusContextService - Setting campus ID:', id, 'isDefault:', isDefault);
-    
     if (id && typeof id === 'number') {
       // Always set on first login
       localStorage.setItem(this.CAMPUS_ID_KEY, id.toString());
@@ -66,20 +61,17 @@ export class CampusContextService {
       
       // Ensure we emit the new value immediately
       this.campusIdSubject.next(id);
-      console.log('CampusContextService - Campus ID set successfully, emitted:', id);
     } else {
       console.warn('CampusContextService - Invalid campus ID:', id);
     }
   }
 
   getCampusId(): Observable<number | null> {
-    console.log('CampusContextService - Getting campus ID observable');
     return this.campusIdSubject.asObservable();
   }
 
   getCurrentCampusId(): number | null {
     const storedId = localStorage.getItem(this.CAMPUS_ID_KEY);
-    console.log('CampusContextService - Current campus ID from storage:', storedId);
     return storedId ? parseInt(storedId, 10) : null;
   }
 
@@ -90,8 +82,6 @@ export class CampusContextService {
   }
 
   updateCampus(id: number): void {
-    console.log('CampusContextService - Manually updating campus to:', id);
-    // When manually updating, always set isDefault to false
     this.setCampusId(id, false);
   }
 
