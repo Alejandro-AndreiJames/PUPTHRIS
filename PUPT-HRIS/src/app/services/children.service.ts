@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable, throwError, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { Children } from '../model/children.model';
 
@@ -19,8 +19,14 @@ export class ChildrenService {
   }
 
   getChildren(userId: number): Observable<Children[]> {
-    return this.http.get<Children[]>(`${this.apiUrl}/user/${userId}`, { headers: this.getHeaders() }).pipe(
-      catchError(this.handleError)
+    return this.http.get<Children[]>(`${this.apiUrl}/children/${userId}`).pipe(
+      map(response => response || []),
+      catchError(error => {
+        if (error.status === 404) {
+          return of([]);
+        }
+        return throwError(() => error);
+      })
     );
   }
 

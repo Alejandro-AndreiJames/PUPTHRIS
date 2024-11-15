@@ -31,6 +31,8 @@ export class ChildrenComponent implements OnInit {
   toastMessage: string = '';
   toastType: 'success' | 'error' | 'warning' = 'success';
 
+  paginatedChildrenData: Children[] = [];
+
   constructor(private fb: FormBuilder, private childrenService: ChildrenService, private authService: AuthService) {
     const token = this.authService.getToken();
     if (token) {
@@ -51,38 +53,47 @@ export class ChildrenComponent implements OnInit {
   }
 
   loadChildren(): void {
-    this.childrenService.getChildren(this.userId).subscribe(
-      data => {
+    this.childrenService.getChildren(this.userId).subscribe({
+      next: (data: Children[]) => {
         this.childrenData = data;
+        const startIndex = (this.currentPage - 1) * this.pageSize;
+        this.paginatedChildrenData = this.childrenData.slice(startIndex, startIndex + this.pageSize);
         this.totalPages = Math.ceil(this.childrenData.length / this.pageSize);
         this.pages = Array.from({ length: this.totalPages }, (_, i) => i + 1);
       },
-      error => {
-        this.showToastNotification('Error fetching children data.', 'error');
-        console.error('Error fetching children data', error);
+      error: (error) => {
+        if (error.status !== 404) {
+          console.error('Error fetching children data', error);
+          this.showToastNotification('Error fetching children data.', 'error');
+        }
+        this.childrenData = [];
+        this.paginatedChildrenData = [];
+        this.totalPages = 0;
+        this.pages = [];
       }
-    );
+    });
   }
 
-  get paginatedChildrenData() {
-    const startIndex = (this.currentPage - 1) * this.pageSize;
-    return this.childrenData.slice(startIndex, startIndex + this.pageSize);
-  }
-
-  nextPage() {
+  nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
+      const startIndex = (this.currentPage - 1) * this.pageSize;
+      this.paginatedChildrenData = this.childrenData.slice(startIndex, startIndex + this.pageSize);
     }
   }
 
-  previousPage() {
+  previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
+      const startIndex = (this.currentPage - 1) * this.pageSize;
+      this.paginatedChildrenData = this.childrenData.slice(startIndex, startIndex + this.pageSize);
     }
   }
 
-  goToPage(page: number) {
+  goToPage(page: number): void {
     this.currentPage = page;
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    this.paginatedChildrenData = this.childrenData.slice(startIndex, startIndex + this.pageSize);
   }
 
   editChild(child: Children): void {

@@ -57,19 +57,22 @@ export class FamilyComponent implements OnInit {
   }
 
   loadFamilyBackground(): void {
-    this.familyService.getFamilyBackground(this.userId).subscribe(
-      data => {
+    this.familyService.getFamilyBackground(this.userId).subscribe({
+      next: (data) => {
         this.familyData = data;
         if (this.familyData) {
           this.familyForm.patchValue(this.familyData);
-          this.initialFormValue = this.familyForm.getRawValue(); // Store the initial form value
+          this.initialFormValue = this.familyForm.getRawValue();
         }
       },
-      error => {
-        this.showToastNotification('Error fetching family background.', 'error');
-        console.error('Error fetching family background', error);
+      error: (error) => {
+        if (error.status !== 404) {
+          this.showToastNotification('Error fetching family background.', 'error');
+          console.error('Error fetching family background', error);
+        }
+        this.familyData = null;
       }
-    );
+    });
   }
 
   toggleForm(): void {

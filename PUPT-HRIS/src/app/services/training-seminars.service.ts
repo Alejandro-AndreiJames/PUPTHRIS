@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable, throwError, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { TrainingSeminar } from '../model/training-seminars.model';
 
@@ -19,9 +19,16 @@ export class TrainingSeminarsService {
   }
 
   getTrainings(userId: number): Observable<TrainingSeminar[]> {
-    return this.http.get<TrainingSeminar[]>(`${this.apiUrl}/user/${userId}`, { headers: this.getHeaders() }).pipe(
-      catchError(this.handleError)
-    );
+    return this.http.get<TrainingSeminar[]>(`${this.apiUrl}/user/${userId}`, { headers: this.getHeaders() })
+      .pipe(
+        map(response => response || []),
+        catchError(error => {
+          if (error.status === 404) {
+            return of([]);
+          }
+          return throwError(() => error);
+        })
+      );
   }
 
   addTraining(training: FormData): Observable<TrainingSeminar> {

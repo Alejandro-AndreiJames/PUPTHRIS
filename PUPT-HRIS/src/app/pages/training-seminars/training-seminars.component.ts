@@ -74,19 +74,22 @@ export class TrainingSeminarsComponent implements OnInit {
   }
 
   loadTrainings(): void {
-    this.trainingSeminarsService.getTrainings(this.userId).subscribe(
-      (data) => {
-        this.trainingData = data;
+    this.trainingSeminarsService.getTrainings(this.userId).subscribe({
+      next: (data: TrainingSeminar[]) => {
+        this.trainingData = data || [];
         this.totalPages = Math.ceil(this.trainingData.length / this.itemsPerPage);
         this.updatePaginatedData();
       },
-      (error) => {
+      error: (error) => {
         if (error.status !== 404) {
           this.showToastNotification('Error fetching trainings data.', 'error');
+          console.error('Error fetching trainings data', error);
         }
-        console.error('Error fetching trainings data', error);
+        this.trainingData = [];
+        this.paginatedTrainingData = [];
+        this.totalPages = 0;
       }
-    );
+    });
   }
 
   updatePaginatedData(): void {

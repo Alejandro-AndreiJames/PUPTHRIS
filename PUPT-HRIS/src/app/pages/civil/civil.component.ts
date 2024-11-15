@@ -59,17 +59,22 @@ export class CivilComponent implements OnInit {
   }
 
   loadCivilServiceEligibilities(): void {
-    this.civilServiceService.getCivilServiceEligibilities(this.userId).subscribe(
-      (data: CivilServiceEligibility[]) => {
-        this.civilServiceData = data;
+    this.civilServiceService.getCivilServiceEligibilities(this.userId).subscribe({
+      next: (data: CivilServiceEligibility[]) => {
+        this.civilServiceData = data || [];
         this.totalPages = Math.ceil(this.civilServiceData.length / this.itemsPerPage);
         this.updatePaginatedData();
       },
-      error => {
-        this.showToastNotification('Error fetching civil service eligibilities.', 'error');
-        console.error('Error fetching civil service eligibilities', error);
+      error: (error) => {
+        if (error.status !== 404) {
+          this.showToastNotification('Error fetching civil service eligibilities.', 'error');
+          console.error('Error fetching civil service eligibilities', error);
+        }
+        this.civilServiceData = [];
+        this.paginatedCivilServiceData = [];
+        this.totalPages = 0;
       }
-    );
+    });
   }
 
   updatePaginatedData(): void {

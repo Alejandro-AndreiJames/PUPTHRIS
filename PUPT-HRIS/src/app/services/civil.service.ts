@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable, throwError, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { CivilServiceEligibility } from '../model/civil-service.model';
 import { environment } from '../../environments/environment';
 
@@ -21,7 +21,13 @@ export class CivilServiceService {
   getCivilServiceEligibilities(userId: number): Observable<CivilServiceEligibility[]> {
     return this.http.get<CivilServiceEligibility[]>(`${this.apiUrl}/employee/${userId}`, { headers: this.getHeaders() })
       .pipe(
-        catchError(this.handleError)
+        map(response => response || []),
+        catchError(error => {
+          if (error.status === 404) {
+            return of([]);
+          }
+          return throwError(() => error);
+        })
       );
   }
 
