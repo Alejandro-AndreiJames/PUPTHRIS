@@ -27,6 +27,8 @@ export class DepartmentManagementComponent implements OnInit, OnDestroy {
   toastMessage: string = '';
   toastType: 'success' | 'error' | 'warning' = 'success';
 
+  showModal: boolean = false;
+
   constructor(
     private departmentService: DepartmentService,
     private campusContextService: CampusContextService,
@@ -115,7 +117,8 @@ export class DepartmentManagementComponent implements OnInit, OnDestroy {
   editDepartment(department: Department): void {
     this.isEditing = true;
     this.currentDepartmentId = department.DepartmentID ?? null;
-    this.editForm.patchValue(department);
+    this.departmentForm.patchValue(department);
+    this.showModal = true;
   }
 
   deleteDepartment(id: number | undefined): void {
@@ -152,10 +155,18 @@ export class DepartmentManagementComponent implements OnInit, OnDestroy {
     }, 3000); // Toast disappears after 3 seconds
   }
 
-  closeEditModal(): void {
+  closeModal(): void {
+    this.showModal = false;
     this.isEditing = false;
     this.currentDepartmentId = null;
-    this.editForm.reset();
+    this.departmentForm.reset();
+  }
+
+  openAddModal(): void {
+    this.isEditing = false;
+    this.currentDepartmentId = null;
+    this.departmentForm.reset();
+    this.showModal = true;
   }
 
   updateDepartment(): void {
@@ -184,7 +195,7 @@ export class DepartmentManagementComponent implements OnInit, OnDestroy {
       this.departmentService.updateDepartment(this.currentDepartmentId, department).subscribe({
         next: () => {
           this.loadDepartments();
-          this.closeEditModal();
+          this.closeModal();
           this.showToastNotification('Department updated successfully', 'success');
         },
         error: (error) => {
