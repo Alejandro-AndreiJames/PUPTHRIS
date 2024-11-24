@@ -28,4 +28,8 @@ router.get('/evaluations/ratings-distribution/:campusId', authenticateJWT, evalu
 // Add this new route
 router.get('/evaluations/faculties-by-rating/:campusId', authenticateJWT, evaluationController.getFacultiesByRating);
 
+// Add these new routes
+router.get('/regularization-candidates', authenticateJWT, evaluationController.getRegularizationCandidates);
+router.get('/performance-review-candidates', authenticateJWT, evaluationController.getPerformanceReviewCandidates);
+
 module.exports = router;

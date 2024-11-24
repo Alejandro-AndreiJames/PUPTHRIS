@@ -16,6 +16,11 @@ import { AcademicRank, AcademicRankCount } from '../../model/academicRank.model'
 import { EvaluationService, EvaluationRatingCount } from '../../services/evaluation.service';
 import { FormsModule } from '@angular/forms';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { 
+  RegularizationCandidate, 
+  PerformanceReviewCandidate,
+  CandidateFilterCriteria 
+} from '../../model/evaluation-candidates.model';
 
 type NgxGaugeType = 'full' | 'semi' | 'arch';
 
@@ -293,9 +298,29 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   public dashboardSections: DashboardSection[] = [
     { id: 'faculty-evaluation', title: 'Faculty Evaluation', visible: true, order: 0 },
     { id: 'charts', title: 'Charts', visible: true, order: 1 },
-    { id: 'academic-ranks', title: 'Academic Ranks', visible: true, order: 2 }
+    { id: 'academic-ranks', title: 'Academic Ranks', visible: true, order: 2 },
+    { id: 'evaluation-candidates', title: 'Faculty Evaluation Candidates', visible: true, order: 3 }
   ];
   public showDashboardSettings = false;
+
+  // Add new properties for evaluation candidates
+  regularizationCandidates: RegularizationCandidate[] = [];
+  performanceReviewCandidates: PerformanceReviewCandidate[] = [];
+  selectedCandidate: RegularizationCandidate | PerformanceReviewCandidate | null = null;
+  showCandidateModal: boolean = false;
+  candidateFilters: CandidateFilterCriteria = {};
+
+  // Add loading states
+  isLoadingRegularization: boolean = false;
+  isLoadingPerformance: boolean = false;
+
+  // Add these properties to the DashboardComponent class
+  showAllRegularization: boolean = false;
+  showAllPerformance: boolean = false;
+
+  // Add these properties
+  showAllCandidatesModal: boolean = false;
+  modalType: 'regularization' | 'performance' | null = null;
 
   constructor(
     private dashboardService: DashboardService,
@@ -359,6 +384,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.selectedSemester = currentMonth > 5 ? 'First Semester' : 'Second Semester';
 
     this.loadDashboardPreferences();
+    this.loadEvaluationCandidates();
   }
 
   ngOnDestroy(): void {
@@ -863,15 +889,31 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     
     if (saved) {
       try {
-        this.dashboardSections = JSON.parse(saved);
+        const savedSections = JSON.parse(saved);
+        
+        // Ensure all default sections exist
+        const defaultSections = [
+          { id: 'faculty-evaluation', title: 'Faculty Evaluation', visible: true, order: 0 },
+          { id: 'charts', title: 'Charts', visible: true, order: 1 },
+          { id: 'academic-ranks', title: 'Academic Ranks', visible: true, order: 2 },
+          { id: 'evaluation-candidates', title: 'Faculty Evaluation Candidates', visible: true, order: 3 }
+        ];
+
+        // Merge saved sections with defaults, keeping saved preferences
+        this.dashboardSections = defaultSections.map(defaultSection => {
+          const savedSection = savedSections.find((s: DashboardSection) => s.id === defaultSection.id);
+          return savedSection || defaultSection;
+        });
+
         this.dashboardSections.sort((a, b) => a.order - b.order);
         
-        // Add timeout to ensure charts are rendered after layout
         setTimeout(() => {
           this.renderCharts();
         }, 250);
       } catch (error) {
         console.error('Error parsing dashboard preferences:', error);
+        // Reset to defaults if there's an error
+        this.clearDashboardPreferences();
       }
     }
   }
@@ -893,5 +935,202 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     setTimeout(() => {
       this.renderCharts();
     }, 250);
+  }
+
+  loadEvaluationCandidates() {
+    const campusId = this.campusContextService.getCurrentCampusId();
+    if (!campusId) {
+      console.log('No campus ID found');
+      return;
+    }
+
+    console.log('Loading candidates for campus:', campusId);
+
+    this.isLoadingRegularization = true;
+    this.evaluationService.getRegularizationCandidates(campusId).subscribe({
+      next: (candidates) => {
+        console.log('Raw regularization candidates:', candidates);
+        
+        // Check each candidate's data
+        candidates.forEach(candidate => {
+          console.log('Candidate:', {
+            name: `${candidate.faculty?.Faculty?.Surname}, ${candidate.faculty?.Faculty?.FirstName}`,
+            employmentType: candidate.faculty?.Faculty?.EmploymentType,
+            evaluationsCount: candidate.evaluations?.length,
+            evaluations: candidate.evaluations
+          });
+        });
+
+        // Filter part-time faculty with 4 evaluations
+        this.regularizationCandidates = candidates.filter(candidate => {
+          const isPartTime = candidate.faculty?.Faculty?.EmploymentType?.toLowerCase().includes('part');
+          const hasFourEvals = candidate.evaluations?.length === 4;
+          
+          console.log('Candidate filtering:', {
+            name: `${candidate.faculty?.Faculty?.Surname}, ${candidate.faculty?.Faculty?.FirstName}`,
+            isPartTime,
+            hasFourEvals,
+            included: isPartTime && hasFourEvals
+          });
+
+          return isPartTime && hasFourEvals;
+        });
+
+        console.log('Filtered regularization candidates:', this.regularizationCandidates);
+      },
+      error: (error) => {
+        console.error('Error loading regularization candidates:', error);
+        this.regularizationCandidates = [];
+      },
+      complete: () => {
+        this.isLoadingRegularization = false;
+      }
+    });
+
+    // Similar debugging for performance review candidates
+    this.isLoadingPerformance = true;
+    this.evaluationService.getPerformanceReviewCandidates(campusId).subscribe({
+      next: (candidates) => {
+        console.log('Raw performance review candidates:', candidates);
+        
+        candidates.forEach(candidate => {
+          console.log('Performance candidate:', {
+            name: `${candidate.faculty?.Faculty?.Surname}, ${candidate.faculty?.Faculty?.FirstName}`,
+            employmentType: candidate.faculty?.Faculty?.EmploymentType,
+            evaluationsCount: candidate.evaluations?.length,
+            evaluations: candidate.evaluations
+          });
+        });
+
+        this.performanceReviewCandidates = candidates.filter(candidate => {
+          const isFullTime = candidate.faculty?.Faculty?.EmploymentType?.toLowerCase().includes('full');
+          const hasFourEvals = candidate.evaluations?.length === 4;
+          
+          console.log('Performance candidate filtering:', {
+            name: `${candidate.faculty?.Faculty?.Surname}, ${candidate.faculty?.Faculty?.FirstName}`,
+            isFullTime,
+            hasFourEvals,
+            included: isFullTime && hasFourEvals
+          });
+
+          return isFullTime && hasFourEvals;
+        });
+
+        console.log('Filtered performance review candidates:', this.performanceReviewCandidates);
+      },
+      error: (error) => {
+        console.error('Error loading performance review candidates:', error);
+        this.performanceReviewCandidates = [];
+      },
+      complete: () => {
+        this.isLoadingPerformance = false;
+      }
+    });
+  }
+
+  viewCandidateDetails(candidate: RegularizationCandidate | PerformanceReviewCandidate) {
+    this.selectedCandidate = candidate;
+    this.showCandidateModal = true;
+  }
+
+  calculateRating(score: number): string {
+    if (score === 0 || isNaN(score)) return 'N/A';
+    if (score >= 91) return 'Outstanding';
+    if (score >= 71) return 'Very Satisfactory';
+    if (score >= 51) return 'Satisfactory';
+    if (score >= 31) return 'Fair';
+    return 'Poor';
+  }
+
+  isRegularizationCandidate(candidate: any): candidate is RegularizationCandidate {
+    return candidate && 'recommendationStrength' in candidate;
+  }
+
+  closeCandidateModal() {
+    this.showCandidateModal = false;
+    this.selectedCandidate = null;
+  }
+
+  getTrendColor(trend: string): string {
+    switch (trend) {
+      case 'Improving': return 'text-green-600';
+      case 'Declining': return 'text-red-600';
+      default: return 'text-gray-600';
+    }
+  }
+
+  getConcernLevelColor(level: string): string {
+    switch (level) {
+      case 'High': return 'text-red-600';
+      case 'Moderate': return 'text-yellow-600';
+      case 'Low': return 'text-orange-600';
+      default: return 'text-gray-600';
+    }
+  }
+
+  // Add this method
+  clearDashboardPreferences(): void {
+    const storageKey = `dashboardPreferences_${this.userID}`;
+    localStorage.removeItem(storageKey);
+    // Reset to default sections
+    this.dashboardSections = [
+      { id: 'faculty-evaluation', title: 'Faculty Evaluation', visible: true, order: 0 },
+      { id: 'charts', title: 'Charts', visible: true, order: 1 },
+      { id: 'academic-ranks', title: 'Academic Ranks', visible: true, order: 2 },
+      { id: 'evaluation-candidates', title: 'Faculty Evaluation Candidates', visible: true, order: 3 }
+    ];
+  }
+
+  // Add these getter methods
+  get displayedRegularizationCandidates() {
+    return this.showAllRegularization 
+      ? this.regularizationCandidates 
+      : this.regularizationCandidates.slice(0, 3);
+  }
+
+  get displayedPerformanceReviewCandidates() {
+    return this.showAllPerformance 
+      ? this.performanceReviewCandidates 
+      : this.performanceReviewCandidates.slice(0, 3);
+  }
+
+  // Add these methods
+  toggleRegularizationDisplay() {
+    this.showAllRegularization = !this.showAllRegularization;
+  }
+
+  togglePerformanceDisplay() {
+    this.showAllPerformance = !this.showAllPerformance;
+  }
+
+  // Add these methods
+  openCandidatesModal(type: 'regularization' | 'performance') {
+    this.modalType = type;
+    this.showAllCandidatesModal = true;
+  }
+
+  closeCandidatesModal() {
+    this.showAllCandidatesModal = false;
+    this.modalType = null;
+  }
+
+  // Helper method to get modal title
+  getModalTitle(): string {
+    return this.modalType === 'regularization' 
+      ? 'All Regularization Candidates' 
+      : 'All Performance Review Candidates';
+  }
+
+  // Helper method to get candidates list for modal
+  get modalCandidates(): (RegularizationCandidate | PerformanceReviewCandidate)[] {
+    if (this.modalType === 'regularization') {
+      return this.regularizationCandidates;
+    }
+    return this.performanceReviewCandidates;
+  }
+
+  // Add this type guard method
+  isPerformanceCandidate(candidate: any): candidate is PerformanceReviewCandidate {
+    return candidate && 'performanceMetrics' in candidate;
   }
 }

@@ -79,6 +79,8 @@ EvaluationCriteria.hasMany(EvaluationScore, {
     as: 'Scores'
 });
 
+User.hasMany(FacultyEvaluation, { foreignKey: 'FacultyID', as: 'FacultyEvaluations' });
+
 module.exports = { 
     User, 
     Department, 
