@@ -6,6 +6,7 @@ const User = require('../models/userModel');
 const Department = require('../models/departmentModel');
 const EvaluationCriteria = require('../models/evaluationCriteriaModel');
 const Role = require('../models/roleModel');
+const UserRole = require('../models/userRoleModel');
 
 exports.submitEvaluation = async (req, res) => {
   let transaction;
@@ -494,3 +495,202 @@ exports.getFacultiesByRating = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.getRegularizationCandidates = async (req, res) => {
+  try {
+    const { campusId } = req.query;
+
+    // Get all part-time faculty users with their evaluations
+    const facultyUsers = await User.findAll({
+      where: {
+        CollegeCampusID: campusId,
+        isActive: true,
+        EmploymentType: 'parttime'  // Match the ENUM value exactly
+      },
+      include: [
+        {
+          model: Role,
+          through: UserRole,
+          where: { RoleName: 'faculty' },
+          attributes: ['RoleName']
+        },
+        {
+          model: Department,
+          as: 'Department',
+          attributes: ['DepartmentName']
+        },
+        {
+          model: FacultyEvaluation,
+          as: 'FacultyEvaluations',
+          separate: true,  // This will perform a separate query
+          order: [
+            ['AcademicYear', 'DESC'],
+            ['Semester', 'DESC']
+          ],
+          limit: 4,
+          include: [{
+            model: EvaluationScore,
+            include: [{
+              model: EvaluationCriteria,
+              as: 'EvaluationCriteria'
+            }]
+          }]
+        }
+      ]
+    });
+
+    const regularizationCandidates = facultyUsers
+      .filter(user => user.FacultyEvaluations.length === 4)
+      .map(user => {
+        const averageScore = user.FacultyEvaluations.reduce((sum, eval) => sum + eval.TotalScore, 0) / 4;
+        
+        let recommendationStrength;
+        if (averageScore >= 93) {
+          recommendationStrength = 'Strong';
+        } else if (averageScore >= 85) {
+          recommendationStrength = 'Moderate';
+        } else {
+          recommendationStrength = 'Weak';
+        }
+
+        console.log(`Faculty: ${user.FirstName}, Average: ${averageScore}, Recommendation: ${recommendationStrength}`);
+
+        return {
+          faculty: {
+            Faculty: {
+              UserID: user.UserID,
+              FirstName: user.FirstName,
+              MiddleName: user.MiddleName,
+              Surname: user.Surname,
+              Department: {
+                DepartmentName: user.Department?.DepartmentName
+              },
+              EmploymentType: user.EmploymentType
+            }
+          },
+          evaluations: user.FacultyEvaluations.map(eval => ({
+            academicYear: eval.AcademicYear,
+            semester: eval.Semester,
+            score: eval.TotalScore,
+            rating: eval.QualitativeRating
+          })),
+          averageScore,
+          recommendationStrength,
+          eligibilityStatus: {
+            isEligible: true,
+            reason: null
+          }
+        };
+      });
+
+    res.status(200).json(regularizationCandidates);
+  } catch (error) {
+    console.error('Error getting regularization candidates:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getPerformanceReviewCandidates = async (req, res) => {
+  try {
+    const { campusId } = req.query;
+    
+    console.log('Searching for campus ID:', campusId);
+
+    // First, get all full-time faculty users
+    const facultyUsers = await User.findAll({
+      where: {
+        CollegeCampusID: campusId,
+        isActive: true,
+        EmploymentType: 'fulltime'  // Make sure this matches your database value exactly
+      },
+      include: [
+        {
+          model: Role,
+          through: UserRole,
+          where: { RoleName: 'faculty' },
+          attributes: ['RoleName'],
+          required: true
+        },
+        {
+          model: Department,
+          as: 'Department',
+          attributes: ['DepartmentName']
+        },
+        {
+          model: FacultyEvaluation,
+          as: 'FacultyEvaluations',
+          required: false,
+          separate: true,
+          order: [
+            ['AcademicYear', 'DESC'],
+            ['Semester', 'DESC']
+          ],
+          limit: 4
+        }
+      ],
+      logging: console.log // This will log the actual SQL query
+    });
+
+    console.log('Found faculty users:', facultyUsers.length);
+    console.log('Employment types:', facultyUsers.map(u => u.EmploymentType));
+
+    // Process and filter candidates
+    const performanceReviewCandidates = facultyUsers
+      .filter(user => {
+        console.log(`User ${user.FirstName} has ${user.FacultyEvaluations?.length} evaluations`);
+        return user.FacultyEvaluations?.length === 4;
+      })
+      .map(user => ({
+        faculty: {
+          Faculty: {
+            UserID: user.UserID,
+            FirstName: user.FirstName,
+            MiddleName: user.MiddleName,
+            Surname: user.Surname,
+            Department: {
+              DepartmentName: user.Department?.DepartmentName
+            },
+            EmploymentType: user.EmploymentType
+          }
+        },
+        evaluations: user.FacultyEvaluations.map(eval => ({
+          academicYear: eval.AcademicYear,
+          semester: eval.Semester,
+          score: eval.TotalScore,
+          rating: eval.QualitativeRating
+        })),
+        performanceMetrics: {
+          trend: calculateTrend(user.FacultyEvaluations),
+          concernLevel: calculateConcernLevel(user.FacultyEvaluations),
+          lowestScore: Math.min(...user.FacultyEvaluations.map(e => e.TotalScore)),
+          averageScore: user.FacultyEvaluations.reduce((sum, e) => sum + e.TotalScore, 0) / 4
+        }
+      }));
+
+    console.log('Filtered performance review candidates:', performanceReviewCandidates.length);
+    res.status(200).json(performanceReviewCandidates);
+
+  } catch (error) {
+    console.error('Error getting performance review candidates:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Helper functions
+function calculateTrend(evaluations) {
+  if (!evaluations || evaluations.length < 2) return 'Stable';
+  const scores = evaluations.map(e => e.TotalScore);
+  const lastScore = scores[0];
+  const previousScore = scores[1];
+  if (lastScore > previousScore) return 'Improving';
+  if (lastScore < previousScore) return 'Declining';
+  return 'Stable';
+}
+
+function calculateConcernLevel(evaluations) {
+  if (!evaluations || evaluations.length === 0) return 'Moderate';
+  const lowestScore = Math.min(...evaluations.map(e => e.TotalScore));
+  if (lowestScore < 51) return 'High';
+  if (lowestScore < 71) return 'Moderate';
+  return 'Low';
+}
