@@ -60,6 +60,7 @@ exports.getDashboardData = async (req, res) => {
     const partTime = await User.count({ where: { ...userWhereClause, EmploymentType: 'parttime' } });
     const fullTime = await User.count({ where: { ...userWhereClause, EmploymentType: 'fulltime' } });
     const temporary = await User.count({ where: { ...userWhereClause, EmploymentType: 'temporary' } });
+    const designee = await User.count({ where: { ...userWhereClause, EmploymentType: 'designee' } });
 
     // Count users who are faculty
     const faculty = await User.count({
@@ -117,16 +118,39 @@ exports.getDashboardData = async (req, res) => {
       order: [['DepartmentName', 'ASC']]
     });
 
+    // Count users with Master's degree
+    const masters = await Education.count({
+      where: { Level: 'MASTER\'S' },
+      include: [{
+        model: User,
+        where: userWhereClause,
+        attributes: []
+      }]
+    });
+
+    // Count users with Doctorate degree
+    const doctorate = await Education.count({
+      where: { Level: 'DOCTORATE' },
+      include: [{
+        model: User,
+        where: userWhereClause,
+        attributes: []
+      }]
+    });
+
     res.status(200).json({
       totalFemale,
       totalMale,
       partTime,
       fullTime,
       temporary,
+      designee,
       faculty,
       staff,
       departments,
       academicRanks: academicRankCounts,
+      masters,
+      doctorate,
     });
   } catch (error) {
     console.error('Error fetching dashboard data:', error);
