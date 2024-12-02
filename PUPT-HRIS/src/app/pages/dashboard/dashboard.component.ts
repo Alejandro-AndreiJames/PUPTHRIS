@@ -78,6 +78,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   public temporary: number = 0;
   public faculty: number = 0;
   public staff: number = 0;
+  public designee: number = 0;
 
   public barChartOptions: ChartOptions<'bar'> = {
     responsive: true,
@@ -89,11 +90,11 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   };
   public barChartLegend = false;
   public barChartData: ChartData<'bar'> = {
-    labels: ['Part-Time', 'Full-Time', 'Temporary'],
+    labels: ['Part-Time', 'Full-Time', 'Temporary', 'Designee'],
     datasets: [
       {
-        data: [0, 0, 0],
-        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+        data: [0, 0, 0, 0],
+        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
       }
     ]
   };
@@ -424,10 +425,16 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.partTime = data.partTime;
       this.fullTime = data.fullTime;
       this.temporary = data.temporary;
+      this.designee = data.designee;
       this.faculty = data.faculty;
       this.staff = data.staff;
   
-      this.barChartData.datasets[0].data = [this.partTime, this.fullTime, this.temporary];
+      this.barChartData.datasets[0].data = [
+        this.partTime, 
+        this.fullTime, 
+        this.temporary,
+        this.designee
+      ];
 
       if (data.departments && Array.isArray(data.departments)) {
         const departments: DepartmentCount[] = data.departments.map((dept: { DepartmentName: string, count: number }) => ({
@@ -735,8 +742,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         return 'Full Time';
       case 'temporary':
         return 'Temporary';
+      case 'designee':
+        return 'Designee';  // Added this case
       default:
-        return type; // Return original value if no match
+        return type.charAt(0).toUpperCase() + type.slice(1); // Capitalize first letter for unknown types
     }
   }
 

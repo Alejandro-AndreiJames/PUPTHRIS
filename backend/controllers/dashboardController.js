@@ -60,6 +60,7 @@ exports.getDashboardData = async (req, res) => {
     const partTime = await User.count({ where: { ...userWhereClause, EmploymentType: 'parttime' } });
     const fullTime = await User.count({ where: { ...userWhereClause, EmploymentType: 'fulltime' } });
     const temporary = await User.count({ where: { ...userWhereClause, EmploymentType: 'temporary' } });
+    const designee = await User.count({ where: { ...userWhereClause, EmploymentType: 'designee' } });
 
     // Count users who are faculty
     const faculty = await User.count({
@@ -123,6 +124,7 @@ exports.getDashboardData = async (req, res) => {
       partTime,
       fullTime,
       temporary,
+      designee,
       faculty,
       staff,
       departments,
