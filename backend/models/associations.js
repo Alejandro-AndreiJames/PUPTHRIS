@@ -11,6 +11,7 @@ const UserRole = require('./userRoleModel');
 const EvaluationCriteria = require('./evaluationCriteriaModel');
 const FacultyEvaluation = require('./facultyEvaluationModel');
 const EvaluationScore = require('./evaluationScoresModel');
+const Education = require('./educationModel');
 
 // CollegeCampus and User associations
 CollegeCampus.hasMany(User, { foreignKey: 'CollegeCampusID', as: 'Users' });
@@ -81,6 +82,10 @@ EvaluationCriteria.hasMany(EvaluationScore, {
 
 User.hasMany(FacultyEvaluation, { foreignKey: 'FacultyID', as: 'FacultyEvaluations' });
 
+// Add Education associations
+User.hasMany(Education, { foreignKey: 'UserID' });
+Education.belongsTo(User, { foreignKey: 'UserID' });
+
 module.exports = { 
     User, 
     Department, 
@@ -92,5 +97,6 @@ module.exports = {
     CollegeCampus, 
     EvaluationCriteria,
     FacultyEvaluation,
-    EvaluationScore
+    EvaluationScore,
+    Education
 };

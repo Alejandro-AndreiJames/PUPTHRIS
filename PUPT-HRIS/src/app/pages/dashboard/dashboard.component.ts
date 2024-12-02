@@ -323,6 +323,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   showAllCandidatesModal: boolean = false;
   modalType: 'regularization' | 'performance' | null = null;
 
+  // Add these properties
+  public doctorate: number = 0;
+  public masters: number = 0;
+
   constructor(
     private dashboardService: DashboardService,
     private cdr: ChangeDetectorRef,
@@ -428,6 +432,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.designee = data.designee;
       this.faculty = data.faculty;
       this.staff = data.staff;
+      this.doctorate = data.doctorate || 0;
+      this.masters = data.masters || 0;
   
       this.barChartData.datasets[0].data = [
         this.partTime, 
