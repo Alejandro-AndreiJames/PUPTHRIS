@@ -1,15 +1,18 @@
 const User = require('../models/userModel');
 
-exports.getUserCredentials = async (req, res) => {
+exports.getAllUserCredentials = async (req, res) => {
     try {
-        const user = await User.findByPk(req.params.id);
+        // Assuming Taguig campus has ID 1 (adjust this based on your actual campus ID)
+        const TAGUIG_CAMPUS_ID = 2;
         
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        // Format the response according to their requirements
-        const credentials = {
+        const users = await User.findAll({
+            where: {
+                CollegeCampusID: TAGUIG_CAMPUS_ID,
+                isActive: true  // Optionally only get active users
+            }
+        });
+        
+        const credentials = users.map(user => ({
             id: user.UserID,
             code: user.Fcode,
             status: user.isActive ? 'Active' : 'Inactive',
@@ -19,8 +22,8 @@ exports.getUserCredentials = async (req, res) => {
             suffix_name: user.NameExtension || null,
             email: user.Email,
             type: user.EmploymentType.toLowerCase(),
-            password: user.PasswordHash  // Note: You might want to handle this differently
-        };
+            password: user.PasswordHash
+        }));
         
         res.json(credentials);
     } catch (error) {
