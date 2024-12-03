@@ -39,6 +39,7 @@ const academicRanksRoutes = require('./routes/academicRanksRoute');
 const excelImportRoutes = require('./routes/excelImportRoute');
 const collegeCampusRoutes = require('./routes/collegeCampusRoutes');
 const evaluationRoutes = require('./routes/evaluationRoutes');
+const apiRoutes = require('./routes/apiRoutes');
 
 require('./models/associations');
 
@@ -84,6 +85,7 @@ app.use('/api/academic-ranks', academicRanksRoutes);
 app.use('/api/excel-import', excelImportRoutes);
 app.use('/api/college-campuses', collegeCampusRoutes);
 app.use('/api/evaluation', evaluationRoutes);
+app.use('/api/external', require('./routes/apiRoutes'));
 
 sequelize.sync().then(() => {
   console.log('Database synced successfully');
