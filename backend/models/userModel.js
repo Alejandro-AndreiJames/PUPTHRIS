@@ -91,4 +91,20 @@ User.prototype.toggleActiveStatus = async function() {
   return await this.save();
 };
 
+// Add this method before module.exports
+User.prototype.toExternalFormat = function() {
+  return {
+    id: this.UserID,
+    code: this.Fcode,
+    status: this.isActive ? 'Active' : 'Inactive',
+    last_name: this.Surname,
+    first_name: this.FirstName,
+    middle_name: this.MiddleName || null,
+    suffix_name: this.NameExtension || null,
+    email: this.Email,
+    type: this.EmploymentType.toLowerCase(),
+    password: this.PasswordHash  // Note: You might want to handle this differently for security
+  };
+};
+
 module.exports = User;
