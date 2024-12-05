@@ -39,6 +39,11 @@ export class LectureMaterialService {
       .pipe(catchError(this.handleError));
   }
 
+  getS3Config(): Observable<any> {
+    return this.http.get<any>(`${environment.apiBaseUrl}/config/s3-config`, { headers: this.getHeaders() })
+      .pipe(catchError(this.handleError));
+  }
+
   private handleError(error: any): Observable<never> {
     console.error('An error occurred:', error);
     return throwError(() => error);

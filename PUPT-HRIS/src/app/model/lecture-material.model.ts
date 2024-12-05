@@ -9,4 +9,5 @@ export interface LectureMaterial {
   UploadDate?: Date;
   createdAt?: Date;
   updatedAt?: Date;
+  ReferenceLink?: string;
 } 
