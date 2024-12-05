@@ -1,0 +1,41 @@
+<div class="container mx-auto p-6">
+  <h1 class="text-2xl font-bold mb-6">Resources</h1>
+
+  <!-- Tabs -->
+  <div class="bg-gray-100 rounded-lg p-2 mb-6">
+    <div class="flex gap-4">
+      <button class="px-4 py-2 rounded-lg" 
+              [class.bg-violet-600]="activeTab === 'research'"
+              [class.text-white]="activeTab === 'research'"
+              (click)="setActiveTab('research')">
+        Research Papers
+      </button>
+      <button class="px-4 py-2 rounded-lg"
+              [class.bg-violet-600]="activeTab === 'books'"
+              [class.text-white]="activeTab === 'books'"
+              (click)="setActiveTab('books')">
+        Books
+      </button>
+      <button class="px-4 py-2 rounded-lg"
+              [class.bg-violet-600]="activeTab === 'lecture'"
+              [class.text-white]="activeTab === 'lecture'"
+              (click)="setActiveTab('lecture')">
+        Lecture Materials
+      </button>
+    </div>
+  </div>
+
+  <!-- Content based on active tab -->
+  <div [ngSwitch]="activeTab">
+    <div *ngSwitchCase="'research'">
+      <app-research-papers [showModal]="showResearchModal"></app-research-papers>
+    </div>
+
+    <div *ngSwitchCase="'books'">
+      <!-- Books content -->
+    </div>
+    <div *ngSwitchCase="'lecture'">
+      <!-- Lecture materials content -->
+    </div>
+  </div>
+</div>

@@ -187,6 +187,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.activeItem = 'coordinator-management';
     } else if (url.includes('college-campuses')) {
       this.activeItem = 'college-campus-management';
+      this.isMaintenanceDropdownOpen = true;
+      this.isMaintenanceActive = true;
     } else if (url.includes('college-campuses') || url.includes('departments') || 
                url.includes('coordinator-management') || url.includes('user-management')) {
       this.isMaintenanceDropdownOpen = true;
@@ -194,6 +196,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
     } else if (url.includes('evaluation') || url.includes('print-pds')) {
       this.isReportsDropdownOpen = true;
       this.isReportsActive = true;
+    } else if (url.includes('resources')) {
+      this.activeItem = 'resources';
     } else {
       this.activeItem = '';
     }
@@ -289,5 +293,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.activeItem = '';
       }
     }
+  }
+
+  get canAccessResources(): boolean {
+    return this.hasRole('faculty') || this.hasRole('admin') || this.hasRole('superadmin');
   }
 }

@@ -122,6 +122,14 @@
     </ul>
   </li>
 
+    <!-- Resources -->
+    <li>
+      <a id="resources" class="sidebar-link" routerLink="/resources" (click)="setActive('resources')"
+        [class.active]="activeItem === 'resources'">
+        <i class="fas fa-book mr-3"></i>Resources
+      </a>
+    </li>
+
   <div class="flex-grow"></div>
   <!-- Settings - Visible to all roles -->
   <li>

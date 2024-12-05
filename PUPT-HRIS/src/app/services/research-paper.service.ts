@@ -10,8 +10,17 @@ import { ResearchPaper } from '../model/research-paper.model';
 })
 export class ResearchPaperService {
   private apiUrl = `${environment.apiBaseUrl}/research-papers`;
+  private s3Config: any;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    this.getS3Config().subscribe(
+      config => this.s3Config = config
+    );
+  }
+
+  getS3Config() {
+    return this.http.get<any>(`${environment.apiBaseUrl}/config/s3-config`);
+  }
 
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');

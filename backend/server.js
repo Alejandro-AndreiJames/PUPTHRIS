@@ -43,6 +43,7 @@ const apiRoutes = require('./routes/apiRoutes');
 const researchPaperRoutes = require('./routes/researchPaperRoutes');
 const bookRoutes = require('./routes/bookRoutes');
 const lectureMaterialRoutes = require('./routes/lectureMaterialRoutes');
+const configRoutes = require('./routes/configRoutes');
 
 require('./models/associations');
 
@@ -92,6 +93,7 @@ app.use('/api/external', require('./routes/apiRoutes'));
 app.use('/api/research-papers', researchPaperRoutes);
 app.use('/api/books', bookRoutes);
 app.use('/api/lecture-materials', lectureMaterialRoutes);
+app.use('/api/config', configRoutes);
 
 sequelize.sync().then(() => {
   console.log('Database synced successfully');
