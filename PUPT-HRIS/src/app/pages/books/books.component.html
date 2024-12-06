@@ -1,0 +1,56 @@
+<div class="container mx-auto p-4">
+  <h2 class="text-2xl font-bold mb-4">Books</h2>
+  <button class="btn btn-primary mb-4" (click)="toggleModal()">Add Book</button>
+
+  <!-- Book Modal -->
+  <div *ngIf="showModal" class="modal modal-open">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg mb-4">{{ isEditing ? 'Edit' : 'Add' }} Book</h3>
+      <form [formGroup]="bookForm" (ngSubmit)="onSubmit()">
+        <div class="form-control">
+          <label class="label">Title</label>
+          <input type="text" formControlName="Title" class="input input-bordered" required>
+        </div>
+        <div class="form-control">
+          <label class="label">Author</label>
+          <input type="text" formControlName="Author" class="input input-bordered" required>
+        </div>
+        <div class="form-control">
+          <label class="label">Description</label>
+          <textarea formControlName="Description" class="textarea textarea-bordered"></textarea>
+        </div>
+        <div class="modal-action">
+          <button type="button" class="btn" (click)="toggleModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="!bookForm.valid">
+            {{ isEditing ? 'Update' : 'Save' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="mt-8">
+    <h3 class="text-xl font-bold mb-2">Book List</h3>
+    <table class="table w-full">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Author</th>
+          <th>Description</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let book of books">
+          <td>{{ book.Title }}</td>
+          <td>{{ book.Author }}</td>
+          <td>{{ book.Description }}</td>
+          <td>
+            <button class="btn btn-sm btn-info" (click)="editBook(book)">Edit</button>
+            <button class="btn btn-sm btn-error" (click)="deleteBook(book.BookID!)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

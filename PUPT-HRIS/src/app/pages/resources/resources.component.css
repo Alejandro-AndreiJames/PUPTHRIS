@@ -1,0 +1,38 @@
+.tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.tab {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.tab:hover {
+  background-color: #f3f4f6;
+}
+
+.tab-active {
+  background-color: #dc2626;
+  color: white;
+}
+.tab-active:hover {
+  background-color: #b91c1c;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.btn:hover {
+  transition: background-color 0.2s;
+}
+
