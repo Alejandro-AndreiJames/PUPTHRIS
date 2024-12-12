@@ -223,12 +223,56 @@ button:disabled {
   cursor: not-allowed;
 }
 
-button:disabled:hover {
-  background-color: #cccccc;
-  transform: none;
-}
-
 /* File upload area hover effect */
 .border-dashed:hover {
   border-color: #800000;
+}
+
+/* Toast/Alert styles */
+.toast {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 9999;
+  min-width: 250px;
+}
+
+.alert {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease-out;
+}
+
+.alert-success {
+  background-color: #10B981;
+  color: white;
+}
+
+.alert-error {
+  background-color: #EF4444;
+  color: white;
+}
+
+.alert-warning {
+  background-color: #F59E0B;
+  color: white;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Ensure toast is above other content */
+.toast-end {
+  right: 1rem;
+  left: auto;
 }

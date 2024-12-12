@@ -25,6 +25,9 @@ export class ResearchPapersComponent implements OnInit {
   showDeletePrompt: boolean = false;
   paperToDelete: number | null = null;
   initialFormValue: any;
+  showToast: boolean = false;
+  toastMessage: string = '';
+  toastType: 'success' | 'error' | 'warning' = 'success';
 
   constructor(
     private fb: FormBuilder,
@@ -104,8 +107,12 @@ export class ResearchPapersComponent implements OnInit {
           next: () => {
             this.loadResearchPapers();
             this.toggleModal();
+            this.showToastNotification('Research paper updated successfully', 'success');
           },
-          error: (error) => console.error('Error updating research paper:', error)
+          error: (error) => {
+            console.error('Error updating research paper:', error);
+            this.showToastNotification('Error updating research paper', 'error');
+          }
         });
       } else {
         formData.append('UserID', this.userId.toString());
@@ -113,8 +120,12 @@ export class ResearchPapersComponent implements OnInit {
           next: () => {
             this.loadResearchPapers();
             this.toggleModal();
+            this.showToastNotification('Research paper added successfully', 'success');
           },
-          error: (error) => console.error('Error adding research paper:', error)
+          error: (error) => {
+            console.error('Error adding research paper:', error);
+            this.showToastNotification('Error adding research paper', 'error');
+          }
         });
       }
     }
@@ -155,8 +166,12 @@ export class ResearchPapersComponent implements OnInit {
           this.loadResearchPapers();
           this.showDeletePrompt = false;
           this.paperToDelete = null;
+          this.showToastNotification('Research paper deleted successfully', 'success');
         },
-        error: (error) => console.error('Error deleting research paper:', error)
+        error: (error) => {
+          console.error('Error deleting research paper:', error);
+          this.showToastNotification('Error deleting research paper', 'error');
+        }
       });
     }
   }
@@ -188,5 +203,15 @@ export class ResearchPapersComponent implements OnInit {
   public hasUnsavedChanges(): boolean {
     const currentFormValue = this.researchForm.getRawValue();
     return JSON.stringify(currentFormValue) !== JSON.stringify(this.initialFormValue);
+  }
+
+  private showToastNotification(message: string, type: 'success' | 'error' | 'warning'): void {
+    this.toastMessage = message;
+    this.toastType = type;
+    this.showToast = true;
+
+    setTimeout(() => {
+      this.showToast = false;
+    }, 3000); // Hide toast after 3 seconds
   }
 }
