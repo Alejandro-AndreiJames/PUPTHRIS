@@ -1,6 +1,8 @@
-<div class="container mx-auto p-4">
-  <h2 class="text-2xl font-bold mb-4">Books</h2>
-  <button class="btn btn-primary mb-4" (click)="toggleModal()">Add Book</button>
+<div class="container mx-auto">
+  <div class="header-container">
+    <h2 class="text-2xl font-bold">Books</h2>
+    <button class="btn add-book-btn" (click)="toggleModal()">+ Add Book</button>
+  </div>
 
   <!-- Book Modal -->
   <div *ngIf="showModal" class="modal modal-open">
@@ -29,25 +31,25 @@
     </div>
   </div>
 
-  <div class="mt-8">
+  <div class="mt-8 overflow-x-auto">
     <h3 class="text-xl font-bold mb-2">Book List</h3>
-    <table class="table w-full">
+    <table class="table table-zebra w-full border-separate border-spacing-0">
       <thead>
-        <tr>
-          <th>Title</th>
-          <th>Author</th>
-          <th>Description</th>
-          <th>Actions</th>
+        <tr class="bg-maroon text-white">
+          <th class="p-4">Title</th>
+          <th class="p-4">Author</th>
+          <th class="p-4">Description</th>
+          <th class="p-4 w-36">Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let book of books">
-          <td>{{ book.Title }}</td>
-          <td>{{ book.Author }}</td>
-          <td>{{ book.Description }}</td>
-          <td>
-            <button class="btn btn-sm btn-info" (click)="editBook(book)">Edit</button>
-            <button class="btn btn-sm btn-error" (click)="deleteBook(book.BookID!)">Delete</button>
+        <tr *ngFor="let book of books" class="hover:bg-gray-100">
+          <td class="p-4">{{ book.Title }}</td>
+          <td class="p-4">{{ book.Author }}</td>
+          <td class="p-4">{{ book.Description }}</td>
+          <td class="p-4 flex justify-center space-x-2">
+            <button class="btn btn-sm" (click)="editBook(book)">Edit</button>
+            <button class="btn btn-sm" (click)="deleteBook(book.BookID!)">Delete</button>
           </td>
         </tr>
       </tbody>
