@@ -138,3 +138,19 @@ button[class*="btn-sm"]:nth-child(3) {
 button[class*="btn-sm"]:nth-child(3):hover {
   background-color: #333333;  /* slightly lighter black */
 }
+
+.btn-maroon {
+  background-color: #800000;
+  color: white;
+  border: none;
+}
+
+.btn-maroon:hover {
+  background-color: #660000;
+}
+
+/* Style for disabled button */
+.btn-primary:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
