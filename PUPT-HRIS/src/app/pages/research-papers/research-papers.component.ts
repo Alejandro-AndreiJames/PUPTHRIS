@@ -22,6 +22,8 @@ export class ResearchPapersComponent implements OnInit {
   researchForm: FormGroup;
   private s3Config: any;
   selectedFile: File | null = null;
+  showDeletePrompt: boolean = false;
+  paperToDelete: number | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -130,10 +132,22 @@ export class ResearchPapersComponent implements OnInit {
   }
 
   deletePaper(id: number): void {
-    if (confirm('Are you sure you want to delete this research paper?')) {
-      this.researchService.deleteResearchPaper(id).subscribe({
+    this.paperToDelete = id;
+    this.showDeletePrompt = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeletePrompt = false;
+    this.paperToDelete = null;
+  }
+
+  confirmDelete(): void {
+    if (this.paperToDelete) {
+      this.researchService.deleteResearchPaper(this.paperToDelete).subscribe({
         next: () => {
           this.loadResearchPapers();
+          this.showDeletePrompt = false;
+          this.paperToDelete = null;
         },
         error: (error) => console.error('Error deleting research paper:', error)
       });
