@@ -1,22 +1,26 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, OnInit, Input } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BookService } from '../../services/book.service';
 import { Book } from '../../model/book.model';
 import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-books',
   templateUrl: './books.component.html',
   styleUrls: ['./books.component.css'],
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, CommonModule]
+  imports: [CommonModule, ReactiveFormsModule]
 })
 export class BooksComponent implements OnInit {
   books: Book[] = [];
+  @Input() showModal: boolean = false;
   bookForm: FormGroup;
   isEditing = false;
   currentBookId: number | null = null;
-  showModal = false;
+  showToast: boolean = false;
+  toastMessage: string = '';
+  toastType: 'success' | 'error' | 'warning' = 'success';
 
   constructor(private fb: FormBuilder, private bookService: BookService) {
     this.bookForm = this.fb.group({
@@ -33,7 +37,10 @@ export class BooksComponent implements OnInit {
   loadBooks(): void {
     this.bookService.getBooks().subscribe({
       next: (books) => this.books = books,
-      error: (error) => console.error('Error loading books:', error)
+      error: (error) => {
+        console.error('Error loading books:', error);
+        this.showToastNotification('Error loading books', 'error');
+      }
     });
   }
 
@@ -42,41 +49,83 @@ export class BooksComponent implements OnInit {
       const bookData = this.bookForm.value;
       if (this.isEditing && this.currentBookId !== null) {
         this.bookService.updateBook(this.currentBookId, bookData).subscribe({
-          next: () => this.loadBooks(),
-          error: (error) => console.error('Error updating book:', error)
+          next: () => {
+            this.loadBooks();
+            this.closeModal();
+            this.showToastNotification('Book updated successfully', 'success');
+          },
+          error: (error) => {
+            console.error('Error updating book:', error);
+            this.showToastNotification('Error updating book', 'error');
+          }
         });
       } else {
         this.bookService.addBook(bookData).subscribe({
-          next: () => this.loadBooks(),
-          error: (error) => console.error('Error adding book:', error)
+          next: () => {
+            this.loadBooks();
+            this.closeModal();
+            this.showToastNotification('Book added successfully', 'success');
+          },
+          error: (error) => {
+            console.error('Error adding book:', error);
+            this.showToastNotification('Error adding book', 'error');
+          }
         });
       }
-      this.resetForm();
-      this.toggleModal();
     }
   }
 
   editBook(book: Book): void {
     this.isEditing = true;
     this.currentBookId = book.BookID || null;
-    this.bookForm.patchValue(book);
-    this.toggleModal();
-  }
-
-  deleteBook(id: number): void {
-    this.bookService.deleteBook(id).subscribe({
-      next: () => this.loadBooks(),
-      error: (error) => console.error('Error deleting book:', error)
+    this.bookForm.patchValue({
+      Title: book.Title,
+      Author: book.Author,
+      Description: book.Description
     });
+    this.showModal = true;
   }
 
-  resetForm(): void {
+  addBook(): void {
+    this.isEditing = false;
+    this.currentBookId = null;
+    this.bookForm.reset();
+    this.showModal = true;
+  }
+
+  closeModal(): void {
+    this.showModal = false;
     this.isEditing = false;
     this.currentBookId = null;
     this.bookForm.reset();
   }
 
   toggleModal(): void {
-    this.showModal = !this.showModal;
+    if (this.showModal) {
+      this.closeModal();
+    } else {
+      this.addBook();
+    }
+  }
+
+  private showToastNotification(message: string, type: 'success' | 'error' | 'warning'): void {
+    this.toastMessage = message;
+    this.toastType = type;
+    this.showToast = true;
+
+    setTimeout(() => {
+      this.showToast = false;
+    }, 3000);
+  }
+
+  deleteBook(id: number): void {
+    this.bookService.deleteBook(id).subscribe({
+      next: () => {
+        this.loadBooks();
+      },
+      error: (error) => {
+        console.error('Error deleting book:', error);
+      }
+    });
   }
 }
