@@ -24,6 +24,7 @@ export class ResearchPapersComponent implements OnInit {
   selectedFile: File | null = null;
   showDeletePrompt: boolean = false;
   paperToDelete: number | null = null;
+  initialFormValue: any;
 
   constructor(
     private fb: FormBuilder,
@@ -69,6 +70,10 @@ export class ResearchPapersComponent implements OnInit {
 
   toggleModal(): void {
     this.showModal = !this.showModal;
+    if (this.showModal && !this.isEditing) {
+      this.researchForm.reset();
+      this.initialFormValue = this.researchForm.getRawValue();
+    }
     if (!this.showModal) {
       this.researchForm.reset();
       this.isEditing = false;
@@ -128,6 +133,8 @@ export class ResearchPapersComponent implements OnInit {
       DocumentPath: paper.DocumentPath
     });
 
+    this.initialFormValue = this.researchForm.getRawValue();
+
     this.showModal = true;
   }
 
@@ -176,5 +183,10 @@ export class ResearchPapersComponent implements OnInit {
     if (file) {
       this.selectedFile = file;
     }
+  }
+
+  public hasUnsavedChanges(): boolean {
+    const currentFormValue = this.researchForm.getRawValue();
+    return JSON.stringify(currentFormValue) !== JSON.stringify(this.initialFormValue);
   }
 }

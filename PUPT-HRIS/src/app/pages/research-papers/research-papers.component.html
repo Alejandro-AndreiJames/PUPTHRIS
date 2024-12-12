@@ -43,68 +43,96 @@
     </div>
 
     <!-- Modal Content -->
-    <div class="p-6">
-      <form [formGroup]="researchForm" (ngSubmit)="onSubmit()">
-        <div class="space-y-4">
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Title <span class="text-red-500">*</span></span>
+    <div class="p-5">
+      <form [formGroup]="researchForm" (ngSubmit)="onSubmit()" class="space-y-4">
+        <!-- Two columns grid for Title and Authors -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="form-group">
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              Title <span class="text-red-500">*</span>
             </label>
             <input type="text" formControlName="Title" 
-                   class="w-full py-2 px-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                   required>
+                   class="form-input w-full rounded-md border-gray-300 shadow-sm focus:border-maroon focus:ring focus:ring-maroon focus:ring-opacity-50"
+                   placeholder="Enter title">
           </div>
 
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Description</span>
-            </label>
-            <textarea formControlName="Description" 
-                      class="w-full py-2 px-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300 h-24">
-            </textarea>
-          </div>
-
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Authors <span class="text-red-500">*</span></span>
+          <div class="form-group">
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              Authors <span class="text-red-500">*</span>
             </label>
             <input type="text" formControlName="Authors" 
-                   class="w-full py-2 px-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                   required>
-          </div>
-
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Publication Date <span class="text-red-500">*</span></span>
-            </label>
-            <input type="date" formControlName="PublicationDate" 
-                   class="w-full py-2 px-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                   required>
-          </div>
-
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Reference Link (Optional)</span>
-            </label>
-            <input type="url" formControlName="ReferenceLink" 
-                   class="w-full py-2 px-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                   placeholder="https://...">
-          </div>
-
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-semibold">Upload Document (Optional)</span>
-            </label>
-            <input type="file" 
-                   (change)="onFileChange($event)"
-                   class="w-full py-2 px-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                   accept=".pdf,.doc,.docx">
+                   class="form-input w-full rounded-md border-gray-300 shadow-sm focus:border-maroon focus:ring focus:ring-maroon focus:ring-opacity-50"
+                   placeholder="Enter authors">
           </div>
         </div>
 
-        <div class="flex justify-end gap-4 mt-6">
-          <button type="button" class="btn btn-maroon" (click)="toggleModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" [disabled]="researchForm.invalid || researchForm.pristine">
+        <!-- Description -->
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Description
+          </label>
+          <textarea formControlName="Description" 
+                    class="form-textarea w-full rounded-md border-gray-300 shadow-sm focus:border-maroon focus:ring focus:ring-maroon focus:ring-opacity-50"
+                    rows="2"
+                    placeholder="Enter description"></textarea>
+        </div>
+
+        <!-- Two columns grid for Publication Date and Reference Link -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="form-group">
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              Publication Date <span class="text-red-500">*</span>
+            </label>
+            <input type="date" formControlName="PublicationDate" 
+                   class="form-input w-full rounded-md border-gray-300 shadow-sm focus:border-maroon focus:ring focus:ring-maroon focus:ring-opacity-50">
+          </div>
+
+          <div class="form-group">
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              Reference Link
+            </label>
+            <input type="url" formControlName="ReferenceLink" 
+                   class="form-input w-full rounded-md border-gray-300 shadow-sm focus:border-maroon focus:ring focus:ring-maroon focus:ring-opacity-50"
+                   placeholder="https://...">
+          </div>
+        </div>
+
+        <!-- Document Upload -->
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Upload Document
+          </label>
+          <label class="cursor-pointer block">
+            <div class="mt-1 flex justify-center px-4 py-4 border-2 border-gray-300 border-dashed rounded-md hover:border-maroon transition-colors">
+              <div class="space-y-1 text-center">
+                <svg class="mx-auto h-8 w-8 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                  <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <div class="text-sm text-gray-600">
+                  <span class="text-maroon hover:text-maroon-dark">Upload a file</span>
+                  <span class="pl-1">or drag and drop</span>
+                </div>
+                <p class="text-xs text-gray-500">PDF, DOC up to 10MB</p>
+              </div>
+            </div>
+            <input type="file" 
+                   class="sr-only" 
+                   (change)="onFileChange($event)" 
+                   accept=".pdf,.doc,.docx">
+          </label>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-end space-x-3 pt-4 border-t">
+          <button type="button"
+                  class="px-4 py-2 bg-maroon text-white rounded-md hover:bg-maroon-dark transition-colors"
+                  (click)="toggleModal()">
+            Cancel
+          </button>
+          <button type="submit"
+                  class="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors"
+                  [disabled]="researchForm.invalid || !hasUnsavedChanges()"
+                  [ngClass]="{'opacity-50 cursor-not-allowed': researchForm.invalid || !hasUnsavedChanges()}">
             {{isEditing ? 'Update' : 'Save'}}
           </button>
         </div>
