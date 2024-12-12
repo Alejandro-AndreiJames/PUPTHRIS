@@ -1,16 +1,140 @@
-.modal-box {
-  max-width: 32rem;
+* {
+  font-family: 'Poppins', sans-serif;
+}
+
+.table {
+  width: 100%;
+  border-spacing: 0;
+  border-collapse: separate;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.overflow-x-auto {
+  max-width: 97%;  /* reduce from 100% to 95% */
+  margin: 0 auto;  /* center the container */
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.table tbody tr:nth-child(even) {
+  background-color: #f3f4f6;
+}
+
+.table tbody tr:hover {
+  background-color: #e2e8f0;
+}
+
+.bg-maroon {
+  background-color: #800000;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border: none;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background-color: black;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #800000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .form-control {
   margin-bottom: 1rem;
 }
 
-.table td {
-  padding: 0.75rem;
+.label-text {
+  color: #374151;
+  font-size: 0.875rem;
 }
 
+/* Modal animations */
+.fixed {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.bg-white.rounded-lg {
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Action Buttons */
 .btn-sm {
   padding: 0.25rem 0.5rem;
   font-size: 0.875rem;
+  border: none;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+/* Edit button */
+button[class*="btn-sm"]:nth-child(1) {
+  background-color: #00A3FF;  /* light blue */
+  color: white;
+}
+
+button[class*="btn-sm"]:nth-child(1):hover {
+  background-color: #0089D6;  /* darker blue */
+}
+
+/* Delete button */
+button[class*="btn-sm"]:nth-child(2) {
+  background-color: #FF5757;  /* light red */
+  color: white;
+}
+
+button[class*="btn-sm"]:nth-child(2):hover {
+  background-color: #FF0000;  /* darker red */
+}
+
+/* Download button */
+button[class*="btn-sm"]:nth-child(3) {
+  background-color: black;
+  color: white;
+}
+
+button[class*="btn-sm"]:nth-child(3):hover {
+  background-color: #333333;  /* slightly lighter black */
 }

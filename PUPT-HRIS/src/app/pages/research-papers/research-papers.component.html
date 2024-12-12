@@ -1,29 +1,28 @@
-<div class="flex justify-between items-center mb-6">
-  <h2 class="text-xl font-semibold">Research Papers</h2>
+<div class="flex justify-between items-center mb-4">
+  <h2 class="text-xl font-bold">Research Papers</h2>
   <button class="btn btn-primary" (click)="toggleModal()">+ Add Research Paper</button>
 </div>
 
-<!-- Research Papers List -->
+<!-- Research Papers Table -->
 <div class="overflow-x-auto">
-  <table class="table w-full">
+  <table class="table table-zebra w-full border-separate border-spacing-0">
     <thead>
-      <tr>
-        <th>Title</th>
-        <th>Authors</th>
-        <th>Publication Date</th>
-        <th>Status</th>
-        <th>Actions</th>
+      <tr class="bg-maroon text-white">
+        <th class="p-4">Title</th>
+        <th class="p-4">Authors</th>
+        <th class="p-4">Publication Date</th>
+        <th class="p-4 w-36">Actions</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let paper of researchPapers">
-        <td>{{paper.Title}}</td>
-        <td>{{paper.Authors}}</td>
-        <td>{{paper.PublicationDate | date}}</td>
-        <td class="flex gap-2">
-          <button class="btn btn-sm btn-info" (click)="editPaper(paper)">Edit</button>
-          <button class="btn btn-sm btn-error" (click)="deletePaper(paper.ResearchID!)">Delete</button>
-          <button class="btn btn-sm btn-success" (click)="downloadFile(paper.DocumentPath!)">Download</button>
+      <tr *ngFor="let paper of researchPapers" class="hover:bg-gray-100">
+        <td class="p-4">{{paper.Title}}</td>
+        <td class="p-4">{{paper.Authors}}</td>
+        <td class="p-4">{{paper.PublicationDate | date}}</td>
+        <td class="p-4 flex justify-center space-x-2">
+          <button class="btn btn-sm" (click)="editPaper(paper)">Edit</button>
+          <button class="btn btn-sm" (click)="deletePaper(paper.ResearchID!)">Delete</button>
+          <button class="btn btn-sm" (click)="downloadFile(paper.DocumentPath!)">Download</button>
         </td>
       </tr>
     </tbody>
@@ -31,62 +30,85 @@
 </div>
 
 <!-- Modal -->
-<div *ngIf="showModal" class="modal modal-open">
-  <div class="modal-box">
-    <h3 class="font-bold text-lg mb-4">{{isEditing ? 'Edit' : 'Add'}} Research Paper</h3>
-    <form [formGroup]="researchForm" (ngSubmit)="onSubmit()">
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text">Title</span>
-        </label>
-        <input type="text" formControlName="Title" class="input input-bordered" required>
-      </div>
+<div *ngIf="showModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+  <div class="bg-white w-11/12 max-w-2xl rounded-lg shadow-lg">
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center p-4 bg-maroon text-white rounded-t-lg">
+      <h2 class="text-xl font-bold">{{isEditing ? 'Edit' : 'Add'}} Research Paper</h2>
+      <button (click)="toggleModal()" class="text-white hover:text-gray-300">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
 
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text">Description</span>
-        </label>
-        <textarea formControlName="Description" class="textarea textarea-bordered"></textarea>
-      </div>
+    <!-- Modal Content -->
+    <div class="p-6">
+      <form [formGroup]="researchForm" (ngSubmit)="onSubmit()">
+        <div class="space-y-4">
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">Title</span>
+            </label>
+            <input type="text" formControlName="Title" 
+                   class="w-full py-2 px-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                   required>
+          </div>
 
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text">Authors</span>
-        </label>
-        <input type="text" formControlName="Authors" class="input input-bordered" required>
-      </div>
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">Description</span>
+            </label>
+            <textarea formControlName="Description" 
+                      class="w-full py-2 px-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300 h-24">
+            </textarea>
+          </div>
 
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text">Publication Date</span>
-        </label>
-        <input type="date" formControlName="PublicationDate" class="input input-bordered" required>
-      </div>
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">Authors</span>
+            </label>
+            <input type="text" formControlName="Authors" 
+                   class="w-full py-2 px-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                   required>
+          </div>
 
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text">Reference Link (Optional)</span>
-        </label>
-        <input type="url" formControlName="ReferenceLink" class="input input-bordered" 
-               placeholder="https://...">
-      </div>
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">Publication Date</span>
+            </label>
+            <input type="date" formControlName="PublicationDate" 
+                   class="w-full py-2 px-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                   required>
+          </div>
 
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text">Upload Document (Optional)</span>
-        </label>
-        <input type="file" 
-               (change)="onFileChange($event)"
-               class="file-input file-input-bordered"
-               accept=".pdf,.doc,.docx">
-      </div>
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">Reference Link (Optional)</span>
+            </label>
+            <input type="url" formControlName="ReferenceLink" 
+                   class="w-full py-2 px-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                   placeholder="https://...">
+          </div>
 
-      <div class="modal-action">
-        <button type="button" class="btn" (click)="toggleModal()">Cancel</button>
-        <button type="submit" class="btn btn-primary" [disabled]="!researchForm.valid">
-          {{isEditing ? 'Update' : 'Save'}}
-        </button>
-      </div>
-    </form>
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-semibold">Upload Document (Optional)</span>
+            </label>
+            <input type="file" 
+                   (change)="onFileChange($event)"
+                   class="w-full py-2 px-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                   accept=".pdf,.doc,.docx">
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-4 mt-6">
+          <button type="button" class="btn" (click)="toggleModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="!researchForm.valid">
+            {{isEditing ? 'Update' : 'Save'}}
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
