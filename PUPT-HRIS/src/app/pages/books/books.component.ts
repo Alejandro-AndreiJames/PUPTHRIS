@@ -23,6 +23,8 @@ export class BooksComponent implements OnInit {
   toastType: 'success' | 'error' | 'warning' = 'success';
   showDeletePrompt: boolean = false;
   bookToDelete: number | null = null;
+  originalBookData: any = null;
+  hasChanges: boolean = false;
 
   constructor(private fb: FormBuilder, private bookService: BookService) {
     this.bookForm = this.fb.group({
@@ -81,12 +83,31 @@ export class BooksComponent implements OnInit {
   editBook(book: Book): void {
     this.isEditing = true;
     this.currentBookId = book.BookID || null;
+    this.originalBookData = { ...book };
+    
     this.bookForm.patchValue({
       Title: book.Title,
       Author: book.Author,
-      Description: book.Description
+      Description: book.Description,
+      ISBN: book.ISBN
     });
+    
+    this.bookForm.valueChanges.subscribe(currentValue => {
+      this.hasChanges = this.checkForChanges(currentValue);
+    });
+    
     this.showModal = true;
+  }
+
+  private checkForChanges(currentValue: any): boolean {
+    if (!this.originalBookData) return true;
+    
+    return (
+      currentValue.Title !== this.originalBookData.Title ||
+      currentValue.Author !== this.originalBookData.Author ||
+      currentValue.Description !== this.originalBookData.Description ||
+      currentValue.ISBN !== this.originalBookData.ISBN
+    );
   }
 
   addBook(): void {
@@ -100,6 +121,8 @@ export class BooksComponent implements OnInit {
     this.showModal = false;
     this.isEditing = false;
     this.currentBookId = null;
+    this.originalBookData = null;
+    this.hasChanges = false;
     this.bookForm.reset();
   }
 
