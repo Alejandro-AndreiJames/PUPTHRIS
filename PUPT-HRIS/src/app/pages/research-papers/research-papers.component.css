@@ -259,3 +259,23 @@ button:disabled {
   right: 1rem;
   left: auto;
 }
+
+/* File upload area styling */
+.border-dashed {
+  border: 2px dashed #d1d5db;
+  transition: all 0.3s ease;
+}
+
+.border-dashed:hover {
+  border-color: #800000; /* maroon color */
+  background-color: rgba(128, 0, 0, 0.05); /* very light maroon background */
+}
+
+/* Upload text styling */
+.text-maroon {
+  color: #800000;
+}
+
+.hover\:text-maroon-dark:hover {
+  color: #600000;
+}
