@@ -68,3 +68,23 @@
 .btn-sm:hover {
   background-color: #333333;
 }
+
+/* Delete Confirmation Modal Styles */
+.modal-box {
+  max-width: 400px;
+  margin: 1rem;
+  width: 100%;
+  position: relative;
+  padding: 1.5rem;
+}
+
+/* Simple fade animation for the modal overlay */
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Apply fade animation to the modal overlay */
+.fixed {
+  animation: modalFadeIn 0.2s ease-out forwards;
+}

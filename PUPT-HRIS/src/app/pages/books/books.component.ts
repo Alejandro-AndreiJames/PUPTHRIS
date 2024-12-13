@@ -21,6 +21,8 @@ export class BooksComponent implements OnInit {
   showToast: boolean = false;
   toastMessage: string = '';
   toastType: 'success' | 'error' | 'warning' = 'success';
+  showDeletePrompt: boolean = false;
+  bookToDelete: number | null = null;
 
   constructor(private fb: FormBuilder, private bookService: BookService) {
     this.bookForm = this.fb.group({
@@ -119,13 +121,29 @@ export class BooksComponent implements OnInit {
   }
 
   deleteBook(id: number): void {
-    this.bookService.deleteBook(id).subscribe({
-      next: () => {
-        this.loadBooks();
-      },
-      error: (error) => {
-        console.error('Error deleting book:', error);
-      }
-    });
+    this.bookToDelete = id;
+    this.showDeletePrompt = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeletePrompt = false;
+    this.bookToDelete = null;
+  }
+
+  confirmDelete(): void {
+    if (this.bookToDelete) {
+      this.bookService.deleteBook(this.bookToDelete).subscribe({
+        next: () => {
+          this.loadBooks();
+          this.showDeletePrompt = false;
+          this.bookToDelete = null;
+          this.showToastNotification('Book deleted successfully', 'success');
+        },
+        error: (error) => {
+          console.error('Error deleting book:', error);
+          this.showToastNotification('Error deleting book', 'error');
+        }
+      });
+    }
   }
 }

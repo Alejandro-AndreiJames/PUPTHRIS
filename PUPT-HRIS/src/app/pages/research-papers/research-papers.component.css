@@ -74,7 +74,7 @@
   font-size: 0.875rem;
 }
 
-/* Modal animations */
+/* Modal animations - simplified to just fade */
 @keyframes modalFadeIn {
   from {
     opacity: 0;
@@ -84,32 +84,15 @@
   }
 }
 
-@keyframes modalSlideIn {
-  from {
-    transform: translateY(-10px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
 /* Modal overlay */
 .fixed {
-  animation: modalFadeIn 0.2s ease-out;
+  animation: modalFadeIn 0.2s ease-out forwards;
 }
 
 /* Modal box */
 .modal-box {
-  animation: modalSlideIn 0.2s ease-out;
   max-width: 400px;
   margin: 1rem;
-  transform-origin: center;
-}
-
-/* Ensure the modal maintains its size */
-.modal-box {
   width: 100%;
   position: relative;
   padding: 1.5rem;
