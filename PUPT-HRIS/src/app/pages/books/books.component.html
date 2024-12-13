@@ -1,30 +1,73 @@
 <div class="container mx-auto">
-  <div class="header-container">
-    <h2 class="text-2xl font-bold">Books</h2>
-    <button class="btn add-book-btn" (click)="toggleModal()">+ Add Book</button>
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-bold">Books</h2>
+    <button class="btn btn-primary" (click)="toggleModal()">+ Add Book</button>
   </div>
 
   <!-- Book Modal -->
-  <div *ngIf="showModal" class="modal modal-open">
-    <div class="modal-box">
-      <h3 class="font-bold text-lg mb-4">{{ isEditing ? 'Edit' : 'Add' }} Book</h3>
-      <form [formGroup]="bookForm" (ngSubmit)="onSubmit()">
-        <div class="form-control">
-          <label class="label">Title</label>
-          <input type="text" formControlName="Title" class="input input-bordered" required>
+  <div *ngIf="showModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+    <div class="modal-box bg-white rounded-lg shadow-lg">
+      <!-- Header -->
+      <div class="bg-maroon text-white p-4 -m-6 mb-6 rounded-t-lg flex justify-between items-center">
+        <h3 class="font-bold text-xl">{{isEditing ? 'Edit' : 'Add'}} Book</h3>
+        <button (click)="toggleModal()" class="text-white hover:text-gray-300">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Form -->
+      <form [formGroup]="bookForm" (ngSubmit)="onSubmit()" class="space-y-4">
+        <!-- Single column layout -->
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Title <span class="text-red-500">*</span>
+          </label>
+          <input type="text" formControlName="Title" 
+                 class="form-input w-full rounded-md border-gray-300 shadow-sm focus:border-maroon focus:ring focus:ring-maroon focus:ring-opacity-50"
+                 placeholder="Enter title">
         </div>
-        <div class="form-control">
-          <label class="label">Author</label>
-          <input type="text" formControlName="Author" class="input input-bordered" required>
+
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Author <span class="text-red-500">*</span>
+          </label>
+          <input type="text" formControlName="Author" 
+                 class="form-input w-full rounded-md border-gray-300 shadow-sm focus:border-maroon focus:ring focus:ring-maroon focus:ring-opacity-50"
+                 placeholder="Enter author">
         </div>
-        <div class="form-control">
-          <label class="label">Description</label>
-          <textarea formControlName="Description" class="textarea textarea-bordered"></textarea>
+
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            ISBN
+          </label>
+          <input type="text" formControlName="ISBN" 
+                 class="form-input w-full rounded-md border-gray-300 shadow-sm focus:border-maroon focus:ring focus:ring-maroon focus:ring-opacity-50"
+                 placeholder="Enter ISBN">
         </div>
-        <div class="modal-action">
-          <button type="button" class="btn" (click)="toggleModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" [disabled]="!bookForm.valid">
-            {{ isEditing ? 'Update' : 'Save' }}
+
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Description
+          </label>
+          <textarea formControlName="Description" 
+                    class="form-textarea w-full rounded-md border-gray-300 shadow-sm focus:border-maroon focus:ring focus:ring-maroon focus:ring-opacity-50"
+                    rows="3"
+                    placeholder="Enter description"></textarea>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-end space-x-4 mt-6 pt-4 border-t border-gray-200">
+          <button type="button"
+                  class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+                  (click)="toggleModal()">
+            Cancel
+          </button>
+          <button type="submit"
+                  class="px-4 py-2 bg-maroon text-white rounded-md hover:bg-maroon-dark transition-colors"
+                  [disabled]="!bookForm.valid">
+            {{isEditing ? 'Update' : 'Save'}}
           </button>
         </div>
       </form>
@@ -84,6 +127,19 @@
           Delete
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div *ngIf="showToast" class="toast toast-end">
+    <div *ngIf="toastType === 'success'" class="alert alert-success">
+      <span>{{ toastMessage }}</span>
+    </div>
+    <div *ngIf="toastType === 'error'" class="alert alert-error">
+      <span>{{ toastMessage }}</span>
+    </div>
+    <div *ngIf="toastType === 'warning'" class="alert alert-warning">
+      <span>{{ toastMessage }}</span>
     </div>
   </div>
 </div>

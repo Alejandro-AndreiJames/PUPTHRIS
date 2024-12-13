@@ -28,7 +28,8 @@ export class BooksComponent implements OnInit {
     this.bookForm = this.fb.group({
       Title: ['', Validators.required],
       Author: ['', Validators.required],
-      Description: ['']
+      Description: [''],
+      ISBN: ['']
     });
   }
 
