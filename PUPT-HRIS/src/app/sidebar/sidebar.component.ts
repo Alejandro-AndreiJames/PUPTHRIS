@@ -95,10 +95,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
     return this.hasRole('superadmin') || this.hasRole('admin');
   }
 
-  get canPrintPds(): boolean {
-    return this.hasRole('faculty') || this.hasRole('staff') || this.hasRole('admin') || this.hasRole('superadmin');
-  }
-
   get isProfileActive(): boolean {
     // This method determines if the profile section should be active or not
     return this.activeItem.startsWith('my-profile') || this.isProfileDropdownOpen;
@@ -126,8 +122,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.activeItem = 'user-management';
     } else if (url.includes('employees')) {
       this.activeItem = 'employees';
-    } else if (url.includes('print-pds')) {
-      this.activeItem = 'print-pds';
     } else if (url.includes('new-account')) {
       this.activeItem = 'new-account';
     } else if (url.includes('basic-details')) {
@@ -136,32 +130,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
     } else if (url.includes('personal-details')) {
       this.activeItem = 'my-profile-personal-details';
       this.isProfileDropdownOpen = true;
-    } else if (url.includes('contact-details')) {
-      this.activeItem = 'my-profile-contact-details';
-      this.isProfileDropdownOpen = true;
     } else if (url.includes('educational-background')) {
       this.activeItem = 'my-profile-educational-background';
-      this.isProfileDropdownOpen = true;
-    } else if (url.includes('family-background')) {
-      this.activeItem = 'my-profile-family-background';
-      this.isProfileDropdownOpen = true;
-    } else if (url.includes('children')) {
-      this.activeItem = 'my-profile-children';
-      this.isProfileDropdownOpen = true;
-    } else if (url.includes('civil-service-eligibility')) {
-      this.activeItem = 'my-profile-civil-service-eligibility';
-      this.isProfileDropdownOpen = true;
-    } else if (url.includes('learning-development')) {
-      this.activeItem = 'my-profile-learning-development';
-      this.isProfileDropdownOpen = true;
-    } else if (url.includes('work-experience')) {
-      this.activeItem = 'my-profile-work-experience';
-      this.isProfileDropdownOpen = true;
-    } else if (url.includes('voluntary-works')) {
-      this.activeItem = 'my-profile-voluntary-works';
-      this.isProfileDropdownOpen = true;
-    } else if (url.includes('other-information')) {
-      this.activeItem = 'my-profile-other-information';
       this.isProfileDropdownOpen = true;
     } else if (url.includes('trainings-and-seminars')) {
       this.activeItem = 'my-profile-trainings-and-seminars';
@@ -171,15 +141,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.isProfileDropdownOpen = true;
     } else if (url.includes('officer-membership')) {
       this.activeItem = 'my-profile-officer-membership';
-      this.isProfileDropdownOpen = true;
-    } else if (url.includes('additional-question')) {
-      this.activeItem = 'my-profile-additional-question';
-      this.isProfileDropdownOpen = true;
-    } else if (url.includes('character-reference')) {
-      this.activeItem = 'my-profile-character-reference';
-      this.isProfileDropdownOpen = true;
-    } else if (url.includes('signature')) {
-      this.activeItem = 'my-profile-signature';
       this.isProfileDropdownOpen = true;
     } else if (url.includes('settings')) {
       this.activeItem = 'settings';
@@ -193,7 +154,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
                url.includes('coordinator-management') || url.includes('user-management')) {
       this.isMaintenanceDropdownOpen = true;
       this.isMaintenanceActive = true;
-    } else if (url.includes('evaluation') || url.includes('print-pds')) {
+    } else if (url.includes('evaluation')) {
       this.isReportsDropdownOpen = true;
       this.isReportsActive = true;
     } else if (url.includes('resources')) {
@@ -279,7 +240,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   get showReportsMenu(): boolean {
-    return this.canAccessEvaluation || this.canPrintPds;
+    return this.canAccessEvaluation;
   }
 
   toggleMaintenanceDropdown() {

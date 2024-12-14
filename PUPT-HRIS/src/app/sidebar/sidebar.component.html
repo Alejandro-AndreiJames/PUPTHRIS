@@ -72,11 +72,6 @@
           class="sidebar-link">
           <i class="fas fa-clipboard-check mr-3"></i>Evaluation</a>
       </li>
-      <li *ngIf="canPrintPds">
-        <a routerLink="/print-pds" (click)="setActive('print-pds')"
-          [class.active]="activeItem === 'print-pds'">
-          <i class="fas fa-print mr-3"></i>Print PDS</a>
-      </li>
     </ul>
   </li>
 
@@ -91,34 +86,14 @@
         [class.active]="activeItem === 'my-profile-basic-details'">Basic Details</a></li>
       <li><a routerLink="/personal-details" (click)="setActive('my-profile-personal-details')"
         [class.active]="activeItem === 'my-profile-personal-details'">Personal Details</a></li>
-      <li><a routerLink="/contact-details" (click)="setActive('my-profile-contact-details')"
-        [class.active]="activeItem === 'my-profile-contact-details'">Contact Details</a></li>
       <li><a routerLink="/educational-background" (click)="setActive('my-profile-educational-background')"
         [class.active]="activeItem === 'my-profile-educational-background'">Educational Background</a></li>
-      <li><a routerLink="/family-background" (click)="setActive('my-profile-family-background')"
-        [class.active]="activeItem === 'my-profile-family-background'">Family Background</a></li>
-      <li><a routerLink="/civil-service-eligibility" (click)="setActive('my-profile-civil-service-eligibility')"
-        [class.active]="activeItem === 'my-profile-civil-service-eligibility'">Civil Service Eligibility</a></li>
-      <li><a routerLink="/learning-development" (click)="setActive('my-profile-learning-development')"
-        [class.active]="activeItem === 'my-profile-learning-development'">Learning Development</a></li>
-      <li><a routerLink="/work-experience" (click)="setActive('my-profile-work-experience')"
-        [class.active]="activeItem === 'my-profile-work-experience'">Work Experience</a></li>
-      <li><a routerLink="/voluntary-works" (click)="setActive('my-profile-voluntary-works')"
-        [class.active]="activeItem === 'my-profile-voluntary-works'">Voluntary Work</a></li>
       <li><a routerLink="/trainings-and-seminars" (click)="setActive('my-profile-trainings-and-seminars')"
         [class.active]="activeItem === 'my-profile-trainings-and-seminars'">Trainings and Seminars</a></li>
       <li><a routerLink="/outstanding-achievement" (click)="setActive('my-profile-outstanding-achievement')"
         [class.active]="activeItem === 'my-profile-outstanding-achievement'">Outstanding Achievement</a></li>
       <li><a routerLink="/officer-membership" (click)="setActive('my-profile-officer-membership')"
         [class.active]="activeItem === 'my-profile-officer-membership'">Officership and Membership</a></li>
-      <li><a routerLink="/other-information" (click)="setActive('my-profile-other-information')"
-        [class.active]="activeItem === 'my-profile-other-information'">Other Information</a></li>
-      <li><a routerLink="/additional-question" (click)="setActive('my-profile-additional-question')"
-        [class.active]="activeItem === 'my-profile-additional-question'">Additional Questions</a></li>
-      <li><a routerLink="/character-reference" (click)="setActive('my-profile-character-reference')"
-        [class.active]="activeItem === 'my-profile-character-reference'">Character Reference</a></li>
-      <li><a routerLink="/signature" (click)="setActive('my-profile-signature')"
-        [class.active]="activeItem === 'my-profile-signature'">Signature</a></li>
     </ul>
   </li>
 
