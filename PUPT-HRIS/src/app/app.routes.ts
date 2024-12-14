@@ -25,6 +25,7 @@ import { CampusGuard } from './services/campus.guard';
 import { EvaluationComponent } from './pages/evaluation/evaluation.component';
 import { Page404Component } from './page-404/page-404.component';
 import { ResourcesComponent } from './pages/resources/resources.component';
+import { ProfessionalLicenseComponent } from './pages/professional-license/professional-license.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -56,6 +57,7 @@ export const routes: Routes = [
       { path: 'college-campuses', component: CollegeCampusManagementComponent, canActivate: [RoleGuard], data: { expectedRoles: ['superadmin'] } },
       { path: 'evaluation', component: EvaluationComponent, canActivate: [RoleGuard], data: { expectedRoles: ['admin', 'superadmin'] } },
       { path: 'resources', component: ResourcesComponent },
+      { path: 'professional-license', component: ProfessionalLicenseComponent, canActivate: [RoleGuard], data: { expectedRoles: ['faculty', 'staff', 'admin', 'superadmin'] } },
       { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
     ]
   },

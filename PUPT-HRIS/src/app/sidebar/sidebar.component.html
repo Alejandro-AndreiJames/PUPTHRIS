@@ -94,6 +94,13 @@
         [class.active]="activeItem === 'my-profile-outstanding-achievement'">Outstanding Achievement</a></li>
       <li><a routerLink="/officer-membership" (click)="setActive('my-profile-officer-membership')"
         [class.active]="activeItem === 'my-profile-officer-membership'">Officership and Membership</a></li>
+      <li>
+        <a routerLink="/professional-license" 
+           (click)="setActive('my-profile-professional-license')"
+           [class.active]="activeItem === 'my-profile-professional-license'">
+          Professional License
+        </a>
+      </li>
     </ul>
   </li>
 

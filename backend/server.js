@@ -31,6 +31,8 @@ const bookRoutes = require('./routes/bookRoutes');
 const lectureMaterialRoutes = require('./routes/lectureMaterialRoutes');
 const configRoutes = require('./routes/configRoutes');
 const professionalLicenseRoutes = require('./routes/professionalLicenseRoutes');
+const employmentInformationRoutes = require('./routes/employmentInformationRoutes');
+const certificationRoutes = require('./routes/certificationRoutes');
 require('./models/associations');
 dotenv.config();
 const app = express();
@@ -64,6 +66,8 @@ app.use('/api/books', bookRoutes);
 app.use('/api/lecture-materials', lectureMaterialRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/professional-licenses', professionalLicenseRoutes);
+app.use('/api/employment-information', employmentInformationRoutes);
+app.use('/api/certifications', certificationRoutes);
 sequelize.sync().then(() => {
   console.log('Database synced successfully');
   

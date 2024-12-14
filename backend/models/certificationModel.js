@@ -1,8 +1,8 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db.config');
 
-const ProfessionalLicense = sequelize.define('ProfessionalLicense', {
-  LicenseID: {
+const Certification = sequelize.define('Certification', {
+  CertificationID: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
@@ -15,21 +15,33 @@ const ProfessionalLicense = sequelize.define('ProfessionalLicense', {
       key: 'UserID',
     },
   },
-  ProfessionalLicenseEarned: {
+  Name: {
     type: DataTypes.STRING(255),
     allowNull: false,
   },
-  YearObtained: {
-    type: DataTypes.INTEGER,
+  IssuingOrganization: {
+    type: DataTypes.STRING(255),
     allowNull: false,
+  },
+  IssueDate: {
+    type: DataTypes.DATE,
+    allowNull: true,
   },
   ExpirationDate: {
     type: DataTypes.DATE,
     allowNull: true,
+  },
+  CredentialID: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+  },
+  CredentialURL: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
   }
 }, {
-  tableName: 'professional_licenses',
+  tableName: 'certifications',
   timestamps: true,
 });
 
-module.exports = ProfessionalLicense;
+module.exports = Certification;
