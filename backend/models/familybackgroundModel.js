@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db.config');
-
+//
 const FamilyBackground = sequelize.define('familybackground', {
   FamilyBackgroundID: {
     type: DataTypes.INTEGER,

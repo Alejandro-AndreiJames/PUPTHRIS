@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db.config');
-
+//
 const AdditionalQuestion = sequelize.define('AdditionalQuestion', {
   ResponseID: {
     type: DataTypes.INTEGER,

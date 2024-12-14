@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db.config');
-
+//
 const LearningDevelopment = sequelize.define('learningdevelopment', {
   LearningDevelopmentID: {
     type: DataTypes.INTEGER,

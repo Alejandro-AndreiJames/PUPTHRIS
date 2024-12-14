@@ -31,7 +31,11 @@ export class BooksComponent implements OnInit {
       Title: ['', Validators.required],
       Author: ['', Validators.required],
       Description: [''],
-      ISBN: ['']
+      ISBN: ['', [
+        Validators.pattern(/^(?:\d{10}|\d{13})$/),
+        Validators.minLength(10),
+        Validators.maxLength(13)
+      ]]
     });
   }
 

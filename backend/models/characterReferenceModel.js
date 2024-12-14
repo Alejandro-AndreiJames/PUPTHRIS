@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db.config');
-
+//
 const CharacterReference = sequelize.define('CharacterReference', {
   ReferenceID: {
     type: DataTypes.INTEGER,

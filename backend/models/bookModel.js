@@ -24,6 +24,14 @@ const Book = sequelize.define('Book', {
     type: DataTypes.STRING(255),
     allowNull: false
   },
+  ISBN: {
+    type: DataTypes.STRING(13),
+    allowNull: true,
+    validate: {
+      isNumeric: true,
+      len: [10, 13]
+    }
+  },
   Description: {
     type: DataTypes.TEXT,
     allowNull: true
