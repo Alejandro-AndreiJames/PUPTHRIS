@@ -11,18 +11,8 @@ const VoluntaryWork = require('../models/voluntaryworkModel');
 const OfficerMembership = require('../models/officerMembershipModel');
 const PersonalDetails = require('../models/personalDetailsModel');
 const Education = require('../models/educationModel');
-const WorkExperience = require('../models/workexperienceModel');
-const ContactDetails = require('../models/contactDetailsModel');
-const FamilyBackground = require('../models/familybackgroundModel');
-const Children = require('../models/childrenModel');
-const UserSignatures = require('../models/userSignaturesModel');
 const ProfileImage = require('../models/profileImageModel');
 const SpecialSkill = require('../models/specialSkillModel');
-const Membership = require('../models/membershipModel');
-const CivilServiceEligibility = require('../models/CivilServiceEligibility');
-const LearningDevelopment = require('../models/learningdevelopmentModel');
-const AdditionalQuestion = require('../models/additionalQuestionModel');
-const CharacterReference = require('../models/characterReferenceModel');
 const moment = require('moment');
 
 exports.getDashboardData = async (req, res) => {
@@ -299,20 +289,10 @@ exports.getProfileCompletion = async (req, res) => {
     const specialSkills = await SpecialSkill.findAll({ where: { userID: userId } });
     const voluntaryWork = await VoluntaryWork.findAll({ where: { userID: userId } });
     const achievementAwards = await AchievementAward.findAll({ where: { UserID: userId } });
-    const workExperience = await WorkExperience.findAll({ where: { userID: userId } });
-    const userSignatures = await UserSignatures.findOne({ where: { UserID: userId } });
-    const contactDetails = await ContactDetails.findOne({ where: { UserID: userId } });
     const personalDetails = await PersonalDetails.findOne({ where: { UserID: userId } });
     const officershipMembership = await OfficerMembership.findAll({ where: { UserID: userId } });
-    const familyBackground = await FamilyBackground.findOne({ where: { UserID: userId } });
-    const characterReference = await CharacterReference.findAll({ where: { UserID: userId } });
-    const additionalQuestion = await AdditionalQuestion.findOne({ where: { UserID: userId } });
-    const learningDevelopment = await LearningDevelopment.findAll({ where: { UserID: userId } });
     const profileImage = await ProfileImage.findOne({ where: { UserID: userId } });
     const academicRank = await AcademicRank.findOne({ where: { UserID: userId } });
-    const membership = await Membership.findAll({ where: { userID: userId } });
-    const civilServiceEligibility = await CivilServiceEligibility.findAll({ where: { userID: userId } });
-    const children = await Children.findAll({ where: { UserID: userId } });
     const education = await Education.findAll({ where: { UserID: userId } });
 
     // Define the total number of sections
@@ -324,21 +304,11 @@ exports.getProfileCompletion = async (req, res) => {
     if (basicDetails) completedSections++; else incompleteSections.push('Add your basic details');
     if (personalDetails) completedSections++; else incompleteSections.push('Add your personal details');
     if (education.length > 0) completedSections++; else incompleteSections.push('Add your education details');
-    if (workExperience.length > 0) completedSections++; else incompleteSections.push('Add your work experience');
-    if (contactDetails) completedSections++; else incompleteSections.push('Add your contact details');
-    if (familyBackground) completedSections++; else incompleteSections.push('Add your family background');
-    if (children.length > 0) completedSections++; else incompleteSections.push('Add your children details');
-    if (userSignatures) completedSections++; else incompleteSections.push('Add your signature');
     if (profileImage) completedSections++; else incompleteSections.push('Add your profile image');
     if (academicRank) completedSections++; else incompleteSections.push('Add your academic rank');
-    if (membership.length > 0) completedSections++; else incompleteSections.push('Add your memberships');
-    if (civilServiceEligibility.length > 0) completedSections++; else incompleteSections.push('Add your civil service eligibility');
-    if (additionalQuestion) completedSections++; else incompleteSections.push('Answer additional questions');
-    if (learningDevelopment.length > 0) completedSections++; else incompleteSections.push('Add your learning and development');
     if (specialSkills.length > 0) completedSections++; else incompleteSections.push('Add your special skills');
     if (voluntaryWork.length > 0) completedSections++; else incompleteSections.push('Add your voluntary work');
     if (achievementAwards.length > 0) completedSections++; else incompleteSections.push('Add your achievement awards');
-    if (characterReference.length > 0) completedSections++; else incompleteSections.push('Add your character references');
     if (officershipMembership.length > 0) completedSections++; else incompleteSections.push('Add your officership memberships');
 
     // Calculate the completion percentage

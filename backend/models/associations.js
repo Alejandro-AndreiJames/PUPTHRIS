@@ -1,8 +1,6 @@
 const User = require('./userModel');
 const Department = require('./departmentModel');
 const Coordinator = require('./coordinatorModel');
-const CivilServiceEligibility = require('./CivilServiceEligibility');
-const WorkExperience = require('./workexperienceModel');
 const BasicDetails = require('./basicDetailsModel');
 const AcademicRank = require('./academicRanksModel');
 const CollegeCampus = require('./collegeCampusModel');
@@ -35,13 +33,6 @@ User.hasOne(Department, {
     as: 'CoordinatedDepartment'
 });
 
-// Civil Service Eligibility associations
-User.hasMany(CivilServiceEligibility, { foreignKey: 'userID' });
-CivilServiceEligibility.belongsTo(User, { foreignKey: 'userID' });
-
-// Work Experience associations
-User.hasMany(WorkExperience, { foreignKey: 'userID' });
-WorkExperience.belongsTo(User, { foreignKey: 'userID' });
 
 User.hasOne(BasicDetails, { foreignKey: 'UserID' });
 BasicDetails.belongsTo(User, { foreignKey: 'UserID' });
@@ -103,8 +94,6 @@ module.exports = {
     User, 
     Department, 
     Coordinator, 
-    CivilServiceEligibility, 
-    WorkExperience, 
     BasicDetails, 
     AcademicRank, 
     CollegeCampus, 
