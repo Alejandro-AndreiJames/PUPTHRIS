@@ -92,8 +92,24 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
   // Existing methods...
   onSubmit() {
     if (this.forgotPasswordForm.valid) {
-      const email = this.forgotPasswordForm.get('email')?.value;
-      // Your existing submit logic
+      const { email } = this.forgotPasswordForm.value;
+      this.authService.forgotPassword(email)
+        .subscribe({
+          next: (response: any) => {
+            console.log('Password reset link sent:', response.message);
+            this.showToastNotification('Password reset link sent. Please check your email.', 'success');
+            setTimeout(() => {
+              this.router.navigate(['/login']);
+            }, 3000);
+          },
+          error: (error) => {
+            console.error('Password reset failed', error);
+            this.showToastNotification('Failed to send password reset link. Please try again.', 'error');
+          }
+        });
+    } else {
+      console.error('Form is invalid');
+      this.showToastNotification('Please enter a valid email address.', 'warning');
     }
   }
 
