@@ -26,6 +26,8 @@ import { EvaluationComponent } from './pages/evaluation/evaluation.component';
 import { Page404Component } from './page-404/page-404.component';
 import { ResourcesComponent } from './pages/resources/resources.component';
 import { ProfessionalLicenseComponent } from './pages/professional-license/professional-license.component';
+import { EmploymentInformationComponent } from './pages/employment-information/employment-information.component';
+import { CertificationComponent } from './pages/certification/certification.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -58,6 +60,8 @@ export const routes: Routes = [
       { path: 'evaluation', component: EvaluationComponent, canActivate: [RoleGuard], data: { expectedRoles: ['admin', 'superadmin'] } },
       { path: 'resources', component: ResourcesComponent },
       { path: 'professional-license', component: ProfessionalLicenseComponent, canActivate: [RoleGuard], data: { expectedRoles: ['faculty', 'staff', 'admin', 'superadmin'] } },
+      { path: 'employment-information', component: EmploymentInformationComponent, canActivate: [RoleGuard], data: { expectedRoles: ['faculty', 'staff', 'admin', 'superadmin'] } },
+      { path: 'certification', component: CertificationComponent, canActivate: [RoleGuard], data: { expectedRoles: ['faculty', 'staff', 'admin', 'superadmin'] } },
       { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
     ]
   },

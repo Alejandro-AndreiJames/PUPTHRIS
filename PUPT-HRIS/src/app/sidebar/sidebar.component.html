@@ -101,6 +101,20 @@
           Professional License
         </a>
       </li>
+      <li>
+        <a routerLink="/employment-information" 
+           (click)="setActive('my-profile-employment-information')"
+           [class.active]="activeItem === 'my-profile-employment-information'">
+          Employment Information
+        </a>
+      </li>
+      <li>
+        <a routerLink="/certification" 
+           (click)="setActive('my-profile-certification')"
+           [class.active]="activeItem === 'my-profile-certification'">
+          Certification
+        </a>
+      </li>
     </ul>
   </li>
 

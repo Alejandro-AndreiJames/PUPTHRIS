@@ -162,6 +162,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
     } else if (url.includes('professional-license')) {
       this.activeItem = 'my-profile-professional-license';
       this.isProfileDropdownOpen = true;
+    } else if (url.includes('employment-information')) {
+      this.activeItem = 'my-profile-employment-information';
+      this.isProfileDropdownOpen = true;
+    } else if (url.includes('certification')) {
+      this.activeItem = 'my-profile-certification';
+      this.isProfileDropdownOpen = true;
     } else {
       this.activeItem = '';
     }
