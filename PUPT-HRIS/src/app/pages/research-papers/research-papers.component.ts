@@ -22,6 +22,12 @@ export class ResearchPapersComponent implements OnInit {
   researchForm: FormGroup;
   private s3Config: any;
   selectedFile: File | null = null;
+  showDeletePrompt: boolean = false;
+  paperToDelete: number | null = null;
+  initialFormValue: any;
+  showToast: boolean = false;
+  toastMessage: string = '';
+  toastType: 'success' | 'error' | 'warning' = 'success';
 
   constructor(
     private fb: FormBuilder,
@@ -67,6 +73,10 @@ export class ResearchPapersComponent implements OnInit {
 
   toggleModal(): void {
     this.showModal = !this.showModal;
+    if (this.showModal && !this.isEditing) {
+      this.researchForm.reset();
+      this.initialFormValue = this.researchForm.getRawValue();
+    }
     if (!this.showModal) {
       this.researchForm.reset();
       this.isEditing = false;
@@ -97,8 +107,12 @@ export class ResearchPapersComponent implements OnInit {
           next: () => {
             this.loadResearchPapers();
             this.toggleModal();
+            this.showToastNotification('Research paper updated successfully', 'success');
           },
-          error: (error) => console.error('Error updating research paper:', error)
+          error: (error) => {
+            console.error('Error updating research paper:', error);
+            this.showToastNotification('Error updating research paper', 'error');
+          }
         });
       } else {
         formData.append('UserID', this.userId.toString());
@@ -106,8 +120,12 @@ export class ResearchPapersComponent implements OnInit {
           next: () => {
             this.loadResearchPapers();
             this.toggleModal();
+            this.showToastNotification('Research paper added successfully', 'success');
           },
-          error: (error) => console.error('Error adding research paper:', error)
+          error: (error) => {
+            console.error('Error adding research paper:', error);
+            this.showToastNotification('Error adding research paper', 'error');
+          }
         });
       }
     }
@@ -126,16 +144,34 @@ export class ResearchPapersComponent implements OnInit {
       DocumentPath: paper.DocumentPath
     });
 
+    this.initialFormValue = this.researchForm.getRawValue();
+
     this.showModal = true;
   }
 
   deletePaper(id: number): void {
-    if (confirm('Are you sure you want to delete this research paper?')) {
-      this.researchService.deleteResearchPaper(id).subscribe({
+    this.paperToDelete = id;
+    this.showDeletePrompt = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeletePrompt = false;
+    this.paperToDelete = null;
+  }
+
+  confirmDelete(): void {
+    if (this.paperToDelete) {
+      this.researchService.deleteResearchPaper(this.paperToDelete).subscribe({
         next: () => {
           this.loadResearchPapers();
+          this.showDeletePrompt = false;
+          this.paperToDelete = null;
+          this.showToastNotification('Research paper deleted successfully', 'success');
         },
-        error: (error) => console.error('Error deleting research paper:', error)
+        error: (error) => {
+          console.error('Error deleting research paper:', error);
+          this.showToastNotification('Error deleting research paper', 'error');
+        }
       });
     }
   }
@@ -162,5 +198,20 @@ export class ResearchPapersComponent implements OnInit {
     if (file) {
       this.selectedFile = file;
     }
+  }
+
+  public hasUnsavedChanges(): boolean {
+    const currentFormValue = this.researchForm.getRawValue();
+    return JSON.stringify(currentFormValue) !== JSON.stringify(this.initialFormValue);
+  }
+
+  private showToastNotification(message: string, type: 'success' | 'error' | 'warning'): void {
+    this.toastMessage = message;
+    this.toastType = type;
+    this.showToast = true;
+
+    setTimeout(() => {
+      this.showToast = false;
+    }, 3000); // Hide toast after 3 seconds
   }
 }

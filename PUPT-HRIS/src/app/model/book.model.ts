@@ -6,4 +6,5 @@ export interface Book {
   Description?: string;
   createdAt?: Date;
   updatedAt?: Date;
+  ISBN?: string;
 } 

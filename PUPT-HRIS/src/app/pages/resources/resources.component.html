@@ -1,41 +1,43 @@
-<div class="container mx-auto p-6">
-  <h1 class="text-2xl font-bold mb-6">Resources</h1>
-
-  <!-- Tabs -->
-  <div class="bg-gray-100 rounded-lg p-2 mb-6">
+<div class="container bg-base-200 rounded-lg shadow-lg p-0 mx-auto max-w-7xl mb-10">
+  <!-- Header Section -->
+  <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
+    <h1 class="text-2xl font-bold">Resources</h1>
+  </div>
+  
+  <div class="p-6 space-y-4">
+    <h1 class="text-lg font-normal">Access and manage your academic resources.</h1>
+    <!-- Resource Type Selection -->
     <div class="flex gap-4">
-      <button class="px-4 py-2 rounded-lg" 
-              [class.bg-violet-600]="activeTab === 'research'"
-              [class.text-white]="activeTab === 'research'"
+      <button class="tab-button" 
+              [class.active]="activeTab === 'research'"
               (click)="setActiveTab('research')">
         Research Papers
       </button>
-      <button class="px-4 py-2 rounded-lg"
-              [class.bg-violet-600]="activeTab === 'books'"
-              [class.text-white]="activeTab === 'books'"
+      <button class="tab-button"
+              [class.active]="activeTab === 'books'"
               (click)="setActiveTab('books')">
         Books
       </button>
-      <button class="px-4 py-2 rounded-lg"
-              [class.bg-violet-600]="activeTab === 'lecture'"
-              [class.text-white]="activeTab === 'lecture'"
+      <button class="tab-button"
+              [class.active]="activeTab === 'lecture'"
               (click)="setActiveTab('lecture')">
         Lecture Materials
       </button>
     </div>
-  </div>
 
-  <!-- Content based on active tab -->
-  <div [ngSwitch]="activeTab">
-    <div *ngSwitchCase="'research'">
-      <app-research-papers [showModal]="showResearchModal"></app-research-papers>
-    </div>
-
-    <div *ngSwitchCase="'books'">
-      <app-books></app-books>
-    </div>
-    <div *ngSwitchCase="'lecture'">
-      <app-lecture-materials></app-lecture-materials>
+    <!-- Content Area -->
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+      <div [ngSwitch]="activeTab">
+        <div *ngSwitchCase="'research'">
+          <app-research-papers [showModal]="showResearchModal"></app-research-papers>
+        </div>
+        <div *ngSwitchCase="'books'">
+          <app-books [showModal]="showBooksModal"></app-books>
+        </div>
+        <div *ngSwitchCase="'lecture'">
+          <app-lecture-materials [showModal]="showLectureModal"></app-lecture-materials>
+        </div>
+      </div>
     </div>
   </div>
 </div>
