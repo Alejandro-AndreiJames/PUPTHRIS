@@ -4,9 +4,4 @@ export interface ProfessionalLicense {
   ProfessionalLicenseEarned: string;
   YearObtained: number;
   ExpirationDate?: Date;
-  AnnualSalary?: number;
-  SalaryGradeStep?: string;
-  RatePerHour?: number;
-  DateOfLastPromotion?: Date;
-  InitialYearOfTeaching?: number;
 }

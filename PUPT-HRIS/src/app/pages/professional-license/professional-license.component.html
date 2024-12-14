@@ -8,10 +8,6 @@
     <div *ngIf="professionalLicense" class="p-6">
       <div class="bg-white rounded-lg shadow-md p-6">
         <div class="grid grid-cols-2 gap-4">
-          <!-- License Information -->
-          <div class="col-span-2">
-            <h3 class="text-lg font-medium text-maroon mb-2">License Information</h3>
-          </div>
           <div class="flex flex-col pb-2 border-b border-gray-200">
             <span class="text-gray-600 font-medium text-sm">Professional License</span>
             <span class="text-gray-900 font-semibold">{{ professionalLicense.ProfessionalLicenseEarned || 'No Information Entered' }}</span>
@@ -23,31 +19,6 @@
           <div class="flex flex-col pb-2 border-b border-gray-200">
             <span class="text-gray-600 font-medium text-sm">Expiration Date</span>
             <span class="text-gray-900 font-semibold">{{ (professionalLicense.ExpirationDate | date) || 'No Information Entered' }}</span>
-          </div>
-
-          <!-- Employment Information -->
-          <div class="col-span-2 mt-4">
-            <h3 class="text-lg font-medium text-maroon mb-2">Employment Information</h3>
-          </div>
-          <div class="flex flex-col pb-2 border-b border-gray-200">
-            <span class="text-gray-600 font-medium text-sm">Annual Salary</span>
-            <span class="text-gray-900 font-semibold">{{ professionalLicense.AnnualSalary || 'No Information Entered' }}</span>
-          </div>
-          <div class="flex flex-col pb-2 border-b border-gray-200">
-            <span class="text-gray-600 font-medium text-sm">Salary Grade Step</span>
-            <span class="text-gray-900 font-semibold">{{ professionalLicense.SalaryGradeStep || 'No Information Entered' }}</span>
-          </div>
-          <div class="flex flex-col pb-2 border-b border-gray-200">
-            <span class="text-gray-600 font-medium text-sm">Rate per Hour</span>
-            <span class="text-gray-900 font-semibold">{{ professionalLicense.RatePerHour || 'No Information Entered' }}</span>
-          </div>
-          <div class="flex flex-col pb-2 border-b border-gray-200">
-            <span class="text-gray-600 font-medium text-sm">Date of Last Promotion</span>
-            <span class="text-gray-900 font-semibold">{{ (professionalLicense.DateOfLastPromotion | date) || 'No Information Entered' }}</span>
-          </div>
-          <div class="flex flex-col pb-2 border-b border-gray-200">
-            <span class="text-gray-600 font-medium text-sm">Initial Year of Teaching</span>
-            <span class="text-gray-900 font-semibold">{{ professionalLicense.InitialYearOfTeaching || 'No Information Entered' }}</span>
           </div>
         </div>
       </div>
@@ -76,8 +47,6 @@
         <div class="bg-white rounded-lg shadow-md p-6">
           <p class="text-sm text-gray-600 mb-4">Note: Fields marked with an asterisk (*) are required.</p>
 
-          <!-- License Information -->
-          <h3 class="text-xl font-semibold text-maroon mb-4">License Information</h3>
           <div class="grid grid-cols-2 gap-6">
             <div class="form-control">
               <label class="label">
@@ -98,45 +67,6 @@
                 <span class="label-text">Expiration Date</span>
               </label>
               <input formControlName="ExpirationDate" class="input input-bordered w-full" type="date">
-            </div>
-          </div>
-
-          <!-- Employment Information -->
-          <h3 class="text-xl font-semibold text-maroon mb-4 mt-8">Employment Information</h3>
-          <div class="grid grid-cols-2 gap-6">
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text">Annual Salary</span>
-              </label>
-              <input formControlName="AnnualSalary" class="input input-bordered w-full" type="number">
-            </div>
-
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text">Salary Grade Step</span>
-              </label>
-              <input formControlName="SalaryGradeStep" class="input input-bordered w-full" type="text">
-            </div>
-
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text">Rate per Hour</span>
-              </label>
-              <input formControlName="RatePerHour" class="input input-bordered w-full" type="number">
-            </div>
-
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text">Date of Last Promotion</span>
-              </label>
-              <input formControlName="DateOfLastPromotion" class="input input-bordered w-full" type="date">
-            </div>
-
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text">Initial Year of Teaching</span>
-              </label>
-              <input formControlName="InitialYearOfTeaching" class="input input-bordered w-full" type="number">
             </div>
           </div>
         </div>

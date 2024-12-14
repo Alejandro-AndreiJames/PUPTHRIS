@@ -44,11 +44,6 @@ export class ProfessionalLicenseComponent implements OnInit {
       ProfessionalLicenseEarned: ['', Validators.required],
       YearObtained: ['', Validators.required],
       ExpirationDate: [''],
-      AnnualSalary: [''],
-      SalaryGradeStep: [''],
-      RatePerHour: [''],
-      DateOfLastPromotion: [''],
-      InitialYearOfTeaching: [''],
       UserID: [this.userId]
     });
   }
