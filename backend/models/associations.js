@@ -13,6 +13,7 @@ const Education = require('./educationModel');
 const ResearchPaper = require('./researchPaperModel');
 const Book = require('./bookModel');
 const LectureMaterial = require('./lectureMaterialModel');
+const ProfessionalLicense = require('./professionalLicenseModel');
 
 // CollegeCampus and User associations
 CollegeCampus.hasMany(User, { foreignKey: 'CollegeCampusID', as: 'Users' });
@@ -90,6 +91,9 @@ Book.belongsTo(User, { foreignKey: 'UserID' });
 User.hasMany(LectureMaterial, { foreignKey: 'UserID' });
 LectureMaterial.belongsTo(User, { foreignKey: 'UserID' });
 
+User.hasMany(ProfessionalLicense, { foreignKey: 'UserID' });
+ProfessionalLicense.belongsTo(User, { foreignKey: 'UserID' });
+
 module.exports = { 
     User, 
     Department, 
@@ -103,5 +107,6 @@ module.exports = {
     Education,
     ResearchPaper,
     Book,
-    LectureMaterial
+    LectureMaterial,
+    ProfessionalLicense
 };
