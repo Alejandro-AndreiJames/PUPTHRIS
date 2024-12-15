@@ -119,6 +119,7 @@
         <a class="tab" [class.tab-active]="activeTab === 'memberships'" (click)="setActiveTab('memberships')">Officership and Memberships</a>
         <a class="tab" [class.tab-active]="activeTab === 'licenses'" (click)="setActiveTab('licenses')">Professional Licenses</a>
         <a class="tab" [class.tab-active]="activeTab === 'employment'" (click)="setActiveTab('employment')">Employment Information</a>
+        <a class="tab" [class.tab-active]="activeTab === 'certifications'" (click)="setActiveTab('certifications')">Certifications</a>
       </div>
     </div>
     
@@ -430,6 +431,51 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Certifications Content -->
+        <div *ngIf="activeTab === 'certifications'">
+          <div class="card">
+            <div class="card-body">
+              <table class="table w-full">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Issuing Organization</th>
+                    <th>Issue Date</th>
+                    <th>Expiration Date</th>
+                    <th>Credential ID</th>
+                    <th>Credential URL</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngIf="!certifications?.length">
+                    <td colspan="6" class="text-center">No certifications found</td>
+                  </tr>
+                  <tr *ngFor="let cert of certifications">
+                    <td>{{ cert.Name || 'No information entered' }}</td>
+                    <td>{{ cert.IssuingOrganization || 'No information entered' }}</td>
+                    <td>{{ cert.IssueDate ? (cert.IssueDate | date) : 'No information entered' }}</td>
+                    <td>{{ cert.ExpirationDate ? (cert.ExpirationDate | date) : 'No information entered' }}</td>
+                    <td>{{ cert.CredentialID || 'No information entered' }}</td>
+                    <td>
+                      <a *ngIf="cert.CredentialURL" 
+                         [href]="cert.CredentialURL" 
+                         target="_blank" 
+                         class="btn btn-link">
+                        View Credential
+                      </a>
+                      <span *ngIf="!cert.CredentialURL">No URL provided</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div *ngIf="!certifications" class="text-center py-4">
+            <p>Loading certifications...</p>
+          </div>
         </div>
       </div>
 

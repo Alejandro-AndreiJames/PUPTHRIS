@@ -9,6 +9,7 @@ import { AchievementAwardService } from '../../services/achievement-awards.servi
 import { OfficershipMembershipService } from '../../services/officership-membership.service';
 import { ProfessionalLicenseService } from '../../services/professional-license.service';
 import { EmploymentInformationService } from '../../services/employment-information.service';
+import { CertificationService } from '../../services/certification.service';
 
 import { User } from '../../model/user.model';
 import { BasicDetails } from '../../model/basic-details.model';
@@ -28,6 +29,7 @@ import { AchievementAward } from '../../model/achievement-awards.model';
 import { OfficershipMembership } from '../../model/officership-membership.model';
 import { ProfessionalLicense } from '../../model/professional-license.model';
 import { EmploymentInformation } from '../../model/employment-information.model';
+import { Certification } from '../../model/certification.model';
 
 @Component({
   selector: 'app-employee',
@@ -68,6 +70,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   memberships: OfficershipMembership[] | null = null;
   professionalLicenses: ProfessionalLicense[] | null = null;
   employmentInfo: EmploymentInformation | null = null;
+  certifications: Certification[] | null = null;
 
   constructor(
     private campusContextService: CampusContextService,
@@ -82,7 +85,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     private achievementAwardService: AchievementAwardService,
     private officershipMembershipService: OfficershipMembershipService,
     private professionalLicenseService: ProfessionalLicenseService,
-    private employmentInformationService: EmploymentInformationService
+    private employmentInformationService: EmploymentInformationService,
+    private certificationService: CertificationService
   ) {}
 
   ngOnInit(): void {
@@ -194,6 +198,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       this.loadMemberships(user.UserID);
       this.loadProfessionalLicenses(user.UserID);
       this.loadEmploymentInfo(user.UserID);
+      this.loadCertifications(user.UserID);
     }
   }
 
@@ -296,6 +301,9 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         case 'employment':
           this.loadEmploymentInfo(this.selectedUser.UserID);
           break;
+        case 'certifications':
+          this.loadCertifications(this.selectedUser.UserID);
+          break;
       }
     }
   }
@@ -328,6 +336,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     this.memberships = null;
     this.professionalLicenses = null;
     this.employmentInfo = null;
+    this.certifications = null;
   }
 
   applyFilters(): void {
@@ -543,6 +552,20 @@ export class EmployeeComponent implements OnInit, OnDestroy {
           console.error('Error loading employment information:', error);
         }
         this.employmentInfo = null;
+      }
+    });
+  }
+
+  loadCertifications(userId: number): void {
+    this.certificationService.getCertifications(userId).subscribe({
+      next: (data) => {
+        this.certifications = data;
+      },
+      error: (error) => {
+        if (error.status !== 404) {
+          console.error('Error loading certifications:', error);
+        }
+        this.certifications = [];
       }
     });
   }
