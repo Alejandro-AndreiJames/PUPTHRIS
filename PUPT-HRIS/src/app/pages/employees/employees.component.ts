@@ -4,6 +4,7 @@ import { BasicDetailsService } from '../../services/basic-details.service';
 import { EducationService } from '../../services/education.service';
 import { PersonalDetailsService } from '../../services/personal-details.service';
 import { VoluntaryWorkService } from '../../services/voluntarywork.service';
+import { TrainingSeminarsService } from '../../services/training-seminars.service';
 
 import { User } from '../../model/user.model';
 import { BasicDetails } from '../../model/basic-details.model';
@@ -18,6 +19,7 @@ import { FormsModule } from '@angular/forms';
 import { DepartmentService } from '../../services/department.service';
 import { ProfileImageComponent } from '../profile-image/profile-image.component';
 import { ProfileImageService } from '../../services/profile-image.service';
+import { TrainingSeminar } from '../../model/training-seminars.model';
 
 @Component({
   selector: 'app-employee',
@@ -49,6 +51,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   departments: any[] = [];
   selectedDepartment: string = '';
   selectedUser: User | null = null;
+  trainingSeminars: TrainingSeminar[] | null = null;
 
   constructor(
     private campusContextService: CampusContextService,
@@ -58,7 +61,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     private personalDetailsService: PersonalDetailsService,
     private voluntaryWorkService: VoluntaryWorkService,
     private departmentService: DepartmentService,
-    private profileImageService: ProfileImageService
+    private profileImageService: ProfileImageService,
+    private trainingSeminarsService: TrainingSeminarsService
   ) {}
 
   ngOnInit(): void {
@@ -164,6 +168,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     this.fetchEducationDetails(user.UserID);
     this.fetchPersonalDetails(user.UserID);
     this.fetchVoluntaryWorks(user.UserID);
+    this.fetchTrainingSeminars(user.UserID);
   }
 
   fetchBasicDetails(userId: number): void {
@@ -209,6 +214,18 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       (error) => {
         console.error('Error fetching voluntary works', error);
         this.voluntaryWorks = null;
+      }
+    );
+  }
+
+  fetchTrainingSeminars(userId: number): void {
+    this.trainingSeminarsService.getTrainings(userId).subscribe(
+      (trainings) => {
+        this.trainingSeminars = trainings;
+      },
+      (error) => {
+        console.error('Error fetching training seminars', error);
+        this.trainingSeminars = null;
       }
     );
   }
@@ -267,6 +284,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     this.educationDetails = null;
     this.personalDetails = null;
     this.voluntaryWorks = null;
+    this.trainingSeminars = null;
   }
 
   applyFilters(): void {

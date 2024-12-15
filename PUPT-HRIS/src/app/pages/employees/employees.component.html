@@ -114,6 +114,7 @@
         <a class="tab" [class.tab-active]="activeTab === 'basic'" (click)="setActiveTab('basic')">Basic Details</a>
         <a class="tab" [class.tab-active]="activeTab === 'education'" (click)="setActiveTab('education')">Educational Background</a>
         <a class="tab" [class.tab-active]="activeTab === 'personal'" (click)="setActiveTab('personal')">Personal Details</a>
+        <a class="tab" [class.tab-active]="activeTab === 'trainings'" (click)="setActiveTab('trainings')">Trainings and Seminars</a>
       </div>
     </div>
     
@@ -226,6 +227,38 @@
               <tr>
                 <td><strong>Permanent Address:</strong></td>
                 <td colspan="3">{{ formatAddress(personalDetails, 'Permanent') || 'No information entered' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Trainings and Seminars Content -->
+        <div *ngIf="activeTab === 'trainings'">
+          <table class="table w-full">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Classification</th>
+                <th>Organizer</th>
+                <th>Date</th>
+                <th>Hours</th>
+                <th>Venue</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!trainingSeminars?.length">
+                <td colspan="6" class="text-center">No trainings or seminars recorded</td>
+              </tr>
+              <tr *ngFor="let training of trainingSeminars">
+                <td>{{ training.Title || 'No information entered' }}</td>
+                <td>{{ training.Classification || 'No information entered' }}</td>
+                <td>{{ training.Organizer || 'No information entered' }}</td>
+                <td>
+                  {{ training.DateFrom ? (training.DateFrom | date:'mediumDate') : 'No date' }}
+                  {{ training.DateTo ? ' - ' + (training.DateTo | date:'mediumDate') : '' }}
+                </td>
+                <td>{{ training.NumberOfHours || 'N/A' }}</td>
+                <td>{{ training.Venue || 'No information entered' }}</td>
               </tr>
             </tbody>
           </table>
