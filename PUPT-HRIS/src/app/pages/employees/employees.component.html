@@ -118,6 +118,7 @@
         <a class="tab" [class.tab-active]="activeTab === 'achievements'" (click)="setActiveTab('achievements')">Outstanding Achievements</a>
         <a class="tab" [class.tab-active]="activeTab === 'memberships'" (click)="setActiveTab('memberships')">Officership and Memberships</a>
         <a class="tab" [class.tab-active]="activeTab === 'licenses'" (click)="setActiveTab('licenses')">Professional Licenses</a>
+        <a class="tab" [class.tab-active]="activeTab === 'employment'" (click)="setActiveTab('employment')">Employment Information</a>
       </div>
     </div>
     
@@ -233,6 +234,52 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Employment Information Content -->
+        <div *ngIf="activeTab === 'employment'">
+          <div class="card">
+            <div class="card-body">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="info-group">
+                  <label class="font-semibold">Annual Salary:</label>
+                  <p>{{ (employmentInfo && employmentInfo.AnnualSalary) ? 
+                      (employmentInfo.AnnualSalary | currency:'PHP':'symbol-narrow':'1.2-2') : 
+                      'No information entered' }}</p>
+                </div>
+
+                <div class="info-group">
+                  <label class="font-semibold">Salary Grade & Step:</label>
+                  <p>{{ employmentInfo?.SalaryGradeStep || 'No information entered' }}</p>
+                </div>
+
+                <div class="info-group">
+                  <label class="font-semibold">Rate Per Hour:</label>
+                  <p>{{ (employmentInfo && employmentInfo.RatePerHour) ? 
+                      (employmentInfo.RatePerHour | currency:'PHP':'symbol-narrow':'1.2-2') : 
+                      'No information entered' }}</p>
+                </div>
+
+                <div class="info-group">
+                  <label class="font-semibold">Date of Last Promotion:</label>
+                  <p>{{ (employmentInfo && employmentInfo.DateOfLastPromotion) ? 
+                      (employmentInfo.DateOfLastPromotion | date) : 
+                      'No information entered' }}</p>
+                </div>
+
+                <div class="info-group">
+                  <label class="font-semibold">Initial Year of Teaching:</label>
+                  <p>{{ (employmentInfo && employmentInfo.InitialYearOfTeaching) ? 
+                      employmentInfo.InitialYearOfTeaching : 
+                      'No information entered' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="!employmentInfo" class="text-center py-4">
+            <p>No employment information available.</p>
+          </div>
         </div>
 
         <!-- Trainings and Seminars Content -->
