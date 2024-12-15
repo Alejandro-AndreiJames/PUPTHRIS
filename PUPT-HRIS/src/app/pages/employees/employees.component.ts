@@ -6,6 +6,7 @@ import { PersonalDetailsService } from '../../services/personal-details.service'
 import { VoluntaryWorkService } from '../../services/voluntarywork.service';
 import { TrainingSeminarsService } from '../../services/training-seminars.service';
 import { AchievementAwardService } from '../../services/achievement-awards.service';
+import { OfficershipMembershipService } from '../../services/officership-membership.service';
 
 import { User } from '../../model/user.model';
 import { BasicDetails } from '../../model/basic-details.model';
@@ -22,6 +23,7 @@ import { ProfileImageComponent } from '../profile-image/profile-image.component'
 import { ProfileImageService } from '../../services/profile-image.service';
 import { TrainingSeminar } from '../../model/training-seminars.model';
 import { AchievementAward } from '../../model/achievement-awards.model';
+import { OfficershipMembership } from '../../model/officership-membership.model';
 
 @Component({
   selector: 'app-employee',
@@ -59,6 +61,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   selectedSupportingDocument: string | null = null;
   selectedProofType: 'file' | 'link' = 'file';
   achievements: AchievementAward[] | null = null;
+  memberships: OfficershipMembership[] | null = null;
 
   constructor(
     private campusContextService: CampusContextService,
@@ -70,7 +73,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     private departmentService: DepartmentService,
     private profileImageService: ProfileImageService,
     private trainingSeminarsService: TrainingSeminarsService,
-    private achievementAwardService: AchievementAwardService
+    private achievementAwardService: AchievementAwardService,
+    private officershipMembershipService: OfficershipMembershipService
   ) {}
 
   ngOnInit(): void {
@@ -179,6 +183,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     this.fetchTrainingSeminars(user.UserID);
     if (user.UserID) {
       this.loadAchievements(user.UserID);
+      this.loadMemberships(user.UserID);
     }
   }
 
@@ -300,6 +305,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     this.voluntaryWorks = null;
     this.trainingSeminars = null;
     this.achievements = null;
+    this.memberships = null;
   }
 
   applyFilters(): void {
@@ -473,6 +479,20 @@ export class EmployeeComponent implements OnInit, OnDestroy {
           console.error('Error loading achievements:', error);
         }
         this.achievements = [];
+      }
+    });
+  }
+
+  loadMemberships(userId: number): void {
+    this.officershipMembershipService.getMembershipsByUserId(userId).subscribe({
+      next: (data) => {
+        this.memberships = data;
+      },
+      error: (error) => {
+        if (error.status !== 404) {
+          console.error('Error loading memberships:', error);
+        }
+        this.memberships = [];
       }
     });
   }

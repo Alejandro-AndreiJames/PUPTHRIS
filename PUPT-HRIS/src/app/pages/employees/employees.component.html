@@ -116,6 +116,7 @@
         <a class="tab" [class.tab-active]="activeTab === 'personal'" (click)="setActiveTab('personal')">Personal Details</a>
         <a class="tab" [class.tab-active]="activeTab === 'trainings'" (click)="setActiveTab('trainings')">Trainings and Seminars</a>
         <a class="tab" [class.tab-active]="activeTab === 'achievements'" (click)="setActiveTab('achievements')">Outstanding Achievements</a>
+        <a class="tab" [class.tab-active]="activeTab === 'memberships'" (click)="setActiveTab('memberships')">Officership and Memberships</a>
       </div>
     </div>
     
@@ -298,6 +299,54 @@
                     </button>
                     <a *ngIf="achievement.ProofType === 'link'" 
                        [href]="achievement.Proof" 
+                       target="_blank" 
+                       class="btn btn-link">
+                      View Link
+                    </a>
+                  </ng-container>
+                  <ng-template #noProof>
+                    No proof available
+                  </ng-template>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Memberships Content -->
+        <div *ngIf="activeTab === 'memberships'">
+          <table class="table w-full">
+            <thead>
+              <tr>
+                <th>Organization Name</th>
+                <th>Position</th>
+                <th>Level</th>
+                <th>Classification</th>
+                <th>Inclusive Dates From</th>
+                <th>Inclusive Dates To</th>
+                <th>Proof</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!memberships?.length">
+                <td colspan="7" class="text-center">No officership or membership records found</td>
+              </tr>
+              <tr *ngFor="let membership of memberships">
+                <td>{{ membership.OrganizationName || 'No information entered' }}</td>
+                <td>{{ membership.Position || 'No information entered' }}</td>
+                <td>{{ membership.Level || 'No information entered' }}</td>
+                <td>{{ membership.Classification || 'No information entered' }}</td>
+                <td>{{ membership.InclusiveDatesFrom ? (membership.InclusiveDatesFrom | date) : 'No date' }}</td>
+                <td>{{ membership.InclusiveDatesTo ? (membership.InclusiveDatesTo | date) : 'No date' }}</td>
+                <td>
+                  <ng-container *ngIf="membership.Proof; else noProof">
+                    <button *ngIf="membership.ProofType === 'file'" 
+                            (click)="openProofModal(membership.Proof, membership.SupportingDocument)" 
+                            class="btn btn-link">
+                      View File
+                    </button>
+                    <a *ngIf="membership.ProofType === 'link'" 
+                       [href]="membership.Proof" 
                        target="_blank" 
                        class="btn btn-link">
                       View Link
