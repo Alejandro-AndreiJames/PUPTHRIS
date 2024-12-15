@@ -117,6 +117,7 @@
         <a class="tab" [class.tab-active]="activeTab === 'trainings'" (click)="setActiveTab('trainings')">Trainings and Seminars</a>
         <a class="tab" [class.tab-active]="activeTab === 'achievements'" (click)="setActiveTab('achievements')">Outstanding Achievements</a>
         <a class="tab" [class.tab-active]="activeTab === 'memberships'" (click)="setActiveTab('memberships')">Officership and Memberships</a>
+        <a class="tab" [class.tab-active]="activeTab === 'licenses'" (click)="setActiveTab('licenses')">Professional Licenses</a>
       </div>
     </div>
     
@@ -356,6 +357,29 @@
                     No proof available
                   </ng-template>
                 </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Professional Licenses Content -->
+        <div *ngIf="activeTab === 'licenses'">
+          <table class="table w-full">
+            <thead>
+              <tr>
+                <th>Professional License</th>
+                <th>Year Obtained</th>
+                <th>Expiration Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!professionalLicenses?.length">
+                <td colspan="3" class="text-center">No professional licenses found</td>
+              </tr>
+              <tr *ngFor="let license of professionalLicenses">
+                <td>{{ license.ProfessionalLicenseEarned || 'No information entered' }}</td>
+                <td>{{ license.YearObtained || 'No information entered' }}</td>
+                <td>{{ license.ExpirationDate ? (license.ExpirationDate | date) : 'No expiration date' }}</td>
               </tr>
             </tbody>
           </table>

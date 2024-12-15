@@ -7,6 +7,7 @@ import { VoluntaryWorkService } from '../../services/voluntarywork.service';
 import { TrainingSeminarsService } from '../../services/training-seminars.service';
 import { AchievementAwardService } from '../../services/achievement-awards.service';
 import { OfficershipMembershipService } from '../../services/officership-membership.service';
+import { ProfessionalLicenseService } from '../../services/professional-license.service';
 
 import { User } from '../../model/user.model';
 import { BasicDetails } from '../../model/basic-details.model';
@@ -24,6 +25,7 @@ import { ProfileImageService } from '../../services/profile-image.service';
 import { TrainingSeminar } from '../../model/training-seminars.model';
 import { AchievementAward } from '../../model/achievement-awards.model';
 import { OfficershipMembership } from '../../model/officership-membership.model';
+import { ProfessionalLicense } from '../../model/professional-license.model';
 
 @Component({
   selector: 'app-employee',
@@ -62,6 +64,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   selectedProofType: 'file' | 'link' = 'file';
   achievements: AchievementAward[] | null = null;
   memberships: OfficershipMembership[] | null = null;
+  professionalLicenses: ProfessionalLicense[] | null = null;
 
   constructor(
     private campusContextService: CampusContextService,
@@ -74,7 +77,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     private profileImageService: ProfileImageService,
     private trainingSeminarsService: TrainingSeminarsService,
     private achievementAwardService: AchievementAwardService,
-    private officershipMembershipService: OfficershipMembershipService
+    private officershipMembershipService: OfficershipMembershipService,
+    private professionalLicenseService: ProfessionalLicenseService
   ) {}
 
   ngOnInit(): void {
@@ -184,6 +188,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     if (user.UserID) {
       this.loadAchievements(user.UserID);
       this.loadMemberships(user.UserID);
+      this.loadProfessionalLicenses(user.UserID);
     }
   }
 
@@ -278,6 +283,13 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     if (tab === 'achievements' && this.selectedUser) {
       this.loadAchievements(this.selectedUser.UserID);
     }
+    if (this.selectedUser?.UserID) {
+      switch (tab) {
+        case 'licenses':
+          this.loadProfessionalLicenses(this.selectedUser.UserID);
+          break;
+      }
+    }
   }
 
   closeModal(): void {
@@ -306,6 +318,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     this.trainingSeminars = null;
     this.achievements = null;
     this.memberships = null;
+    this.professionalLicenses = null;
   }
 
   applyFilters(): void {
@@ -493,6 +506,20 @@ export class EmployeeComponent implements OnInit, OnDestroy {
           console.error('Error loading memberships:', error);
         }
         this.memberships = [];
+      }
+    });
+  }
+
+  loadProfessionalLicenses(userId: number): void {
+    this.professionalLicenseService.getProfessionalLicenses(userId).subscribe({
+      next: (data) => {
+        this.professionalLicenses = data;
+      },
+      error: (error) => {
+        if (error.status !== 404) {
+          console.error('Error loading professional licenses:', error);
+        }
+        this.professionalLicenses = [];
       }
     });
   }
