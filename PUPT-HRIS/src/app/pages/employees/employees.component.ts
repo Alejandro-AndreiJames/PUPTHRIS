@@ -52,6 +52,10 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   selectedDepartment: string = '';
   selectedUser: User | null = null;
   trainingSeminars: TrainingSeminar[] | null = null;
+  isProofModalOpen: boolean = false;
+  selectedProofUrl: string | null = null;
+  selectedSupportingDocument: string | null = null;
+  selectedProofType: 'file' | 'link' = 'file';
 
   constructor(
     private campusContextService: CampusContextService,
@@ -425,5 +429,26 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     ].filter(part => part !== null && part !== undefined && part !== '');
 
     return nameParts.length > 0 ? nameParts.join(' ') : 'No information entered';
+  }
+
+  openProofModal(proofUrl: string, supportingDocument?: string): void {
+    this.selectedProofUrl = proofUrl;
+    this.selectedSupportingDocument = supportingDocument || 'No description available';
+    this.selectedProofType = this.isImage(proofUrl) ? 'file' : 'link';
+    this.isProofModalOpen = true;
+  }
+
+  closeProofModal(): void {
+    this.selectedProofUrl = null;
+    this.isProofModalOpen = false;
+  }
+
+  isImage(url: string): boolean {
+    return /\.(jpg|jpeg|png|gif)$/i.test(url);
+  }
+
+  onProofImageError(): void {
+    console.error('Error loading proof image');
+    // You can add error handling here if needed
   }
 }
