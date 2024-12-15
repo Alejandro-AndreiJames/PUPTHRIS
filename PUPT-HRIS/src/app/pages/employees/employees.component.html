@@ -115,6 +115,7 @@
         <a class="tab" [class.tab-active]="activeTab === 'education'" (click)="setActiveTab('education')">Educational Background</a>
         <a class="tab" [class.tab-active]="activeTab === 'personal'" (click)="setActiveTab('personal')">Personal Details</a>
         <a class="tab" [class.tab-active]="activeTab === 'trainings'" (click)="setActiveTab('trainings')">Trainings and Seminars</a>
+        <a class="tab" [class.tab-active]="activeTab === 'achievements'" (click)="setActiveTab('achievements')">Outstanding Achievements</a>
       </div>
     </div>
     
@@ -260,15 +261,43 @@
                 </td>
                 <td>{{ training.NumberOfHours || 'N/A' }}</td>
                 <td>{{ training.Venue || 'No information entered' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Outstanding Achievements Content -->
+        <div *ngIf="activeTab === 'achievements'">
+          <table class="table w-full">
+            <thead>
+              <tr>
+                <th>Nature of Achievement</th>
+                <th>Classification</th>
+                <th>Level</th>
+                <th>Awarding Body</th>
+                <th>Inclusive Dates</th>
+                <th>Proof</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!achievements?.length">
+                <td colspan="6" class="text-center">No achievements recorded</td>
+              </tr>
+              <tr *ngFor="let achievement of achievements">
+                <td>{{ achievement.NatureOfAchievement || 'No information entered' }}</td>
+                <td>{{ achievement.Classification || 'No information entered' }}</td>
+                <td>{{ achievement.Level || 'No information entered' }}</td>
+                <td>{{ achievement.AwardingBody || 'No information entered' }}</td>
+                <td>{{ achievement.InclusiveDates || 'No information entered' }}</td>
                 <td>
-                  <ng-container *ngIf="training.Proof; else noProof">
-                    <button *ngIf="training.ProofType === 'file'" 
-                            (click)="openProofModal(training.Proof, training.SupportingDocuments)" 
+                  <ng-container *ngIf="achievement.Proof; else noProof">
+                    <button *ngIf="achievement.ProofType === 'file'" 
+                            (click)="openProofModal(achievement.Proof, achievement.SupportingDocument)" 
                             class="btn btn-link">
                       View File
                     </button>
-                    <a *ngIf="training.ProofType === 'link'" 
-                       [href]="training.Proof" 
+                    <a *ngIf="achievement.ProofType === 'link'" 
+                       [href]="achievement.Proof" 
                        target="_blank" 
                        class="btn btn-link">
                       View Link

@@ -5,6 +5,7 @@ import { EducationService } from '../../services/education.service';
 import { PersonalDetailsService } from '../../services/personal-details.service';
 import { VoluntaryWorkService } from '../../services/voluntarywork.service';
 import { TrainingSeminarsService } from '../../services/training-seminars.service';
+import { AchievementAwardService } from '../../services/achievement-awards.service';
 
 import { User } from '../../model/user.model';
 import { BasicDetails } from '../../model/basic-details.model';
@@ -20,6 +21,7 @@ import { DepartmentService } from '../../services/department.service';
 import { ProfileImageComponent } from '../profile-image/profile-image.component';
 import { ProfileImageService } from '../../services/profile-image.service';
 import { TrainingSeminar } from '../../model/training-seminars.model';
+import { AchievementAward } from '../../model/achievement-awards.model';
 
 @Component({
   selector: 'app-employee',
@@ -56,6 +58,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   selectedProofUrl: string | null = null;
   selectedSupportingDocument: string | null = null;
   selectedProofType: 'file' | 'link' = 'file';
+  achievements: AchievementAward[] | null = null;
 
   constructor(
     private campusContextService: CampusContextService,
@@ -66,7 +69,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     private voluntaryWorkService: VoluntaryWorkService,
     private departmentService: DepartmentService,
     private profileImageService: ProfileImageService,
-    private trainingSeminarsService: TrainingSeminarsService
+    private trainingSeminarsService: TrainingSeminarsService,
+    private achievementAwardService: AchievementAwardService
   ) {}
 
   ngOnInit(): void {
@@ -173,6 +177,9 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     this.fetchPersonalDetails(user.UserID);
     this.fetchVoluntaryWorks(user.UserID);
     this.fetchTrainingSeminars(user.UserID);
+    if (user.UserID) {
+      this.loadAchievements(user.UserID);
+    }
   }
 
   fetchBasicDetails(userId: number): void {
@@ -263,6 +270,9 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     console.log('Setting active tab to:', tab);
     this.activeTab = tab;
     console.log('Current tab data:', (this as any)[tab + 'Details']);
+    if (tab === 'achievements' && this.selectedUser) {
+      this.loadAchievements(this.selectedUser.UserID);
+    }
   }
 
   closeModal(): void {
@@ -289,6 +299,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     this.personalDetails = null;
     this.voluntaryWorks = null;
     this.trainingSeminars = null;
+    this.achievements = null;
   }
 
   applyFilters(): void {
@@ -450,5 +461,19 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   onProofImageError(): void {
     console.error('Error loading proof image');
     // You can add error handling here if needed
+  }
+
+  loadAchievements(userId: number): void {
+    this.achievementAwardService.getAchievementsByUserId(userId).subscribe({
+      next: (data) => {
+        this.achievements = data;
+      },
+      error: (error) => {
+        if (error.status !== 404) {
+          console.error('Error loading achievements:', error);
+        }
+        this.achievements = [];
+      }
+    });
   }
 }
