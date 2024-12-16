@@ -488,3 +488,41 @@ exports.getFemaleUsers = async (req, res) => {
     res.status(500).json({ message: 'Error fetching female users', error: error.message });
   }
 };
+
+exports.getMaleUsers = async (req, res) => {
+  try {
+    const { campusId } = req.query;
+    console.log('Fetching male users for campus:', campusId);
+
+    const maleUsers = await User.findAll({
+      attributes: ['EmploymentType'],
+      where: {
+        isActive: true,
+        ...(campusId && { CollegeCampusID: campusId })
+      },
+      include: [
+        {
+          model: BasicDetails,
+          where: { Sex: 'Male' },  // Changed to Male
+          required: true,
+          attributes: ['LastName', 'FirstName', 'MiddleInitial']
+        },
+        {
+          model: Department,
+          attributes: ['DepartmentName'],
+          as: 'Department'
+        }
+      ],
+      order: [
+        [BasicDetails, 'LastName', 'ASC'],
+        [BasicDetails, 'FirstName', 'ASC']
+      ]
+    });
+
+    console.log('Male users data:', JSON.stringify(maleUsers, null, 2));
+    res.status(200).json(maleUsers);
+  } catch (error) {
+    console.error('Error fetching male users:', error);
+    res.status(500).json({ message: 'Error fetching male users', error: error.message });
+  }
+};

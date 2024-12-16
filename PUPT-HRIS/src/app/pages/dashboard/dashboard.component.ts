@@ -395,6 +395,14 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   femaleModalTotalPages: number = 1;
   paginatedFemaleList: any[] = [];
 
+  // Add these properties
+  showMaleModal: boolean = false;
+  maleList: any[] = [];
+  maleModalCurrentPage: number = 1;
+  maleModalItemsPerPage: number = 10;
+  maleModalTotalPages: number = 1;
+  paginatedMaleList: any[] = [];
+
   constructor(
     private dashboardService: DashboardService,
     private cdr: ChangeDetectorRef,
@@ -1298,5 +1306,62 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   formatEmploymentTypes(type: string): string {
     if (!type) return 'N/A';
     return type.charAt(0).toUpperCase() + type.slice(1);
+  }
+
+  // Add these methods
+  showMaleList() {
+    const campusId = this.campusContextService.getCurrentCampusId();
+    console.log('Requesting male users for campus:', campusId);
+
+    if (campusId) {
+      this.dashboardService.getMaleUsers(campusId).subscribe({
+        next: (data) => {
+          console.log('Received male users data:', data);
+          this.maleList = data;
+          this.maleModalTotalPages = Math.ceil(this.maleList.length / this.maleModalItemsPerPage);
+          this.updateMaleModalPagination();
+          this.showMaleModal = true;
+        },
+        error: (error) => {
+          console.error('Error fetching male faculty members:', error);
+        }
+      });
+    }
+  }
+
+  closeMaleList() {
+    this.showMaleModal = false;
+    this.maleList = [];
+    this.maleModalCurrentPage = 1;
+  }
+
+  getMaleModalPageArray(): number[] {
+    return Array(this.maleModalTotalPages).fill(0).map((_, i) => i + 1);
+  }
+
+  updateMaleModalPagination() {
+    const startIndex = (this.maleModalCurrentPage - 1) * this.maleModalItemsPerPage;
+    const endIndex = startIndex + this.maleModalItemsPerPage;
+    this.paginatedMaleList = this.maleList.slice(startIndex, endIndex);
+    console.log('Updated paginated male list:', this.paginatedMaleList);
+  }
+
+  previousMaleModalPage() {
+    if (this.maleModalCurrentPage > 1) {
+      this.maleModalCurrentPage--;
+      this.updateMaleModalPagination();
+    }
+  }
+
+  nextMaleModalPage() {
+    if (this.maleModalCurrentPage < this.maleModalTotalPages) {
+      this.maleModalCurrentPage++;
+      this.updateMaleModalPagination();
+    }
+  }
+
+  setMaleModalPage(page: number) {
+    this.maleModalCurrentPage = page;
+    this.updateMaleModalPagination();
   }
 }

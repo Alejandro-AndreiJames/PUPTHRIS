@@ -10,5 +10,6 @@ router.get('/age-group-data', dashboardController.getAgeGroupData);
 router.get('/profile-completion/:userId', dashboardController.getProfileCompletion);
 router.get('/government-id-counts', authMiddleware, dashboardController.getGovernmentIdCounts);
 router.get('/female-users', authMiddleware, dashboardController.getFemaleUsers);
+router.get('/male-users', authMiddleware, dashboardController.getMaleUsers);
 
 module.exports = router;

@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
+import { tap } from 'rxjs/operators';
 
 export interface UserDashboardData {
   department: string;
@@ -99,6 +100,20 @@ export class DashboardService {
       headers: this.getHeaders()
     }).pipe(
       catchError(this.handleError)
+    );
+  }
+
+  getMaleUsers(campusId: number): Observable<any[]> {
+    console.log('Service calling getMaleUsers with campusId:', campusId);
+    return this.http.get<any[]>(`${this.apiUrl}/male-users`, {
+      params: { campusId: campusId.toString() },
+      headers: this.getHeaders()
+    }).pipe(
+      tap(response => console.log('Service received response:', response)),
+      catchError(error => {
+        console.error('Service error:', error);
+        return throwError(() => error);
+      })
     );
   }
 

@@ -43,7 +43,8 @@
         <h3 class="text-2xl font-bold">Female</h3>
         <p class="text-6xl font-extrabold">{{ totalFemale }}</p>
       </div>
-      <div class="card bg-gradient-to-r from-orange-400 to-red-600 text-white p-6 rounded-lg shadow-lg">
+      <div class="card bg-gradient-to-r from-blue-400 to-blue-600 text-white p-6 rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition-all" 
+           (click)="showMaleList()">
         <h3 class="text-2xl font-bold">Male</h3>
         <p class="text-6xl font-extrabold">{{ totalMale }}</p>
       </div>
@@ -819,6 +820,66 @@
 
       <div class="modal-action">
         <button class="btn" (click)="closeFemaleList()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add this modal template -->
+  <div *ngIf="showMaleModal" class="modal modal-open">
+    <div class="modal-box w-11/12 max-w-5xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold text-lg">Male Faculty Members</h3>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="table table-zebra w-full">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Department</th>
+              <th>Employment Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="paginatedMaleList?.length === 0">
+              <td colspan="3">No data available</td>
+            </tr>
+            
+            <tr *ngFor="let member of paginatedMaleList">
+              <td>
+                {{ member.BasicDetail.LastName }}, {{ member.BasicDetail.FirstName }} {{ member.BasicDetail.MiddleInitial }}
+              </td>
+              <td>{{ member.Department?.DepartmentName || 'N/A' }}</td>
+              <td>{{ formatEmploymentTypes(member.EmploymentType) }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination controls -->
+        <div class="pagination-controls mt-4 flex justify-center gap-2">
+          <button 
+            (click)="previousMaleModalPage()" 
+            [disabled]="maleModalCurrentPage === 1" 
+            class="btn btn-sm">Previous</button>
+
+          <span *ngFor="let page of getMaleModalPageArray(); let i = index">
+            <button 
+              (click)="setMaleModalPage(i + 1)" 
+              [class.btn-active]="i + 1 === maleModalCurrentPage" 
+              class="btn btn-sm">
+              {{ i + 1 }}
+            </button>
+          </span>
+
+          <button 
+            (click)="nextMaleModalPage()" 
+            [disabled]="maleModalCurrentPage === maleModalTotalPages" 
+            class="btn btn-sm">Next</button>
+        </div>
+      </div>
+
+      <div class="modal-action">
+        <button class="btn" (click)="closeMaleList()">Close</button>
       </div>
     </div>
   </div>
