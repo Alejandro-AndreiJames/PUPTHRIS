@@ -135,6 +135,34 @@ export class DashboardService {
     );
   }
 
+  getDoctorateUsers(campusId: number): Observable<any[]> {
+    console.log('Requesting doctorate users for campus:', campusId);
+    return this.http.get<any[]>(`${this.apiUrl}/doctorate-users`, {
+      params: { campusId: campusId.toString() },
+      headers: this.getHeaders()
+    }).pipe(
+      tap(response => console.log('Doctorate users response:', response)),
+      catchError(error => {
+        console.error('Service error:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getMastersUsers(campusId: number): Observable<any[]> {
+    console.log('Requesting masters users for campus:', campusId);
+    return this.http.get<any[]>(`${this.apiUrl}/masters-users`, {
+      params: { campusId: campusId.toString() },
+      headers: this.getHeaders()
+    }).pipe(
+      tap(response => console.log('Masters users response:', response)),
+      catchError(error => {
+        console.error('Service error:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
   private handleError(error: HttpErrorResponse): Observable<never> {
     console.error('An error occurred:', error);
     return throwError(() => error.message || 'Server error');
