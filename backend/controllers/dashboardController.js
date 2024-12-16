@@ -681,3 +681,145 @@ exports.getStaffUsers = async (req, res) => {
     });
   }
 };
+
+exports.getDoctorateUsers = async (req, res) => {
+  try {
+    const { campusId } = req.query;
+    console.log('Fetching doctorate users for campus:', campusId);
+
+    const doctorateUsers = await User.findAll({
+      attributes: [
+        'UserID', 
+        'EmploymentType', 
+        'Fcode'
+      ],
+      where: {
+        isActive: true,
+        ...(campusId && { CollegeCampusID: campusId })
+      },
+      include: [
+        {
+          model: BasicDetails,
+          attributes: [
+            'LastName',
+            'FirstName',
+            'MiddleInitial'
+          ],
+          required: false
+        },
+        {
+          model: Department,
+          attributes: ['DepartmentName'],
+          as: 'Department',
+          required: false
+        },
+        {
+          model: Education,
+          where: { Level: 'Doctoral' },
+          required: true
+        }
+      ]
+    });
+
+    // Format the response
+    const formattedUsers = doctorateUsers.map(user => {
+      const basicDetails = user.BasicDetail || {};
+      const department = user.Department || {};
+
+      return {
+        id: user.UserID,
+        name: basicDetails.LastName ? 
+          `${basicDetails.LastName}, ${basicDetails.FirstName} ${basicDetails.MiddleInitial || ''}`.trim() : 
+          'N/A',
+        fcode: user.Fcode || 'N/A',
+        department: department.DepartmentName || 'N/A',
+        employmentType: user.EmploymentType || 'N/A'
+      };
+    });
+
+    console.log(`Found ${formattedUsers.length} doctorate users`);
+    console.log('Formatted doctorate users:', JSON.stringify(formattedUsers, null, 2));
+    
+    res.status(200).json(formattedUsers);
+
+  } catch (error) {
+    console.error('Error fetching doctorate users:', error);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Error fetching doctorate users', 
+      error: error.message,
+      stack: error.stack 
+    });
+  }
+};
+
+exports.getMastersUsers = async (req, res) => {
+  try {
+    const { campusId } = req.query;
+    console.log('Fetching masters users for campus:', campusId);
+
+    const mastersUsers = await User.findAll({
+      attributes: [
+        'UserID', 
+        'EmploymentType', 
+        'Fcode'
+      ],
+      where: {
+        isActive: true,
+        ...(campusId && { CollegeCampusID: campusId })
+      },
+      include: [
+        {
+          model: BasicDetails,
+          attributes: [
+            'LastName',
+            'FirstName',
+            'MiddleInitial'
+          ],
+          required: false
+        },
+        {
+          model: Department,
+          attributes: ['DepartmentName'],
+          as: 'Department',
+          required: false
+        },
+        {
+          model: Education,
+          where: { Level: 'Masters' },
+          required: true
+        }
+      ]
+    });
+
+    // Format the response
+    const formattedUsers = mastersUsers.map(user => {
+      const basicDetails = user.BasicDetail || {};
+      const department = user.Department || {};
+
+      return {
+        id: user.UserID,
+        name: basicDetails.LastName ? 
+          `${basicDetails.LastName}, ${basicDetails.FirstName} ${basicDetails.MiddleInitial || ''}`.trim() : 
+          'N/A',
+        fcode: user.Fcode || 'N/A',
+        department: department.DepartmentName || 'N/A',
+        employmentType: user.EmploymentType || 'N/A'
+      };
+    });
+
+    console.log(`Found ${formattedUsers.length} masters users`);
+    console.log('Formatted masters users:', JSON.stringify(formattedUsers, null, 2));
+    
+    res.status(200).json(formattedUsers);
+
+  } catch (error) {
+    console.error('Error fetching masters users:', error);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Error fetching masters users', 
+      error: error.message,
+      stack: error.stack 
+    });
+  }
+};

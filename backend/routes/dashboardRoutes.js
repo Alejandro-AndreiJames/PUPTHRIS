@@ -13,5 +13,6 @@ router.get('/female-users', authMiddleware, dashboardController.getFemaleUsers);
 router.get('/male-users', authMiddleware, dashboardController.getMaleUsers);
 router.get('/faculty-users', authMiddleware, dashboardController.getFacultyUsers);
 router.get('/staff-users', authMiddleware, dashboardController.getStaffUsers);
-
+router.get('/doctorate-users', authMiddleware, dashboardController.getDoctorateUsers);
+router.get('/masters-users', authMiddleware, dashboardController.getMastersUsers);
 module.exports = router;
