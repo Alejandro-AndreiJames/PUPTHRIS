@@ -22,6 +22,17 @@ export interface UpcomingBirthday {
   DateOfBirth: Date;
 }
 
+export interface GovernmentIdCounts {
+  governmentIds: {
+    gsis: number;
+    pagIbig: number;
+    philHealth: number;
+    sss: number;
+    tin: number;
+    agencyEmployee: number;
+  };
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -69,6 +80,15 @@ export class DashboardService {
       `${this.apiUrl}/profile-completion/${userId}`,
       { headers: this.getHeaders() }
     ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  getGovernmentIdCounts(campusId: number): Observable<GovernmentIdCounts> {
+    return this.http.get<GovernmentIdCounts>(`${this.apiUrl}/government-id-counts`, {
+      params: { campusId: campusId.toString() },
+      headers: this.getHeaders()
+    }).pipe(
       catchError(this.handleError)
     );
   }

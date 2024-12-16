@@ -320,3 +320,134 @@ exports.getProfileCompletion = async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
+exports.getGovernmentIdCounts = async (req, res) => {
+  try {
+    const { campusId } = req.query;
+
+    const userWhereClause = {
+      isActive: true,
+      ...(campusId && { CollegeCampusID: campusId })
+    };
+
+    const gsisCounts = await User.count({
+      where: userWhereClause,
+      include: [{
+        model: PersonalDetails,
+        as: 'personalDetails',
+        where: {
+          GSISNumber: {
+            [Op.and]: {
+              [Op.ne]: null,
+              [Op.ne]: ''
+            }
+          }
+        },
+        required: true
+      }]
+    });
+
+    const pagIbigCounts = await User.count({
+      where: userWhereClause,
+      include: [{
+        model: PersonalDetails,
+        as: 'personalDetails',
+        where: {
+          PagIbigNumber: {
+            [Op.and]: {
+              [Op.ne]: null,
+              [Op.ne]: ''
+            }
+          }
+        },
+        required: true
+      }]
+    });
+
+    const philHealthCounts = await User.count({
+      where: userWhereClause,
+      include: [{
+        model: PersonalDetails,
+        as: 'personalDetails',
+        where: {
+          PhilHealthNumber: {
+            [Op.and]: {
+              [Op.ne]: null,
+              [Op.ne]: ''
+            }
+          }
+        },
+        required: true
+      }]
+    });
+
+    const sssCounts = await User.count({
+      where: userWhereClause,
+      include: [{
+        model: PersonalDetails,
+        as: 'personalDetails',
+        where: {
+          SSSNumber: {
+            [Op.and]: {
+              [Op.ne]: null,
+              [Op.ne]: ''
+            }
+          }
+        },
+        required: true
+      }]
+    });
+
+    const tinCounts = await User.count({
+      where: userWhereClause,
+      include: [{
+        model: PersonalDetails,
+        as: 'personalDetails',
+        where: {
+          TINNumber: {
+            [Op.and]: {
+              [Op.ne]: null,
+              [Op.ne]: ''
+            }
+          }
+        },
+        required: true
+      }]
+    });
+
+    const agencyEmployeeCounts = await User.count({
+      where: userWhereClause,
+      include: [{
+        model: PersonalDetails,
+        as: 'personalDetails',
+        where: {
+          AgencyEmployeeNumber: {
+            [Op.and]: {
+              [Op.ne]: null,
+              [Op.ne]: ''
+            }
+          }
+        },
+        required: true
+      }]
+    });
+
+    res.status(200).json({
+      governmentIds: {
+        gsis: gsisCounts,
+        pagIbig: pagIbigCounts,
+        philHealth: philHealthCounts,
+        sss: sssCounts,
+        tin: tinCounts,
+        agencyEmployee: agencyEmployeeCounts
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching government ID counts:', error);
+    res.status(500).json({ 
+      message: 'Error fetching government ID counts', 
+      error: error.message 
+    });
+  }
+};

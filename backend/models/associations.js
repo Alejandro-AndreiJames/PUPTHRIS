@@ -16,6 +16,7 @@ const LectureMaterial = require('./lectureMaterialModel');
 const ProfessionalLicense = require('./professionalLicenseModel');
 const EmploymentInformation = require('./employmentInformationModel');
 const Certification = require('./certificationModel');
+const PersonalDetails = require('./personalDetailsModel');
 
 // CollegeCampus and User associations
 CollegeCampus.hasMany(User, { foreignKey: 'CollegeCampusID', as: 'Users' });
@@ -124,6 +125,16 @@ Certification.belongsTo(User, {
     as: 'user'
 });
 
+User.hasOne(PersonalDetails, { 
+    foreignKey: 'UserID',
+    as: 'personalDetails'
+});
+
+PersonalDetails.belongsTo(User, {
+    foreignKey: 'UserID',
+    as: 'user'
+});
+
 module.exports = { 
     User, 
     Department, 
@@ -140,5 +151,6 @@ module.exports = {
     LectureMaterial,
     EmploymentInformation,
     ProfessionalLicense,
-    Certification
+    Certification,
+    PersonalDetails
 };

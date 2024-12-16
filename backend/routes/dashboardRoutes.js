@@ -8,5 +8,6 @@ router.get('/user-dashboard-data/:userId', dashboardController.getUserDashboardD
 router.get('/upcoming-birthdays', dashboardController.getUpcomingBirthdays);
 router.get('/age-group-data', dashboardController.getAgeGroupData);
 router.get('/profile-completion/:userId', dashboardController.getProfileCompletion);
+router.get('/government-id-counts', authMiddleware, dashboardController.getGovernmentIdCounts);
 
 module.exports = router;

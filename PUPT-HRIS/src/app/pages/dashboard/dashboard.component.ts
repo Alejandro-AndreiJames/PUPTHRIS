@@ -1,5 +1,5 @@
 import { Component, AfterViewInit, ChangeDetectorRef, ViewChild, OnInit, OnDestroy, ViewChildren, QueryList } from '@angular/core';
-import { ChartOptions, ChartType, ChartData } from 'chart.js';
+import { ChartOptions, ChartType, ChartData, ChartConfiguration } from 'chart.js';
 import { NgChartsModule, BaseChartDirective } from 'ng2-charts';
 import { DashboardService } from '../../services/dashboard.service';
 import { DepartmentCount } from '../../model/departmentCount.model';
@@ -300,7 +300,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     { id: 'faculty-evaluation', title: 'Faculty Evaluation', visible: true, order: 0 },
     { id: 'charts', title: 'Charts', visible: true, order: 1 },
     { id: 'academic-ranks', title: 'Academic Ranks', visible: true, order: 2 },
-    { id: 'evaluation-candidates', title: 'Faculty Evaluation Candidates', visible: true, order: 3 }
+    { id: 'evaluation-candidates', title: 'Faculty Evaluation Candidates', visible: true, order: 3 },
+    { id: 'government-ids', title: 'Government ID Distribution', visible: true, order: 4 }
   ];
   public showDashboardSettings = false;
 
@@ -326,6 +327,65 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   // Add these properties
   public doctorate: number = 0;
   public masters: number = 0;
+
+  // Add these properties
+  public governmentIdBarChart: ChartConfiguration<'bar'>['data'] = {
+    labels: ['GSIS', 'Pag-IBIG', 'PhilHealth', 'SSS', 'TIN', 'Agency Employee'],
+    datasets: [{
+      data: [],
+      label: 'Number of Users',
+      backgroundColor: [
+        'rgba(128, 0, 0, 0.8)',  // Maroon to match theme
+        'rgba(128, 0, 0, 0.7)',
+        'rgba(128, 0, 0, 0.6)',
+        'rgba(128, 0, 0, 0.5)',
+        'rgba(128, 0, 0, 0.4)',
+        'rgba(128, 0, 0, 0.3)'
+      ],
+      borderColor: [
+        'rgba(128, 0, 0, 1)',  // Maroon border
+        'rgba(128, 0, 0, 1)',
+        'rgba(128, 0, 0, 1)',
+        'rgba(128, 0, 0, 1)',
+        'rgba(128, 0, 0, 1)',
+        'rgba(128, 0, 0, 1)'
+      ],
+      borderWidth: 1
+    }]
+  };
+
+  public governmentIdBarChartOptions: ChartConfiguration<'bar'>['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+          color: '#333'
+        },
+        grid: {
+          color: 'rgba(0, 0, 0, 0.1)'
+        }
+      },
+      x: {
+        ticks: {
+          color: '#333'
+        },
+        grid: {
+          display: false
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        display: false
+      },
+      title: {
+        display: false
+      }
+    }
+  };
 
   constructor(
     private dashboardService: DashboardService,
@@ -543,6 +603,26 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       }
 
       this.loadEvaluationRatingsDistribution(campusId);
+
+      this.dashboardService.getGovernmentIdCounts(campusId).subscribe({
+        next: (data) => {
+          this.governmentIdBarChart.datasets[0].data = [
+            data.governmentIds.gsis,
+            data.governmentIds.pagIbig,
+            data.governmentIds.philHealth,
+            data.governmentIds.sss,
+            data.governmentIds.tin,
+            data.governmentIds.agencyEmployee
+          ];
+          // Trigger chart update
+          if (this.charts) {
+            this.charts.forEach(chart => chart.update());
+          }
+        },
+        error: (error) => {
+          console.error('Error fetching government ID counts:', error);
+        }
+      });
     });
   }
 
@@ -911,7 +991,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
           { id: 'faculty-evaluation', title: 'Faculty Evaluation', visible: true, order: 0 },
           { id: 'charts', title: 'Charts', visible: true, order: 1 },
           { id: 'academic-ranks', title: 'Academic Ranks', visible: true, order: 2 },
-          { id: 'evaluation-candidates', title: 'Faculty Evaluation Candidates', visible: true, order: 3 }
+          { id: 'evaluation-candidates', title: 'Faculty Evaluation Candidates', visible: true, order: 3 },
+          { id: 'government-ids', title: 'Government ID Distribution', visible: true, order: 4 }
         ];
 
         // Merge saved sections with defaults, keeping saved preferences
@@ -1092,7 +1173,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       { id: 'faculty-evaluation', title: 'Faculty Evaluation', visible: true, order: 0 },
       { id: 'charts', title: 'Charts', visible: true, order: 1 },
       { id: 'academic-ranks', title: 'Academic Ranks', visible: true, order: 2 },
-      { id: 'evaluation-candidates', title: 'Faculty Evaluation Candidates', visible: true, order: 3 }
+      { id: 'evaluation-candidates', title: 'Faculty Evaluation Candidates', visible: true, order: 3 },
+      { id: 'government-ids', title: 'Government ID Distribution', visible: true, order: 4 }
     ];
   }
 
