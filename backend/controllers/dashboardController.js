@@ -455,9 +455,9 @@ exports.getGovernmentIdCounts = async (req, res) => {
 exports.getFemaleUsers = async (req, res) => {
   try {
     const { campusId } = req.query;
-    
+
     const femaleUsers = await User.findAll({
-      attributes: ['UserID', 'EmploymentType', 'Fcode'],
+      attributes: ['EmploymentType'],
       where: {
         isActive: true,
         ...(campusId && { CollegeCampusID: campusId })
@@ -481,6 +481,7 @@ exports.getFemaleUsers = async (req, res) => {
       ]
     });
 
+    // Send the raw data without additional formatting
     res.status(200).json(femaleUsers);
   } catch (error) {
     console.error('Error fetching female users:', error);
@@ -491,9 +492,10 @@ exports.getFemaleUsers = async (req, res) => {
 exports.getMaleUsers = async (req, res) => {
   try {
     const { campusId } = req.query;
-    
+    console.log('Fetching male users for campus:', campusId);
+
     const maleUsers = await User.findAll({
-      attributes: ['UserID', 'EmploymentType', 'Fcode'],
+      attributes: ['EmploymentType'],
       where: {
         isActive: true,
         ...(campusId && { CollegeCampusID: campusId })
@@ -501,7 +503,7 @@ exports.getMaleUsers = async (req, res) => {
       include: [
         {
           model: BasicDetails,
-          where: { Sex: 'Male' },
+          where: { Sex: 'Male' },  // Changed to Male
           required: true,
           attributes: ['LastName', 'FirstName', 'MiddleInitial']
         },
@@ -517,6 +519,7 @@ exports.getMaleUsers = async (req, res) => {
       ]
     });
 
+    console.log('Male users data:', JSON.stringify(maleUsers, null, 2));
     res.status(200).json(maleUsers);
   } catch (error) {
     console.error('Error fetching male users:', error);
@@ -600,35 +603,81 @@ exports.getStaffUsers = async (req, res) => {
     const { campusId } = req.query;
     console.log('Fetching staff users for campus:', campusId);
 
+    // First, let's check if we can find any roles
+    const staffRole = await Role.findOne({
+      where: { RoleName: 'staff' }
+    });
+    console.log('Staff role:', staffRole);
+
+    // Let's check the UserRoles table directly
+    const userRoles = await UserRole.findAll({
+      where: { RoleID: staffRole.RoleID }
+    });
+    console.log('User roles found:', userRoles);
+
     const staffUsers = await User.findAll({
-      attributes: ['EmploymentType'],
+      attributes: [
+        'UserID', 
+        'EmploymentType', 
+        'Fcode'
+      ],
       where: {
         isActive: true,
-        EmploymentType: 'staff', // Filter for staff type
         ...(campusId && { CollegeCampusID: campusId })
       },
       include: [
         {
           model: BasicDetails,
-          required: true,
-          attributes: ['LastName', 'FirstName', 'MiddleInitial']
+          attributes: [
+            'LastName',
+            'FirstName',
+            'MiddleInitial'
+          ],
+          required: false
         },
         {
           model: Department,
           attributes: ['DepartmentName'],
-          as: 'Department'
+          as: 'Department',
+          required: false
+        },
+        {
+          model: Role,
+          where: { RoleName: 'staff' },
+          through: UserRole,
+          required: true
         }
-      ],
-      order: [
-        [BasicDetails, 'LastName', 'ASC'],
-        [BasicDetails, 'FirstName', 'ASC']
       ]
     });
 
-    console.log('Staff users data:', JSON.stringify(staffUsers, null, 2));
-    res.status(200).json(staffUsers);
+    // Format the response
+    const formattedUsers = staffUsers.map(user => {
+      const basicDetails = user.BasicDetail || {};
+      const department = user.Department || {};
+
+      return {
+        id: user.UserID,
+        name: basicDetails.LastName ? 
+          `${basicDetails.LastName}, ${basicDetails.FirstName} ${basicDetails.MiddleInitial || ''}`.trim() : 
+          'N/A',
+        fcode: user.Fcode || 'N/A',
+        department: department.DepartmentName || 'N/A',
+        employmentType: user.EmploymentType || 'N/A'
+      };
+    });
+
+    console.log(`Found ${formattedUsers.length} staff users`);
+    console.log('Formatted staff users:', JSON.stringify(formattedUsers, null, 2));
+    
+    res.status(200).json(formattedUsers);
+
   } catch (error) {
     console.error('Error fetching staff users:', error);
-    res.status(500).json({ message: 'Error fetching staff users', error: error.message });
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Error fetching staff users', 
+      error: error.message,
+      stack: error.stack 
+    });
   }
 };
