@@ -38,7 +38,8 @@
   <ng-container *ngIf="(userRole === 'admin' || userRole === 'superadmin') && isAdminView; else personalView">
     <!-- Admin Dashboard Content -->
     <div class="cards-container grid grid-cols-1 md:grid-cols-4 gap-4 mb-2">
-      <div class="card bg-gradient-to-r from-orange-400 to-red-600 text-white p-6 rounded-lg shadow-lg">
+      <div class="card bg-gradient-to-r from-orange-400 to-red-600 text-white p-6 rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition-all" 
+           (click)="showFemaleList()">
         <h3 class="text-2xl font-bold">Female</h3>
         <p class="text-6xl font-extrabold">{{ totalFemale }}</p>
       </div>
@@ -758,6 +759,66 @@
 
       <div class="modal-action mt-4">
         <button class="btn bg-maroon text-white hover:bg-black" (click)="closeCandidatesModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add this at the bottom of the file, before the closing </div> -->
+  <div *ngIf="showFemaleModal" class="modal modal-open">
+    <div class="modal-box w-11/12 max-w-5xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold text-lg">Female Faculty Members</h3>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="table table-zebra w-full">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Department</th>
+              <th>Employment Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="paginatedFemaleList?.length === 0">
+              <td colspan="3">No data available</td>
+            </tr>
+            
+            <tr *ngFor="let member of paginatedFemaleList">
+              <td>
+                {{ member.BasicDetail.LastName }}, {{ member.BasicDetail.FirstName }} {{ member.BasicDetail.MiddleInitial }}
+              </td>
+              <td>{{ member.Department?.DepartmentName || 'N/A' }}</td>
+              <td>{{ formatEmploymentTypes(member.EmploymentType) }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination controls -->
+        <div class="pagination-controls mt-4 flex justify-center gap-2">
+          <button 
+            (click)="previousFemaleModalPage()" 
+            [disabled]="femaleModalCurrentPage === 1" 
+            class="btn btn-sm">Previous</button>
+
+          <span *ngFor="let page of getFemaleModalPageArray(); let i = index">
+            <button 
+              (click)="setFemaleModalPage(i + 1)" 
+              [class.btn-active]="i + 1 === femaleModalCurrentPage" 
+              class="btn btn-sm">
+              {{ i + 1 }}
+            </button>
+          </span>
+
+          <button 
+            (click)="nextFemaleModalPage()" 
+            [disabled]="femaleModalCurrentPage === femaleModalTotalPages" 
+            class="btn btn-sm">Next</button>
+        </div>
+      </div>
+
+      <div class="modal-action">
+        <button class="btn" (click)="closeFemaleList()">Close</button>
       </div>
     </div>
   </div>

@@ -387,6 +387,14 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   };
 
+  // Add these properties
+  showFemaleModal: boolean = false;
+  femaleList: any[] = [];
+  femaleModalCurrentPage: number = 1;
+  femaleModalItemsPerPage: number = 10;
+  femaleModalTotalPages: number = 1;
+  paginatedFemaleList: any[] = [];
+
   constructor(
     private dashboardService: DashboardService,
     private cdr: ChangeDetectorRef,
@@ -1229,5 +1237,66 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   // Add this type guard method
   isPerformanceCandidate(candidate: any): candidate is PerformanceReviewCandidate {
     return candidate && 'performanceMetrics' in candidate;
+  }
+
+  // Add these methods
+  showFemaleList() {
+    // Get the current campus ID
+    const campusId = this.campusContextService.getCurrentCampusId();
+    
+    // Call the service to get female faculty members
+    if (campusId) {
+      this.dashboardService.getFemaleUsers(campusId).subscribe({
+        next: (data) => {
+          this.femaleList = data;
+          this.femaleModalTotalPages = Math.ceil(this.femaleList.length / this.femaleModalItemsPerPage);
+          this.updateFemaleModalPagination();
+          this.showFemaleModal = true;
+        },
+        error: (error) => {
+          console.error('Error fetching female faculty members:', error);
+        }
+      });
+    }
+  }
+
+  closeFemaleList() {
+    this.showFemaleModal = false;
+    this.femaleList = [];
+    this.femaleModalCurrentPage = 1;
+  }
+
+  getFemaleModalPageArray(): number[] {
+    return Array(this.femaleModalTotalPages).fill(0).map((_, i) => i + 1);
+  }
+
+  updateFemaleModalPagination() {
+    const startIndex = (this.femaleModalCurrentPage - 1) * this.femaleModalItemsPerPage;
+    const endIndex = startIndex + this.femaleModalItemsPerPage;
+    this.paginatedFemaleList = this.femaleList.slice(startIndex, endIndex);
+  }
+
+  previousFemaleModalPage() {
+    if (this.femaleModalCurrentPage > 1) {
+      this.femaleModalCurrentPage--;
+      this.updateFemaleModalPagination();
+    }
+  }
+
+  nextFemaleModalPage() {
+    if (this.femaleModalCurrentPage < this.femaleModalTotalPages) {
+      this.femaleModalCurrentPage++;
+      this.updateFemaleModalPagination();
+    }
+  }
+
+  setFemaleModalPage(page: number) {
+    this.femaleModalCurrentPage = page;
+    this.updateFemaleModalPagination();
+  }
+
+  formatEmploymentTypes(type: string): string {
+    if (!type) return 'N/A';
+    return type.charAt(0).toUpperCase() + type.slice(1);
   }
 }

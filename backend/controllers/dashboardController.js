@@ -451,3 +451,40 @@ exports.getGovernmentIdCounts = async (req, res) => {
     });
   }
 };
+
+exports.getFemaleUsers = async (req, res) => {
+  try {
+    const { campusId } = req.query;
+
+    const femaleUsers = await User.findAll({
+      attributes: ['EmploymentType'],
+      where: {
+        isActive: true,
+        ...(campusId && { CollegeCampusID: campusId })
+      },
+      include: [
+        {
+          model: BasicDetails,
+          where: { Sex: 'Female' },
+          required: true,
+          attributes: ['LastName', 'FirstName', 'MiddleInitial']
+        },
+        {
+          model: Department,
+          attributes: ['DepartmentName'],
+          as: 'Department'
+        }
+      ],
+      order: [
+        [BasicDetails, 'LastName', 'ASC'],
+        [BasicDetails, 'FirstName', 'ASC']
+      ]
+    });
+
+    // Send the raw data without additional formatting
+    res.status(200).json(femaleUsers);
+  } catch (error) {
+    console.error('Error fetching female users:', error);
+    res.status(500).json({ message: 'Error fetching female users', error: error.message });
+  }
+};
