@@ -831,8 +831,31 @@
   <!-- User List Modal -->
   <div *ngIf="showUserModal" class="modal modal-open" style="z-index: 100;">
     <div class="modal-box w-11/12 max-w-5xl">
-      <h3 class="font-bold text-lg">{{modalTitle}}</h3>
+      <h3 class="font-bold text-lg mb-4">{{modalTitle}}</h3>
       
+      <!-- Add filter controls -->
+      <div class="filter-controls mb-4 flex gap-4 items-center">
+        <select 
+          [(ngModel)]="selectedDepartmentFilter"
+          (change)="applyFilters()"
+          class="select select-bordered w-full max-w-xs">
+          <option value="">All Departments</option>
+          <option *ngFor="let dept of departments" [value]="dept.DepartmentName">
+            {{ dept.DepartmentName }}
+          </option>
+        </select>
+
+        <select 
+          [(ngModel)]="selectedRankFilter"
+          (change)="applyFilters()"
+          class="select select-bordered w-full max-w-xs">
+          <option value="">All Ranks</option>
+          <option *ngFor="let rank of academicRanks" [value]="rank.Rank">
+            {{ rank.Rank }}
+          </option>
+        </select>
+      </div>
+
       <div class="overflow-x-auto">
         <table class="table w-full">
           <thead>

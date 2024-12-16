@@ -413,6 +413,16 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   userModalTotalItems: number = 0;
   paginatedUserList: any[] = [];
 
+  // Add/modify these properties
+  departments: any[] = [];
+
+  // Add to your DashboardComponent class
+  selectedDepartmentFilter: string = '';
+  selectedRankFilter: string = '';
+
+  // Add this property to store the original list
+  originalUserList: any[] = [];
+
   constructor(
     private dashboardService: DashboardService,
     private cdr: ChangeDetectorRef,
@@ -476,6 +486,24 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.loadDashboardPreferences();
     this.loadEvaluationCandidates();
+
+    const campusId = this.campusContextService.getCurrentCampusId();
+    if (campusId) {
+      this.dashboardService.getDashboardData(campusId).subscribe({
+        next: (data) => {
+          console.log('Dashboard Data:', data);
+          console.log('Departments from data:', data.departments);
+          
+          // Store departments
+          this.departments = data.departments;
+          
+          // Your existing code...
+        },
+        error: (error) => {
+          console.error('Error loading dashboard data:', error);
+        }
+      });
+    }
   }
 
   ngOnDestroy(): void {
@@ -1356,12 +1384,12 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
       case 'faculty':
         this.dashboardService.getFacultyUsers(campusId).subscribe({
-          next: (data) => {
-            this.currentUserList = data;
-            this.userModalCurrentPage = 1; // Reset to first page
-            this.updateUserModalPagination(); // Initialize pagination
+          next: (users) => {
+            this.originalUserList = users; // Store original list
+            this.currentUserList = [...users]; // Make a copy for current display
             this.modalTitle = 'Faculty Members';
             this.showUserModal = true;
+            this.updateUserModalPagination();
           },
           error: (error) => console.error('Error fetching faculty users:', error)
         });
@@ -1412,6 +1440,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   closeUserModal(): void {
     this.showUserModal = false;
     this.currentUserList = [];
+    // Reset filters
+    this.selectedDepartmentFilter = '';
+    this.selectedRankFilter = '';
+    this.originalUserList = [];
   }
 
   showUserDetails(user: any): void {
@@ -1453,5 +1485,45 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     const startIndex = (this.userModalCurrentPage - 1) * this.userModalItemsPerPage;
     const endIndex = startIndex + this.userModalItemsPerPage;
     this.paginatedUserList = this.currentUserList.slice(startIndex, endIndex);
+  }
+
+  applyFilters() {
+    console.log('Applying filters:', {
+      department: this.selectedDepartmentFilter,
+      rank: this.selectedRankFilter
+    });
+
+    // Always start with the original list
+    let filteredList = [...this.originalUserList];
+    console.log('Starting with original list:', filteredList);
+
+    // Only filter if a specific value (not empty) is selected
+    if (this.selectedDepartmentFilter && this.selectedDepartmentFilter !== '') {
+      filteredList = filteredList.filter(user => 
+        user.department === this.selectedDepartmentFilter
+      );
+    }
+
+    if (this.selectedRankFilter && this.selectedRankFilter !== '') {
+      filteredList = filteredList.filter(user => 
+        user.rank === this.selectedRankFilter
+      );
+    }
+
+    console.log('Filtered list:', filteredList);
+
+    // Update the current list and paginate
+    this.currentUserList = filteredList;
+    this.userModalCurrentPage = 1;
+    this.updateUserModalPagination();
+  }
+
+  // Add a method to reset filters
+  resetFilters() {
+    this.selectedDepartmentFilter = '';
+    this.selectedRankFilter = '';
+    this.currentUserList = [...this.originalUserList];
+    this.userModalCurrentPage = 1;
+    this.updateUserModalPagination();
   }
 }
