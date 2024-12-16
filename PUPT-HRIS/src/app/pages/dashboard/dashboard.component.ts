@@ -59,7 +59,7 @@ interface DashboardSection {
 }
 
 // Add type definition
-type UserListType = 'male' | 'female' | 'all' | 'faculty' | 'staff';
+type UserListType = 'male' | 'female' | 'faculty' | 'staff' | 'doctorate' | 'masters';
 
 @Component({
   selector: 'app-dashboard',
@@ -1360,6 +1360,28 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
             this.showUserModal = true;
           },
           error: (error) => console.error('Error fetching staff users:', error)
+        });
+        break;
+
+      case 'doctorate':
+        this.dashboardService.getDoctorateUsers(campusId).subscribe({
+          next: (data) => {
+            this.currentUserList = data;
+            this.modalTitle = 'Doctorate Degree Holders';
+            this.showUserModal = true;
+          },
+          error: (error) => console.error('Error fetching doctorate users:', error)
+        });
+        break;
+
+      case 'masters':
+        this.dashboardService.getMastersUsers(campusId).subscribe({
+          next: (data) => {
+            this.currentUserList = data;
+            this.modalTitle = 'Masters Degree Holders';
+            this.showUserModal = true;
+          },
+          error: (error) => console.error('Error fetching masters users:', error)
         });
         break;
     }
