@@ -59,7 +59,7 @@ interface DashboardSection {
 }
 
 // Add type definition
-type UserListType = 'male' | 'female' | 'all';
+type UserListType = 'male' | 'female' | 'all' | 'faculty' | 'staff';
 
 @Component({
   selector: 'app-dashboard',
@@ -1313,7 +1313,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   showUserList(type: UserListType): void {
     const campusId = this.campusContextService.getCurrentCampusId();
     
-    // Handle the case where campusId might be null
     if (!campusId) {
       console.error('No campus ID found');
       return;
@@ -1339,6 +1338,28 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
             this.showUserModal = true;
           },
           error: (error) => console.error('Error fetching female users:', error)
+        });
+        break;
+
+      case 'faculty':
+        this.dashboardService.getFacultyUsers(campusId).subscribe({
+          next: (data) => {
+            this.currentUserList = data;
+            this.modalTitle = 'Faculty Members';
+            this.showUserModal = true;
+          },
+          error: (error) => console.error('Error fetching faculty users:', error)
+        });
+        break;
+
+      case 'staff':
+        this.dashboardService.getStaffUsers(campusId).subscribe({
+          next: (data) => {
+            this.currentUserList = data;
+            this.modalTitle = 'Staff Members';
+            this.showUserModal = true;
+          },
+          error: (error) => console.error('Error fetching staff users:', error)
         });
         break;
     }

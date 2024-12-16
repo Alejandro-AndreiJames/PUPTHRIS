@@ -11,5 +11,7 @@ router.get('/profile-completion/:userId', dashboardController.getProfileCompleti
 router.get('/government-id-counts', authMiddleware, dashboardController.getGovernmentIdCounts);
 router.get('/female-users', authMiddleware, dashboardController.getFemaleUsers);
 router.get('/male-users', authMiddleware, dashboardController.getMaleUsers);
+router.get('/faculty-users', authMiddleware, dashboardController.getFacultyUsers);
+router.get('/staff-users', authMiddleware, dashboardController.getStaffUsers);
 
 module.exports = router;

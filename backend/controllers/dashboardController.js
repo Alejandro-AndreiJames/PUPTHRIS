@@ -455,9 +455,9 @@ exports.getGovernmentIdCounts = async (req, res) => {
 exports.getFemaleUsers = async (req, res) => {
   try {
     const { campusId } = req.query;
-
+    
     const femaleUsers = await User.findAll({
-      attributes: ['EmploymentType'],
+      attributes: ['UserID', 'EmploymentType', 'Fcode'],
       where: {
         isActive: true,
         ...(campusId && { CollegeCampusID: campusId })
@@ -481,7 +481,6 @@ exports.getFemaleUsers = async (req, res) => {
       ]
     });
 
-    // Send the raw data without additional formatting
     res.status(200).json(femaleUsers);
   } catch (error) {
     console.error('Error fetching female users:', error);
@@ -492,10 +491,9 @@ exports.getFemaleUsers = async (req, res) => {
 exports.getMaleUsers = async (req, res) => {
   try {
     const { campusId } = req.query;
-    console.log('Fetching male users for campus:', campusId);
-
+    
     const maleUsers = await User.findAll({
-      attributes: ['EmploymentType'],
+      attributes: ['UserID', 'EmploymentType', 'Fcode'],
       where: {
         isActive: true,
         ...(campusId && { CollegeCampusID: campusId })
@@ -503,7 +501,7 @@ exports.getMaleUsers = async (req, res) => {
       include: [
         {
           model: BasicDetails,
-          where: { Sex: 'Male' },  // Changed to Male
+          where: { Sex: 'Male' },
           required: true,
           attributes: ['LastName', 'FirstName', 'MiddleInitial']
         },
@@ -519,10 +517,118 @@ exports.getMaleUsers = async (req, res) => {
       ]
     });
 
-    console.log('Male users data:', JSON.stringify(maleUsers, null, 2));
     res.status(200).json(maleUsers);
   } catch (error) {
     console.error('Error fetching male users:', error);
     res.status(500).json({ message: 'Error fetching male users', error: error.message });
+  }
+};
+
+// Get Faculty Users
+exports.getFacultyUsers = async (req, res) => {
+  try {
+    const { campusId } = req.query;
+    console.log('Fetching all faculty users for campus:', campusId);
+
+    // Remove any employment type filtering
+    const facultyUsers = await User.findAll({
+      attributes: [
+        'UserID', 
+        'EmploymentType', 
+        'Fcode'
+      ],
+      where: {
+        isActive: true,
+        ...(campusId && { CollegeCampusID: campusId })
+      },
+      include: [
+        {
+          model: BasicDetails,
+          attributes: [
+            'LastName',
+            'FirstName',
+            'MiddleInitial'
+          ],
+          required: false
+        },
+        {
+          model: Department,
+          attributes: ['DepartmentName'],
+          as: 'Department',
+          required: false
+        }
+      ]
+    });
+
+    // Log the raw query results
+    console.log('Raw query results:', JSON.stringify(facultyUsers, null, 2));
+
+    // Format the response
+    const formattedUsers = facultyUsers.map(user => {
+      const basicDetails = user.BasicDetail || {};
+      const department = user.Department || {};
+
+      return {
+        id: user.UserID,
+        name: basicDetails.LastName ? 
+          `${basicDetails.LastName}, ${basicDetails.FirstName} ${basicDetails.MiddleInitial || ''}`.trim() : 
+          'N/A',
+        fcode: user.Fcode || 'N/A',
+        department: department.DepartmentName || 'N/A',
+        employmentType: user.EmploymentType || 'N/A'
+      };
+    });
+
+    console.log(`Found ${formattedUsers.length} faculty users`);
+    console.log('Formatted faculty users:', JSON.stringify(formattedUsers, null, 2));
+    
+    res.status(200).json(formattedUsers);
+
+  } catch (error) {
+    console.error('Error fetching faculty users:', error);
+    res.status(500).json({ 
+      message: 'Error fetching faculty users', 
+      error: error.message,
+      stack: error.stack 
+    });
+  }
+};
+
+// Get Staff Users
+exports.getStaffUsers = async (req, res) => {
+  try {
+    const { campusId } = req.query;
+    console.log('Fetching staff users for campus:', campusId);
+
+    const staffUsers = await User.findAll({
+      attributes: ['EmploymentType'],
+      where: {
+        isActive: true,
+        EmploymentType: 'staff', // Filter for staff type
+        ...(campusId && { CollegeCampusID: campusId })
+      },
+      include: [
+        {
+          model: BasicDetails,
+          required: true,
+          attributes: ['LastName', 'FirstName', 'MiddleInitial']
+        },
+        {
+          model: Department,
+          attributes: ['DepartmentName'],
+          as: 'Department'
+        }
+      ],
+      order: [
+        [BasicDetails, 'LastName', 'ASC'],
+        [BasicDetails, 'FirstName', 'ASC']
+      ]
+    });
+
+    console.log('Staff users data:', JSON.stringify(staffUsers, null, 2));
+    res.status(200).json(staffUsers);
+  } catch (error) {
+    console.error('Error fetching staff users:', error);
+    res.status(500).json({ message: 'Error fetching staff users', error: error.message });
   }
 };

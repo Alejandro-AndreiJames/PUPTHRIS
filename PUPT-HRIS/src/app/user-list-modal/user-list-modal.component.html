@@ -9,19 +9,21 @@
         <thead>
           <tr>
             <th>Name</th>
+            <th>Faculty Code</th>
             <th>Department</th>
             <th>Employment Type</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngIf="!paginatedUsers || paginatedUsers.length === 0">
-            <td colspan="3" class="text-center py-4">No data available</td>
+            <td colspan="4" class="text-center py-4">No data available</td>
           </tr>
           
-          <tr *ngFor="let member of paginatedUsers || []">
+          <tr *ngFor="let member of paginatedUsers">
             <td>{{ formatName(member) }}</td>
-            <td>{{ member.Department?.DepartmentName || 'N/A' }}</td>
-            <td>{{ formatEmploymentType(member.EmploymentType) }}</td>
+            <td>{{ getFcode(member) }}</td>
+            <td>{{ getDepartment(member) }}</td>
+            <td>{{ formatEmploymentType(member.employmentType || member.EmploymentType) }}</td>
           </tr>
         </tbody>
       </table>

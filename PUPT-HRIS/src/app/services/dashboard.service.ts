@@ -117,6 +117,24 @@ export class DashboardService {
     );
   }
 
+  getFacultyUsers(campusId: number): Observable<any[]> {
+    console.log('Requesting faculty users for campus:', campusId);
+    return this.http.get<any[]>(`${this.apiUrl}/faculty-users`, {
+      params: { campusId: campusId.toString() }
+    }).pipe(
+      tap(response => console.log('Faculty users response:', response))
+    );
+  }
+
+  getStaffUsers(campusId: number): Observable<any[]> {
+    console.log('Requesting staff users for campus:', campusId);
+    return this.http.get<any[]>(`${this.apiUrl}/staff-users`, {
+      params: { campusId: campusId.toString() }
+    }).pipe(
+      tap(response => console.log('Staff users response:', response))
+    );
+  }
+
   private handleError(error: HttpErrorResponse): Observable<never> {
     console.error('An error occurred:', error);
     return throwError(() => error.message || 'Server error');
