@@ -14,6 +14,8 @@ const Education = require('../models/educationModel');
 const ProfileImage = require('../models/profileImageModel');
 const SpecialSkill = require('../models/specialSkillModel');
 const moment = require('moment');
+const EmploymentInformation = require('../models/employmentInformationModel');
+const ProfessionalLicense = require('../models/professionalLicenseModel');
 
 exports.getDashboardData = async (req, res) => {
   try {
@@ -457,7 +459,7 @@ exports.getFemaleUsers = async (req, res) => {
     const { campusId } = req.query;
 
     const femaleUsers = await User.findAll({
-      attributes: ['EmploymentType'],
+      attributes: ['UserID', 'EmploymentType', 'Fcode'],
       where: {
         isActive: true,
         ...(campusId && { CollegeCampusID: campusId })
@@ -471,8 +473,8 @@ exports.getFemaleUsers = async (req, res) => {
         },
         {
           model: Department,
-          attributes: ['DepartmentName'],
-          as: 'Department'
+          as: 'Department',
+          attributes: ['DepartmentName']
         }
       ],
       order: [
@@ -481,8 +483,8 @@ exports.getFemaleUsers = async (req, res) => {
       ]
     });
 
-    // Send the raw data without additional formatting
-    res.status(200).json(femaleUsers);
+    const detailedUsers = await getUserDetailsWithEducation(femaleUsers);
+    res.status(200).json(detailedUsers);
   } catch (error) {
     console.error('Error fetching female users:', error);
     res.status(500).json({ message: 'Error fetching female users', error: error.message });
@@ -495,7 +497,7 @@ exports.getMaleUsers = async (req, res) => {
     console.log('Fetching male users for campus:', campusId);
 
     const maleUsers = await User.findAll({
-      attributes: ['EmploymentType'],
+      attributes: ['UserID', 'EmploymentType', 'Fcode'],
       where: {
         isActive: true,
         ...(campusId && { CollegeCampusID: campusId })
@@ -503,14 +505,14 @@ exports.getMaleUsers = async (req, res) => {
       include: [
         {
           model: BasicDetails,
-          where: { Sex: 'Male' },  // Changed to Male
+          where: { Sex: 'Male' },
           required: true,
           attributes: ['LastName', 'FirstName', 'MiddleInitial']
         },
         {
           model: Department,
-          attributes: ['DepartmentName'],
-          as: 'Department'
+          as: 'Department',
+          attributes: ['DepartmentName']
         }
       ],
       order: [
@@ -519,166 +521,149 @@ exports.getMaleUsers = async (req, res) => {
       ]
     });
 
-    console.log('Male users data:', JSON.stringify(maleUsers, null, 2));
-    res.status(200).json(maleUsers);
+    const detailedUsers = await getUserDetailsWithEducation(maleUsers);
+    res.status(200).json(detailedUsers);
   } catch (error) {
     console.error('Error fetching male users:', error);
     res.status(500).json({ message: 'Error fetching male users', error: error.message });
   }
 };
 
-// Get Faculty Users
+// Helper function to format education details
+const getEducationDetails = async (userId) => {
+  const education = await Education.findAll({
+    where: { UserID: userId },
+    order: [['YearGraduated', 'DESC']]
+  });
+
+  return {
+    masters: education.find(e => e.Level === 'Masters'),
+    doctoral: education.find(e => e.Level === 'Doctoral')
+  };
+};
+
+// Helper function to get employment information
+const getEmploymentInfo = async (userId) => {
+  return await EmploymentInformation.findOne({
+    where: { UserID: userId }
+  });
+};
+
+// Helper function to get academic rank
+const getAcademicRank = async (userId) => {
+  return await AcademicRank.findOne({
+    where: { UserID: userId }
+  });
+};
+
+// Helper function to get professional license
+const getProfessionalLicense = async (userId) => {
+  return await ProfessionalLicense.findOne({
+    where: { UserID: userId }
+  });
+};
+
+// Update the existing user query functions to include detailed information
+const getUserDetailsWithEducation = async (users) => {
+  const detailedUsers = await Promise.all(users.map(async (user) => {
+    const educationDetails = await getEducationDetails(user.UserID);
+    const employmentInfo = await getEmploymentInfo(user.UserID);
+    const academicRank = await getAcademicRank(user.UserID);
+    const license = await getProfessionalLicense(user.UserID);
+    const basicDetails = user.BasicDetail || {};
+
+    return {
+      id: user.UserID,
+      name: `${basicDetails.LastName || ''}, ${basicDetails.FirstName || ''} ${basicDetails.MiddleInitial || ''}`.trim(),
+      fcode: user.Fcode || 'N/A',
+      department: user.Department?.DepartmentName || 'N/A',
+      employmentType: user.EmploymentType || 'N/A',
+      rank: academicRank?.Rank || 'N/A',
+      initialEmploymentDate: employmentInfo?.DateHired || 'N/A',
+      licenseNumber: license?.LicenseNumber || 'N/A',
+      education: {
+        masters: educationDetails.masters ? {
+          school: educationDetails.masters.NameOfSchool,
+          graduationDate: educationDetails.masters.YearGraduated
+        } : null,
+        doctoral: educationDetails.doctoral ? {
+          school: educationDetails.doctoral.NameOfSchool,
+          graduationDate: educationDetails.doctoral.YearGraduated
+        } : null
+      }
+    };
+  }));
+
+  return detailedUsers;
+};
+
+// Update the existing controller methods
 exports.getFacultyUsers = async (req, res) => {
   try {
     const { campusId } = req.query;
-    console.log('Fetching all faculty users for campus:', campusId);
-
-    // Remove any employment type filtering
-    const facultyUsers = await User.findAll({
-      attributes: [
-        'UserID', 
-        'EmploymentType', 
-        'Fcode'
-      ],
+    const users = await User.findAll({
       where: {
-        isActive: true,
-        ...(campusId && { CollegeCampusID: campusId })
+        CollegeCampusID: campusId,
+        isActive: true
       },
       include: [
         {
+          model: Role,
+          where: { RoleName: 'faculty' },
+          through: UserRole
+        },
+        {
           model: BasicDetails,
-          attributes: [
-            'LastName',
-            'FirstName',
-            'MiddleInitial'
-          ],
-          required: false
+          attributes: ['LastName', 'FirstName', 'MiddleInitial']
         },
         {
           model: Department,
-          attributes: ['DepartmentName'],
           as: 'Department',
-          required: false
+          attributes: ['DepartmentName']
         }
       ]
     });
 
-    // Log the raw query results
-    console.log('Raw query results:', JSON.stringify(facultyUsers, null, 2));
-
-    // Format the response
-    const formattedUsers = facultyUsers.map(user => {
-      const basicDetails = user.BasicDetail || {};
-      const department = user.Department || {};
-
-      return {
-        id: user.UserID,
-        name: basicDetails.LastName ? 
-          `${basicDetails.LastName}, ${basicDetails.FirstName} ${basicDetails.MiddleInitial || ''}`.trim() : 
-          'N/A',
-        fcode: user.Fcode || 'N/A',
-        department: department.DepartmentName || 'N/A',
-        employmentType: user.EmploymentType || 'N/A'
-      };
-    });
-
-    console.log(`Found ${formattedUsers.length} faculty users`);
-    console.log('Formatted faculty users:', JSON.stringify(formattedUsers, null, 2));
-    
-    res.status(200).json(formattedUsers);
-
+    const detailedUsers = await getUserDetailsWithEducation(users);
+    res.status(200).json(detailedUsers);
   } catch (error) {
     console.error('Error fetching faculty users:', error);
-    res.status(500).json({ 
-      message: 'Error fetching faculty users', 
-      error: error.message,
-      stack: error.stack 
-    });
+    res.status(500).json({ message: 'Error fetching faculty users', error: error.message });
   }
 };
 
-// Get Staff Users
+// Do the same for staff users
 exports.getStaffUsers = async (req, res) => {
   try {
     const { campusId } = req.query;
-    console.log('Fetching staff users for campus:', campusId);
-
-    // First, let's check if we can find any roles
-    const staffRole = await Role.findOne({
-      where: { RoleName: 'staff' }
-    });
-    console.log('Staff role:', staffRole);
-
-    // Let's check the UserRoles table directly
-    const userRoles = await UserRole.findAll({
-      where: { RoleID: staffRole.RoleID }
-    });
-    console.log('User roles found:', userRoles);
-
-    const staffUsers = await User.findAll({
-      attributes: [
-        'UserID', 
-        'EmploymentType', 
-        'Fcode'
-      ],
+    const users = await User.findAll({
       where: {
-        isActive: true,
-        ...(campusId && { CollegeCampusID: campusId })
+        CollegeCampusID: campusId,
+        isActive: true
       },
       include: [
         {
+          model: Role,
+          where: { RoleName: 'staff' },
+          through: UserRole
+        },
+        {
           model: BasicDetails,
-          attributes: [
-            'LastName',
-            'FirstName',
-            'MiddleInitial'
-          ],
-          required: false
+          attributes: ['LastName', 'FirstName', 'MiddleInitial']
         },
         {
           model: Department,
-          attributes: ['DepartmentName'],
           as: 'Department',
-          required: false
-        },
-        {
-          model: Role,
-          where: { RoleName: 'staff' },
-          through: UserRole,
-          required: true
+          attributes: ['DepartmentName']
         }
       ]
     });
 
-    // Format the response
-    const formattedUsers = staffUsers.map(user => {
-      const basicDetails = user.BasicDetail || {};
-      const department = user.Department || {};
-
-      return {
-        id: user.UserID,
-        name: basicDetails.LastName ? 
-          `${basicDetails.LastName}, ${basicDetails.FirstName} ${basicDetails.MiddleInitial || ''}`.trim() : 
-          'N/A',
-        fcode: user.Fcode || 'N/A',
-        department: department.DepartmentName || 'N/A',
-        employmentType: user.EmploymentType || 'N/A'
-      };
-    });
-
-    console.log(`Found ${formattedUsers.length} staff users`);
-    console.log('Formatted staff users:', JSON.stringify(formattedUsers, null, 2));
-    
-    res.status(200).json(formattedUsers);
-
+    const detailedUsers = await getUserDetailsWithEducation(users);
+    res.status(200).json(detailedUsers);
   } catch (error) {
     console.error('Error fetching staff users:', error);
-    console.error('Error stack:', error.stack);
-    res.status(500).json({ 
-      message: 'Error fetching staff users', 
-      error: error.message,
-      stack: error.stack 
-    });
+    res.status(500).json({ message: 'Error fetching staff users', error: error.message });
   }
 };
 
@@ -709,8 +694,8 @@ exports.getDoctorateUsers = async (req, res) => {
         },
         {
           model: Department,
-          attributes: ['DepartmentName'],
           as: 'Department',
+          attributes: ['DepartmentName'],
           required: false
         },
         {
@@ -721,26 +706,8 @@ exports.getDoctorateUsers = async (req, res) => {
       ]
     });
 
-    // Format the response
-    const formattedUsers = doctorateUsers.map(user => {
-      const basicDetails = user.BasicDetail || {};
-      const department = user.Department || {};
-
-      return {
-        id: user.UserID,
-        name: basicDetails.LastName ? 
-          `${basicDetails.LastName}, ${basicDetails.FirstName} ${basicDetails.MiddleInitial || ''}`.trim() : 
-          'N/A',
-        fcode: user.Fcode || 'N/A',
-        department: department.DepartmentName || 'N/A',
-        employmentType: user.EmploymentType || 'N/A'
-      };
-    });
-
-    console.log(`Found ${formattedUsers.length} doctorate users`);
-    console.log('Formatted doctorate users:', JSON.stringify(formattedUsers, null, 2));
-    
-    res.status(200).json(formattedUsers);
+    const detailedUsers = await getUserDetailsWithEducation(doctorateUsers);
+    res.status(200).json(detailedUsers);
 
   } catch (error) {
     console.error('Error fetching doctorate users:', error);
@@ -780,8 +747,8 @@ exports.getMastersUsers = async (req, res) => {
         },
         {
           model: Department,
-          attributes: ['DepartmentName'],
           as: 'Department',
+          attributes: ['DepartmentName'],
           required: false
         },
         {
@@ -792,26 +759,8 @@ exports.getMastersUsers = async (req, res) => {
       ]
     });
 
-    // Format the response
-    const formattedUsers = mastersUsers.map(user => {
-      const basicDetails = user.BasicDetail || {};
-      const department = user.Department || {};
-
-      return {
-        id: user.UserID,
-        name: basicDetails.LastName ? 
-          `${basicDetails.LastName}, ${basicDetails.FirstName} ${basicDetails.MiddleInitial || ''}`.trim() : 
-          'N/A',
-        fcode: user.Fcode || 'N/A',
-        department: department.DepartmentName || 'N/A',
-        employmentType: user.EmploymentType || 'N/A'
-      };
-    });
-
-    console.log(`Found ${formattedUsers.length} masters users`);
-    console.log('Formatted masters users:', JSON.stringify(formattedUsers, null, 2));
-    
-    res.status(200).json(formattedUsers);
+    const detailedUsers = await getUserDetailsWithEducation(mastersUsers);
+    res.status(200).json(detailedUsers);
 
   } catch (error) {
     console.error('Error fetching masters users:', error);

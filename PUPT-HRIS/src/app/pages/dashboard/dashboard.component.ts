@@ -404,6 +404,15 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   currentUserList: any[] = [];
   modalTitle: string = '';
 
+  showDetailsModal: boolean = false;
+  selectedUser: any = null;
+
+  // Pagination properties for user list
+  userModalCurrentPage: number = 1;
+  userModalItemsPerPage: number = 10;
+  userModalTotalItems: number = 0;
+  paginatedUserList: any[] = [];
+
   constructor(
     private dashboardService: DashboardService,
     private cdr: ChangeDetectorRef,
@@ -1323,6 +1332,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         this.dashboardService.getMaleUsers(campusId).subscribe({
           next: (data) => {
             this.currentUserList = data;
+            this.userModalCurrentPage = 1; // Reset to first page
+            this.updateUserModalPagination(); // Initialize pagination
             this.modalTitle = 'Male Faculty Members';
             this.showUserModal = true;
           },
@@ -1334,6 +1345,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         this.dashboardService.getFemaleUsers(campusId).subscribe({
           next: (data) => {
             this.currentUserList = data;
+            this.userModalCurrentPage = 1; // Reset to first page
+            this.updateUserModalPagination(); // Initialize pagination
             this.modalTitle = 'Female Faculty Members';
             this.showUserModal = true;
           },
@@ -1345,6 +1358,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         this.dashboardService.getFacultyUsers(campusId).subscribe({
           next: (data) => {
             this.currentUserList = data;
+            this.userModalCurrentPage = 1; // Reset to first page
+            this.updateUserModalPagination(); // Initialize pagination
             this.modalTitle = 'Faculty Members';
             this.showUserModal = true;
           },
@@ -1356,6 +1371,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         this.dashboardService.getStaffUsers(campusId).subscribe({
           next: (data) => {
             this.currentUserList = data;
+            this.userModalCurrentPage = 1; // Reset to first page
+            this.updateUserModalPagination(); // Initialize pagination
             this.modalTitle = 'Staff Members';
             this.showUserModal = true;
           },
@@ -1367,6 +1384,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         this.dashboardService.getDoctorateUsers(campusId).subscribe({
           next: (data) => {
             this.currentUserList = data;
+            this.userModalCurrentPage = 1; // Reset to first page
+            this.updateUserModalPagination(); // Initialize pagination
             this.modalTitle = 'Doctorate Degree Holders';
             this.showUserModal = true;
           },
@@ -1378,6 +1397,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         this.dashboardService.getMastersUsers(campusId).subscribe({
           next: (data) => {
             this.currentUserList = data;
+            this.userModalCurrentPage = 1; // Reset to first page
+            this.updateUserModalPagination(); // Initialize pagination
             this.modalTitle = 'Masters Degree Holders';
             this.showUserModal = true;
           },
@@ -1391,5 +1412,46 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   closeUserModal(): void {
     this.showUserModal = false;
     this.currentUserList = [];
+  }
+
+  showUserDetails(user: any): void {
+    this.selectedUser = user;
+    this.showDetailsModal = true;
+  }
+
+  closeDetailsModal(): void {
+    this.showDetailsModal = false;
+    this.selectedUser = null;
+  }
+
+  // Pagination methods for user list
+  getUserModalPageArray(): number[] {
+    const pageCount = Math.ceil(this.currentUserList.length / this.userModalItemsPerPage);
+    return Array.from({ length: pageCount }, (_, i) => i + 1);
+  }
+
+  setUserModalPage(pageNumber: number): void {
+    this.userModalCurrentPage = pageNumber;
+    this.updateUserModalPagination();
+  }
+
+  previousUserModalPage(): void {
+    if (this.userModalCurrentPage > 1) {
+      this.userModalCurrentPage--;
+      this.updateUserModalPagination();
+    }
+  }
+
+  nextUserModalPage(): void {
+    if (this.userModalCurrentPage < Math.ceil(this.currentUserList.length / this.userModalItemsPerPage)) {
+      this.userModalCurrentPage++;
+      this.updateUserModalPagination();
+    }
+  }
+
+  updateUserModalPagination(): void {
+    const startIndex = (this.userModalCurrentPage - 1) * this.userModalItemsPerPage;
+    const endIndex = startIndex + this.userModalItemsPerPage;
+    this.paginatedUserList = this.currentUserList.slice(startIndex, endIndex);
   }
 }
