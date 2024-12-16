@@ -21,6 +21,7 @@ import {
   PerformanceReviewCandidate,
   CandidateFilterCriteria 
 } from '../../model/evaluation-candidates.model';
+import { UserListModalComponent } from '../../user-list-modal/user-list-modal.component';
 
 type NgxGaugeType = 'full' | 'semi' | 'arch';
 
@@ -57,12 +58,15 @@ interface DashboardSection {
   order: number;
 }
 
+// Add type definition
+type UserListType = 'male' | 'female' | 'all';
+
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
   standalone: true,
-  imports: [NgChartsModule, CommonModule, NgxGaugeModule, FormsModule, DragDropModule]
+  imports: [NgChartsModule, CommonModule, NgxGaugeModule, FormsModule, DragDropModule, UserListModalComponent]
 })
 export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
@@ -395,13 +399,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   femaleModalTotalPages: number = 1;
   paginatedFemaleList: any[] = [];
 
-  // Add these properties
-  showMaleModal: boolean = false;
-  maleList: any[] = [];
-  maleModalCurrentPage: number = 1;
-  maleModalItemsPerPage: number = 10;
-  maleModalTotalPages: number = 1;
-  paginatedMaleList: any[] = [];
+  // Add these properties to your dashboard component
+  showUserModal = false;
+  currentUserList: any[] = [];
+  modalTitle: string = '';
 
   constructor(
     private dashboardService: DashboardService,
@@ -1308,60 +1309,44 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     return type.charAt(0).toUpperCase() + type.slice(1);
   }
 
-  // Add these methods
-  showMaleList() {
+  // Add this method to handle showing different user lists
+  showUserList(type: UserListType): void {
     const campusId = this.campusContextService.getCurrentCampusId();
-    console.log('Requesting male users for campus:', campusId);
+    
+    // Handle the case where campusId might be null
+    if (!campusId) {
+      console.error('No campus ID found');
+      return;
+    }
 
-    if (campusId) {
-      this.dashboardService.getMaleUsers(campusId).subscribe({
-        next: (data) => {
-          console.log('Received male users data:', data);
-          this.maleList = data;
-          this.maleModalTotalPages = Math.ceil(this.maleList.length / this.maleModalItemsPerPage);
-          this.updateMaleModalPagination();
-          this.showMaleModal = true;
-        },
-        error: (error) => {
-          console.error('Error fetching male faculty members:', error);
-        }
-      });
+    switch(type) {
+      case 'male':
+        this.dashboardService.getMaleUsers(campusId).subscribe({
+          next: (data) => {
+            this.currentUserList = data;
+            this.modalTitle = 'Male Faculty Members';
+            this.showUserModal = true;
+          },
+          error: (error) => console.error('Error fetching male users:', error)
+        });
+        break;
+
+      case 'female':
+        this.dashboardService.getFemaleUsers(campusId).subscribe({
+          next: (data) => {
+            this.currentUserList = data;
+            this.modalTitle = 'Female Faculty Members';
+            this.showUserModal = true;
+          },
+          error: (error) => console.error('Error fetching female users:', error)
+        });
+        break;
     }
   }
 
-  closeMaleList() {
-    this.showMaleModal = false;
-    this.maleList = [];
-    this.maleModalCurrentPage = 1;
-  }
-
-  getMaleModalPageArray(): number[] {
-    return Array(this.maleModalTotalPages).fill(0).map((_, i) => i + 1);
-  }
-
-  updateMaleModalPagination() {
-    const startIndex = (this.maleModalCurrentPage - 1) * this.maleModalItemsPerPage;
-    const endIndex = startIndex + this.maleModalItemsPerPage;
-    this.paginatedMaleList = this.maleList.slice(startIndex, endIndex);
-    console.log('Updated paginated male list:', this.paginatedMaleList);
-  }
-
-  previousMaleModalPage() {
-    if (this.maleModalCurrentPage > 1) {
-      this.maleModalCurrentPage--;
-      this.updateMaleModalPagination();
-    }
-  }
-
-  nextMaleModalPage() {
-    if (this.maleModalCurrentPage < this.maleModalTotalPages) {
-      this.maleModalCurrentPage++;
-      this.updateMaleModalPagination();
-    }
-  }
-
-  setMaleModalPage(page: number) {
-    this.maleModalCurrentPage = page;
-    this.updateMaleModalPagination();
+  // Add method to handle modal closing
+  closeUserModal(): void {
+    this.showUserModal = false;
+    this.currentUserList = [];
   }
 }
