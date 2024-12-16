@@ -110,7 +110,7 @@ exports.getDashboardData = async (req, res) => {
 
     // Count users with Master's degree
     const masters = await Education.count({
-      where: { Level: 'MASTER\'S' },
+      where: { Level: 'MASTERS' },
       include: [{
         model: User,
         where: userWhereClause,
@@ -120,7 +120,7 @@ exports.getDashboardData = async (req, res) => {
 
     // Count users with Doctorate degree
     const doctorate = await Education.count({
-      where: { Level: 'DOCTORATE' },
+      where: { Level: 'DOCTORAL' },
       include: [{
         model: User,
         where: userWhereClause,
