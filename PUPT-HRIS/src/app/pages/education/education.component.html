@@ -136,10 +136,22 @@
             <ng-container *ngIf="['Post-Baccalaureate', 'Masters', 'Doctoral'].includes(educationForm.get('Level')?.value)">
               <div class="form-control">
                 <label class="label-text">Means of Education Support <span class="text-red-500">*</span></label>
-                <input formControlName="MeansOfEducationSupport" 
-                       class="input input-bordered w-full" 
-                       type="text" 
-                       placeholder="Enter means of support">
+                <div class="space-y-2">
+                  <div class="flex items-center" *ngFor="let support of meansOfSupport">
+                    <input type="checkbox"
+                           [id]="'support-' + support"
+                           [value]="support"
+                           (change)="onSupportChange($event)"
+                           [checked]="isChecked(support)"
+                           class="checkbox checkbox-sm mr-2">
+                    <label [for]="'support-' + support" class="cursor-pointer">{{ support }}</label>
+                  </div>
+                </div>
+                <div *ngIf="educationForm.get('MeansOfEducationSupport')?.invalid && 
+                            educationForm.get('MeansOfEducationSupport')?.touched" 
+                     class="text-red-500 text-sm mt-1">
+                  Please select at least one means of support
+                </div>
               </div>
 
               <div class="form-control">
