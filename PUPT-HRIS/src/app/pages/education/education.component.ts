@@ -27,13 +27,10 @@ export class EducationComponent implements OnInit {
   toastType: 'success' | 'error' | 'warning' = 'success';
 
   levels: string[] = [
-    'ELEMENTARY',
-    'SECONDARY',
-    'VOCATIONAL / TRADE COURSE',
-    'COLLEGE',
-    'GRADUATE STUDIES',
-    `MASTER'S`,
-    'DOCTORATE'
+    'Bachelors Degree',
+    'Post-Baccalaureate',
+    'Masters',
+    'Doctoral'
   ];
 
   showDeletePrompt: boolean = false;
@@ -55,12 +52,13 @@ export class EducationComponent implements OnInit {
     this.educationForm = this.fb.group({
       Level: ['', Validators.required],
       NameOfSchool: ['', Validators.required],
-      BasicEducationDegreeCourse: [''],
-      PeriodOfAttendanceFrom: ['', [Validators.required, this.dateValidator()]],
-      PeriodOfAttendanceTo: ['', [Validators.required, this.dateValidator()]],
-      HighestLevelUnitsEarned: [''],
-      YearGraduated: [''],
-      AcademicHonors: ['']
+      Course: [''],
+      ThesisType: [''],
+      MeansOfEducationSupport: [''],
+      FundingAgency: [''],
+      DurationOfFundingSupport: [''],
+      UnitsEarned: [''],
+      YearGraduated: ['', Validators.required]
     });
 
     this.educationForm.get('PeriodOfAttendanceFrom')?.valueChanges.subscribe(value => {
@@ -68,6 +66,10 @@ export class EducationComponent implements OnInit {
       if (toControl?.value && value && toControl.value < value) {
         toControl.setValue('');
       }
+    });
+
+    this.educationForm.get('Level')?.valueChanges.subscribe(level => {
+      this.updateFormValidation(level);
     });
   }
 
@@ -98,8 +100,6 @@ export class EducationComponent implements OnInit {
       if (education) {
         const formData = {
           ...education,
-          PeriodOfAttendanceFrom: education.PeriodOfAttendanceFrom ? education.PeriodOfAttendanceFrom.toString().split('T')[0] : '',
-          PeriodOfAttendanceTo: education.PeriodOfAttendanceTo ? education.PeriodOfAttendanceTo.toString().split('T')[0] : ''
         };
         
         console.log('Setting form data:', formData);
@@ -226,5 +226,42 @@ export class EducationComponent implements OnInit {
       }
       return null;
     };
+  }
+
+  private updateFormValidation(level: string) {
+    const courseControl = this.educationForm.get('Course');
+    const thesisTypeControl = this.educationForm.get('ThesisType');
+    const meansControl = this.educationForm.get('MeansOfEducationSupport');
+    const fundingControl = this.educationForm.get('FundingAgency');
+    const durationControl = this.educationForm.get('DurationOfFundingSupport');
+    const unitsControl = this.educationForm.get('UnitsEarned');
+
+    // Reset all validations first
+    [courseControl, thesisTypeControl, meansControl, fundingControl, 
+     durationControl, unitsControl].forEach(control => {
+      control?.clearValidators();
+      control?.updateValueAndValidity();
+    });
+
+    switch(level) {
+      case 'Bachelors Degree':
+        courseControl?.setValidators(Validators.required);
+        break;
+      case 'Post-Baccalaureate':
+        [meansControl, fundingControl, durationControl].forEach(control => 
+          control?.setValidators(Validators.required));
+        break;
+      case 'Masters':
+        [thesisTypeControl, meansControl, fundingControl, durationControl].forEach(control => 
+          control?.setValidators(Validators.required));
+        break;
+      case 'Doctoral':
+        [thesisTypeControl, meansControl, fundingControl, durationControl, unitsControl]
+          .forEach(control => control?.setValidators(Validators.required));
+        break;
+    }
+
+    // Update validity
+    this.educationForm.updateValueAndValidity();
   }
 }

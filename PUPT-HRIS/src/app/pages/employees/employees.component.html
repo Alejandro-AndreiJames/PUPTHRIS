@@ -182,24 +182,59 @@
           <table class="table w-full">
             <thead>
               <tr>
-                <th>School Name</th>
                 <th>Level</th>
-                <th>Inclusive Dates of Attendance</th>
+                <th>Name of School</th>
+                <th>Details</th>
+                <th>Additional Information</th>
+                <th>Year Graduated</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngIf="!educationDetails?.length">
-                <td colspan="3" class="text-center">No information entered</td>
+                <td colspan="5" class="text-center">No education records found</td>
               </tr>
               <tr *ngFor="let education of educationDetails">
+                <td>{{ education.Level }}</td>
                 <td>{{ education.NameOfSchool || 'No information entered' }}</td>
-                <td>{{ education.Level || 'No information entered' }}</td>
+                
+                <!-- Dynamic content based on education level -->
                 <td>
-                  {{ (education.PeriodOfAttendanceFrom || education.PeriodOfAttendanceTo) ? 
-                     ((education.PeriodOfAttendanceFrom | date:'yyyy') + ' - ' + 
-                      (education.PeriodOfAttendanceTo | date:'yyyy')) : 
-                     'No information entered' }}
+                  <ng-container [ngSwitch]="education.Level">
+                    <!-- Bachelors Degree -->
+                    <span *ngSwitchCase="'Bachelors Degree'">
+                      Course: {{ education.Course || 'N/A' }}
+                    </span>
+                    
+                    <!-- Masters or Doctoral -->
+                    <span *ngSwitchCase="'Masters'">
+                      Type: {{ education.ThesisType || 'N/A' }}
+                    </span>
+                    
+                    <span *ngSwitchCase="'Doctoral'">
+                      Type: {{ education.ThesisType || 'N/A' }}<br>
+                      Units Earned: {{ education.UnitsEarned || 'N/A' }}
+                    </span>
+                    
+                    <!-- Default case -->
+                    <span *ngSwitchDefault>N/A</span>
+                  </ng-container>
                 </td>
+                
+                <!-- Additional Information -->
+                <td>
+                  <ng-container *ngIf="['Post-Baccalaureate', 'Masters', 'Doctoral'].includes(education.Level)">
+                    <div class="text-sm">
+                      <p><strong>Support:</strong> {{ education.MeansOfEducationSupport || 'N/A' }}</p>
+                      <p><strong>Agency:</strong> {{ education.FundingAgency || 'N/A' }}</p>
+                      <p><strong>Duration:</strong> {{ education.DurationOfFundingSupport || 'N/A' }}</p>
+                    </div>
+                  </ng-container>
+                  <span *ngIf="!['Post-Baccalaureate', 'Masters', 'Doctoral'].includes(education.Level)">
+                    N/A
+                  </span>
+                </td>
+                
+                <td>{{ education.YearGraduated || 'No information entered' }}</td>
               </tr>
             </tbody>
           </table>

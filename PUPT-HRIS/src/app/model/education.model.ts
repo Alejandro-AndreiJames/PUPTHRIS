@@ -1,12 +1,13 @@
 export interface Education {
   EducationID?: number;
   UserID: number;
-  Level: string;
+  Level: 'Bachelors Degree' | 'Post-Baccalaureate' | 'Masters' | 'Doctoral';
   NameOfSchool: string;
-  BasicEducationDegreeCourse: string;
-  PeriodOfAttendanceFrom: Date;
-  PeriodOfAttendanceTo: Date;
-  HighestLevelUnitsEarned: string;
+  Course?: string;  // for Bachelors only
+  ThesisType?: 'Thesis' | 'Non-Thesis';  // for Masters and Doctoral
+  MeansOfEducationSupport?: string;  // for Post-Baccalaureate, Masters, and Doctoral
+  FundingAgency?: string;  // for Post-Baccalaureate, Masters, and Doctoral
+  DurationOfFundingSupport?: string;  // for Post-Baccalaureate, Masters, and Doctoral
+  UnitsEarned?: string;  // for Doctoral only
   YearGraduated: string;
-  AcademicHonors: string;
 }

@@ -217,13 +217,16 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   }
 
   fetchEducationDetails(userId: number): void {
-    this.educationService.getEducationByUser(userId).subscribe(
-      (details) => (this.educationDetails = details),
-      (error) => {
+    this.educationService.getEducationByUser(userId).subscribe({
+      next: (details) => {
+        this.educationDetails = details;
+        console.log('Education details loaded:', details);
+      },
+      error: (error) => {
         console.error('Error fetching education details', error);
         this.educationDetails = null;
       }
-    );
+    });
   }
 
   fetchPersonalDetails(userId: number): void {
