@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CampusContextService } from '../../services/campus-context.service';
-import { Subscription } from 'rxjs';
+import { Subscription, Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { UserService } from '../../services/user.service';
 import { User } from '../../model/user.model';
 import { DepartmentService } from '../../services/department.service';
@@ -101,13 +101,25 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   toastType: 'success' | 'error' | 'warning' = 'success';
   private toastTimeout: any;
 
+  private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
+
   constructor(
     private campusContextService: CampusContextService,
     private userService: UserService,
     private departmentService: DepartmentService,
     private evaluationService: EvaluationService,
     private authService: AuthService
-  ) {}
+  ) {
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.currentPage = 1; // Reset to first page when searching
+      this.loadFaculties();
+    });
+  }
 
   ngOnInit(): void {
     this.campusSubscription = this.campusContextService.getCampusId().subscribe(
@@ -130,6 +142,8 @@ export class EvaluationComponent implements OnInit, OnDestroy {
     if (this.chart) {
       this.chart.destroy();
     }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadFaculties(): void {
@@ -142,7 +156,7 @@ export class EvaluationComponent implements OnInit, OnDestroy {
       page: this.currentPage,
       limit: this.itemsPerPage,
       campusId: this.campusId,
-      role: 'faculty', // Always filter for faculty
+      role: 'faculty',
       departmentId: this.selectedDepartment || undefined,
       employmentType: this.selectedEmploymentType || undefined,
       search: this.searchTerm || undefined
@@ -180,39 +194,41 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   }
 
   paginateUsers(): void {
-    // Since data is already paginated from server, just set it
+    // Since the data is already paginated from the server, 
+    // we just need to set it to paginatedUsers
     this.paginatedUsers = this.filteredUsers;
   }
 
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
-      this.loadFaculties();
+      this.loadFaculties(); // Reload data with new page
     }
   }
 
   previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
-      this.loadFaculties();
+      this.loadFaculties(); // Reload data with new page
     }
   }
 
   setPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
+    if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
-      this.loadFaculties();
+      this.loadFaculties(); // Reload data with new page
     }
   }
 
   applyFilters(): void {
-    this.currentPage = 1;
+    this.currentPage = 1; // Reset to first page
     this.loadFaculties();
   }
 
-  onSearch(): void {
-    this.currentPage = 1;
-    this.loadFaculties();
+  onSearch(event: any): void {
+    const searchValue = event.target.value;
+    this.searchTerm = searchValue;
+    this.searchSubject.next(searchValue);
   }
 
   private initializeAcademicYears() {
@@ -654,13 +670,12 @@ export class EvaluationComponent implements OnInit, OnDestroy {
     return false;
   }
 
-  // Add method to handle department changes
+  // Change handlers
   onDepartmentChange(): void {
     this.currentPage = 1;
     this.loadFaculties();
   }
 
-  // Add method to handle employment type changes
   onEmploymentTypeChange(): void {
     this.currentPage = 1;
     this.loadFaculties();

@@ -8,17 +8,16 @@
     
     <!-- Search bar -->
     <div class="search-container">
-      <div class="search-wrapper">
-        <input type="text" 
-               [(ngModel)]="searchTerm" 
-               (input)="onSearch()"
-               placeholder="Search faculty by name or Fcode..." 
-               class="search-input"
-        >
-        <span class="search-icon">
-          <i class="fas fa-search"></i>
-        </span>
-      </div>
+      <input
+        type="text"
+        [ngModel]="searchTerm"
+        (input)="onSearch($event)"
+        placeholder="Search faculty..."
+        class="search-input"
+      >
+      <span class="search-icon">
+        <i class="fas fa-search"></i>
+      </span>
     </div>
   </div>
 
