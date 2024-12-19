@@ -4,6 +4,7 @@ const { Department, CollegeCampus } = require('../models/associations');
 const Role = require('../models/roleModel');
 const bcrypt = require('bcrypt');
 require('dotenv').config();
+const { Op } = require('sequelize');
 
 // Add this constant at the top of your file
 const ADMIN_ROLE_NAME = 'admin'; // Adjust this if your admin role has a different name
@@ -69,18 +70,35 @@ exports.getUsers = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
     const campusId = req.query.campusId;
+    const departmentId = req.query.departmentId;
+    const employmentType = req.query.employmentType;
+    const search = req.query.search;
+    const role = req.query.role;
 
-    console.log('Query params:', { page, limit, offset, campusId }); // Add this for debugging
-
+    // Build where clause
     let whereClause = { isActive: true };
+    
     if (campusId) {
       whereClause.CollegeCampusID = campusId;
     }
+    
+    if (departmentId) {
+      whereClause.DepartmentID = departmentId;
+    }
+    
+    if (employmentType) {
+      whereClause.EmploymentType = employmentType;
+    }
+    
+    if (search) {
+      whereClause[Op.or] = [
+        { FirstName: { [Op.iLike]: `%${search}%` } },
+        { Surname: { [Op.iLike]: `%${search}%` } },
+        { Fcode: { [Op.iLike]: `%${search}%` } }
+      ];
+    }
 
-    // Get total count first
-    const totalCount = await User.count({ where: whereClause });
-
-    // Then get paginated data
+    // Get users with role filtering
     const users = await User.findAll({
       where: whereClause,
       include: [
@@ -93,22 +111,44 @@ exports.getUsers = async (req, res) => {
           model: Role,
           as: 'Roles',
           through: { attributes: [] },
-          attributes: ['RoleName']
+          ...(role && {
+            where: {
+              RoleName: { [Op.like]: `%${role}%` }
+            }
+          })
         }
       ],
       offset: offset,
       limit: limit,
-      order: [['UserID', 'ASC']] // Add consistent ordering
+      order: [['UserID', 'ASC']],
+      distinct: true
     });
 
-    // Calculate pagination metadata
-    const totalPages = Math.ceil(totalCount / limit);
+    // Get total count
+    const totalCount = await User.count({
+      where: whereClause,
+      include: [
+        {
+          model: Role,
+          as: 'Roles',
+          ...(role && {
+            where: {
+              RoleName: { [Op.like]: `%${role}%` }
+            }
+          })
+        }
+      ],
+      distinct: true
+    });
+
+    console.log('Query executed with role:', role);
+    console.log('Total results:', totalCount);
 
     res.json({
       data: users,
       metadata: {
         totalItems: totalCount,
-        totalPages: totalPages,
+        totalPages: Math.ceil(totalCount / limit),
         currentPage: page,
         itemsPerPage: limit
       }

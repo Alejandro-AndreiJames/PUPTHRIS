@@ -114,20 +114,40 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       return;
     }
     
-    const params = {
+    const params: any = {
       page: this.currentPage,
       limit: this.itemsPerPage,
       campusId: this.campusId
     };
 
-    console.log('Requesting page:', params); // Debug log
+    // Modified role filter logic
+    if (this.selectedRole && this.selectedRole !== 'All Roles') {
+      // Make sure we're using the exact role name as stored in the database
+      params.role = this.selectedRole === 'Staff' ? 'staff' : 
+                    this.selectedRole === 'Faculty' ? 'faculty' : 
+                    this.selectedRole === 'Admin' ? 'admin' : 
+                    this.selectedRole.toLowerCase();
+      
+      console.log('Filtering by role:', params.role); // Debug log
+    }
+
+    if (this.selectedDepartment) {
+      params.departmentId = this.selectedDepartment;
+    }
+    if (this.selectedEmploymentType) {
+      params.employmentType = this.selectedEmploymentType;
+    }
+    if (this.searchTerm) {
+      params.search = this.searchTerm;
+    }
+
+    console.log('Request params:', params); // Debug log
 
     this.userService.getUsers(params).subscribe({
       next: (response) => {
-        console.log('Response:', response); // Debug log
+        console.log('Response:', response);
         this.users = response.data;
         this.filteredUsers = [...this.users];
-        // Use the metadata from the response
         this.totalPages = response.metadata.totalPages;
         this.paginateUsers();
       },
@@ -150,8 +170,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
 
   // Method to paginate users based on the current page
   paginateUsers(): void {
-    // Since the data is already paginated from the server, 
-    // we just need to set it to paginatedUsers
+    // Since data is already paginated from server, just set it
     this.paginatedUsers = this.filteredUsers;
   }
 
@@ -159,7 +178,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
-      this.loadActiveUsers(); // Reload data with new page
+      this.loadActiveUsers();
     }
   }
 
@@ -167,15 +186,15 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
-      this.loadActiveUsers(); // Reload data with new page
+      this.loadActiveUsers();
     }
   }
 
   // Method to set a specific page
   setPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
       this.currentPage = page;
-      this.loadActiveUsers(); // Reload data with new page
+      this.loadActiveUsers();
     }
   }
 
@@ -354,13 +373,13 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   }
 
   applyFilters(): void {
-    this.currentPage = 1; // Reset to first page
+    this.currentPage = 1; // Reset to first page when applying filters
     this.loadActiveUsers();
   }
 
   onSearch(): void {
-    this.currentPage = 1; // Reset to first page
-    this.applyFilters();
+    this.currentPage = 1; // Reset to first page when searching
+    this.loadActiveUsers();
   }
 
   loadDepartments(): void {
@@ -533,5 +552,12 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         this.certifications = [];
       }
     });
+  }
+
+  // Add this method to handle role selection changes
+  onRoleChange(): void {
+    console.log('Selected role:', this.selectedRole); // Debug log
+    this.currentPage = 1; // Reset to first page
+    this.loadActiveUsers();
   }
 }

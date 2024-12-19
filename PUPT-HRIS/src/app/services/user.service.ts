@@ -15,6 +15,16 @@ interface UserResponse {
   }
 }
 
+interface GetUsersParams {
+  page?: number;
+  limit?: number;
+  campusId?: number;
+  departmentId?: string;
+  employmentType?: string;
+  search?: string;
+  role?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -34,17 +44,16 @@ export class UserService {
       .pipe(catchError(this.handleError));
   }
 
-  getUsers(params: { 
-    page?: number; 
-    limit?: number;
-    campusId?: number;
-  }): Observable<UserResponse> {
+  getUsers(params: GetUsersParams): Observable<UserResponse> {
     let url = this.apiUrl;
     const queryParams = new URLSearchParams();
     
-    if (params.page) queryParams.append('page', params.page.toString());
-    if (params.limit) queryParams.append('limit', params.limit.toString());
-    if (params.campusId) queryParams.append('campusId', params.campusId.toString());
+    // Add all params to query string
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && value !== '') {
+        queryParams.append(key, value.toString());
+      }
+    });
     
     url += `?${queryParams.toString()}`;
     console.log('Request URL:', url);

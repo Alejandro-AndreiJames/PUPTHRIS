@@ -136,11 +136,12 @@ export class EvaluationComponent implements OnInit, OnDestroy {
       console.error('Campus ID is null');
       return;
     }
-
+    
     const params = {
       page: this.currentPage,
       limit: this.itemsPerPage,
-      campusId: this.campusId
+      campusId: this.campusId,
+      role: 'faculty'
     };
 
     console.log('Requesting page:', params);
@@ -148,12 +149,7 @@ export class EvaluationComponent implements OnInit, OnDestroy {
     this.userService.getUsers(params).subscribe({
       next: (response) => {
         console.log('Response:', response);
-        this.users = response.data.filter((user: User) => 
-          user.Roles?.some((role: { RoleName: string }) => 
-            role.RoleName.toLowerCase() === 'faculty'
-          )
-        );
-        
+        this.users = response.data;
         this.filteredUsers = [...this.users];
         this.totalPages = response.metadata.totalPages;
         this.paginateUsers();
