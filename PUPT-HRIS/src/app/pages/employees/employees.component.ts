@@ -113,17 +113,28 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       console.error('Campus ID is null');
       return;
     }
-    this.userService.getUsers(this.campusId).subscribe(
-      (data) => {
-        this.users = data;
-        this.filteredUsers = data; // Initialize filteredUsers
-        this.totalPages = Math.ceil(this.users.length / this.itemsPerPage);
+    
+    const params = {
+      page: this.currentPage,
+      limit: this.itemsPerPage,
+      campusId: this.campusId
+    };
+
+    console.log('Requesting page:', params); // Debug log
+
+    this.userService.getUsers(params).subscribe({
+      next: (response) => {
+        console.log('Response:', response); // Debug log
+        this.users = response.data;
+        this.filteredUsers = [...this.users];
+        // Use the metadata from the response
+        this.totalPages = response.metadata.totalPages;
         this.paginateUsers();
       },
-      (error) => {
-        console.error('Error fetching active users', error);
+      error: (error) => {
+        console.error('Error loading users:', error);
       }
-    );
+    });
   }
 
   getRoleName(roles: { RoleName: string }[]): string {
@@ -139,16 +150,16 @@ export class EmployeeComponent implements OnInit, OnDestroy {
 
   // Method to paginate users based on the current page
   paginateUsers(): void {
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-    this.paginatedUsers = this.filteredUsers.slice(start, end);
+    // Since the data is already paginated from the server, 
+    // we just need to set it to paginatedUsers
+    this.paginatedUsers = this.filteredUsers;
   }
 
   // Method to go to the next page
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
-      this.paginateUsers();
+      this.loadActiveUsers(); // Reload data with new page
     }
   }
 
@@ -156,7 +167,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
-      this.paginateUsers();
+      this.loadActiveUsers(); // Reload data with new page
     }
   }
 
@@ -164,7 +175,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   setPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
-      this.paginateUsers();
+      this.loadActiveUsers(); // Reload data with new page
     }
   }
 
@@ -343,72 +354,12 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   }
 
   applyFilters(): void {
-    console.log('Starting filter application with:', {
-      searchTerm: this.searchTerm,
-      selectedRole: this.selectedRole,
-      selectedEmploymentType: this.selectedEmploymentType,
-      selectedDepartment: this.selectedDepartment
-    });
-
-    console.log('Total users before filtering:', this.users.length);
-
-    this.filteredUsers = this.users.filter(user => {
-      console.log('Processing user:', {
-        name: `${user.FirstName} ${user.Surname}`,
-        roles: user.Roles,
-        employmentType: user.EmploymentType,
-        department: user.Department
-      });
-
-      const matchesSearch = !this.searchTerm.trim() || 
-        `${user.FirstName} ${user.MiddleName} ${user.Surname} ${user.NameExtension}`
-          .toLowerCase()
-          .includes(this.searchTerm.toLowerCase()) ||
-        user.Fcode.toLowerCase().includes(this.searchTerm.toLowerCase());
-      console.log('Search match:', matchesSearch);
-
-      const matchesRole = !this.selectedRole || 
-        user.Roles?.some(role => role.RoleName.toLowerCase() === this.selectedRole.toLowerCase());
-      console.log('Role match:', matchesRole);
-
-      const matchesEmploymentType = !this.selectedEmploymentType || 
-        user.EmploymentType.toLowerCase() === this.selectedEmploymentType.toLowerCase();
-      console.log('Employment type match:', {
-        userType: user.EmploymentType,
-        selectedType: this.selectedEmploymentType,
-        matches: matchesEmploymentType
-      });
-
-      const matchesDepartment = !this.selectedDepartment || 
-        (this.selectedDepartment === 'na' ? 
-          !user.Department : 
-          user.Department?.DepartmentName === this.departments.find(d => 
-            d.DepartmentID.toString() === this.selectedDepartment
-          )?.DepartmentName);
-
-      console.log('Department match:', {
-        userDeptName: user.Department?.DepartmentName,
-        selectedDeptId: this.selectedDepartment,
-        selectedDeptName: this.departments.find(d => 
-          d.DepartmentID.toString() === this.selectedDepartment
-        )?.DepartmentName,
-        matches: matchesDepartment
-      });
-
-      const includeUser = matchesSearch && matchesRole && matchesEmploymentType && matchesDepartment;
-      console.log('Final decision for user:', includeUser);
-
-      return includeUser;
-    });
-
-    console.log('Total users after filtering:', this.filteredUsers.length);
-
-    this.currentPage = 1;
-    this.totalPages = Math.ceil(this.filteredUsers.length / this.itemsPerPage);
-    this.paginateUsers();
+    this.currentPage = 1; // Reset to first page
+    this.loadActiveUsers();
   }
 
   onSearch(): void {
+    this.currentPage = 1; // Reset to first page
     this.applyFilters();
   }
 
@@ -445,9 +396,20 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   }
 
   loadUsers(): void {
-    this.userService.getUsers(this.campusId || undefined).subscribe({
-      next: (users) => {
-        this.users = users;
+    if (this.campusId === null) {
+      console.error('Cannot load users: Campus ID is null');
+      return;
+    }
+
+    const params = {
+      page: this.currentPage,
+      limit: this.itemsPerPage,
+      campusId: this.campusId
+    };
+
+    this.userService.getUsers(params).subscribe({
+      next: (response) => {
+        this.users = response.data;
         this.users.forEach(user => this.loadProfileImage(user));
         this.applyFilters();
       },

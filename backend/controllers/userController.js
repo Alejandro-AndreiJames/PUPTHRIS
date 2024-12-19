@@ -68,20 +68,20 @@ exports.getUsers = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
-    const { campusId } = req.query;
+    const campusId = req.query.campusId;
+
+    console.log('Query params:', { page, limit, offset, campusId }); // Add this for debugging
 
     let whereClause = { isActive: true };
     if (campusId) {
       whereClause.CollegeCampusID = campusId;
     }
 
-    // Get total count and paginated data
-    const { count, rows } = await User.findAndCountAll({
-      attributes: [
-        'UserID', 'Fcode', 'FirstName', 'MiddleName', 
-        'Surname', 'NameExtension', 'Email', 
-        'EmploymentType', 'isActive', 'CollegeCampusID'
-      ],
+    // Get total count first
+    const totalCount = await User.count({ where: whereClause });
+
+    // Then get paginated data
+    const users = await User.findAll({
       where: whereClause,
       include: [
         {
@@ -94,35 +94,29 @@ exports.getUsers = async (req, res) => {
           as: 'Roles',
           through: { attributes: [] },
           attributes: ['RoleName']
-        },
-        {
-          model: CollegeCampus,
-          as: 'CollegeCampus',
-          attributes: ['Name']
         }
       ],
-      offset,
-      limit,
+      offset: offset,
+      limit: limit,
+      order: [['UserID', 'ASC']] // Add consistent ordering
     });
 
     // Calculate pagination metadata
-    const totalPages = Math.ceil(count / limit);
+    const totalPages = Math.ceil(totalCount / limit);
 
     res.json({
-      data: rows,
+      data: users,
       metadata: {
-        totalItems: count,
+        totalItems: totalCount,
         totalPages: totalPages,
         currentPage: page,
         itemsPerPage: limit
       }
     });
+
   } catch (error) {
-    console.error('Error fetching users:', error);
-    res.status(500).json({ 
-      message: 'Internal server error', 
-      error: error.message 
-    });
+    console.error('Error in getUsers:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
 

@@ -5,6 +5,16 @@ import { catchError, tap } from 'rxjs/operators';
 import { User } from '../model/user.model';
 import { environment } from '../../environments/environment';
 
+interface UserResponse {
+  data: User[];
+  metadata: {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    itemsPerPage: number;
+  }
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -28,15 +38,7 @@ export class UserService {
     page?: number; 
     limit?: number;
     campusId?: number;
-  }): Observable<{
-    data: User[];
-    metadata: {
-      totalItems: number;
-      totalPages: number;
-      currentPage: number;
-      itemsPerPage: number;
-    }
-  }> {
+  }): Observable<UserResponse> {
     let url = this.apiUrl;
     const queryParams = new URLSearchParams();
     
@@ -45,7 +47,8 @@ export class UserService {
     if (params.campusId) queryParams.append('campusId', params.campusId.toString());
     
     url += `?${queryParams.toString()}`;
-    return this.http.get<any>(url, { headers: this.getHeaders() });
+    console.log('Request URL:', url);
+    return this.http.get<UserResponse>(url, { headers: this.getHeaders() });
   }
 
   getUserById(userId: number): Observable<User> {

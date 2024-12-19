@@ -136,19 +136,32 @@ export class EvaluationComponent implements OnInit, OnDestroy {
       console.error('Campus ID is null');
       return;
     }
-    this.userService.getUsers(this.campusId).subscribe(
-      (data) => {
-        this.users = data.filter(user => 
-          user.Roles?.some(role => role.RoleName.toLowerCase() === 'faculty')
+
+    const params = {
+      page: this.currentPage,
+      limit: this.itemsPerPage,
+      campusId: this.campusId
+    };
+
+    console.log('Requesting page:', params);
+
+    this.userService.getUsers(params).subscribe({
+      next: (response) => {
+        console.log('Response:', response);
+        this.users = response.data.filter((user: User) => 
+          user.Roles?.some((role: { RoleName: string }) => 
+            role.RoleName.toLowerCase() === 'faculty'
+          )
         );
-        this.filteredUsers = this.users;
-        this.totalPages = Math.ceil(this.users.length / this.itemsPerPage);
+        
+        this.filteredUsers = [...this.users];
+        this.totalPages = response.metadata.totalPages;
         this.paginateUsers();
       },
-      (error) => {
-        console.error('Error fetching faculties', error);
+      error: (error) => {
+        console.error('Error fetching faculties:', error);
       }
-    );
+    });
   }
 
   loadDepartments(): void {
@@ -167,58 +180,39 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   }
 
   paginateUsers(): void {
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-    this.paginatedUsers = this.filteredUsers.slice(start, end);
+    // Since the data is already paginated from the server, 
+    // we just need to set it to paginatedUsers
+    this.paginatedUsers = this.filteredUsers;
   }
 
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
-      this.paginateUsers();
+      this.loadFaculties(); // Reload data with new page
     }
   }
 
   previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
-      this.paginateUsers();
+      this.loadFaculties(); // Reload data with new page
     }
   }
 
   setPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
-      this.paginateUsers();
+      this.loadFaculties(); // Reload data with new page
     }
   }
 
   applyFilters(): void {
-    this.filteredUsers = this.users.filter(user => {
-      // Search by name or Fcode
-      const searchText = this.searchTerm.toLowerCase().trim();
-      const matchesSearch = !searchText || 
-        `${user.FirstName} ${user.MiddleName} ${user.Surname} ${user.NameExtension} ${user.Fcode}`
-          .toLowerCase()
-          .includes(searchText);
-
-      const matchesDepartment = !this.selectedDepartment || 
-        user.Department?.DepartmentName === this.departments.find(d => 
-          d.DepartmentID.toString() === this.selectedDepartment
-        )?.DepartmentName;
-
-      const matchesEmploymentType = !this.selectedEmploymentType || 
-        user.EmploymentType?.toLowerCase() === this.selectedEmploymentType.toLowerCase();
-
-      return matchesSearch && matchesDepartment && matchesEmploymentType;
-    });
-
-    this.currentPage = 1;
-    this.totalPages = Math.ceil(this.filteredUsers.length / this.itemsPerPage);
-    this.paginateUsers();
+    this.currentPage = 1; // Reset to first page
+    this.loadFaculties();
   }
 
   onSearch(): void {
+    this.currentPage = 1; // Reset to first page
     this.applyFilters();
   }
 
