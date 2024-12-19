@@ -30,6 +30,7 @@ import { OfficershipMembership } from '../../model/officership-membership.model'
 import { ProfessionalLicense } from '../../model/professional-license.model';
 import { EmploymentInformation } from '../../model/employment-information.model';
 import { Certification } from '../../model/certification.model';
+import { GetUsersParams } from '../../model/get-user-params.model';
 
 @Component({
   selector: 'app-employee',

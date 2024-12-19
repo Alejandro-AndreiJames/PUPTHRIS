@@ -11,6 +11,7 @@ import { AuthService } from '../../services/auth.service';
 import { EvaluationSubmission, FacultyEvaluation } from '../../model/evaluation.model';
 import { EVALUATION_CATEGORIES } from '../../model/evaluation-criteria.model';
 import { Chart } from 'chart.js/auto';
+import { GetUsersParams } from '../../model/get-user-params.model';
 
 // Add this interface to define the return type
 interface RatingDescription {
@@ -137,25 +138,28 @@ export class EvaluationComponent implements OnInit, OnDestroy {
       return;
     }
     
-    const params = {
+    const params: GetUsersParams = {
       page: this.currentPage,
       limit: this.itemsPerPage,
       campusId: this.campusId,
-      role: 'faculty'
+      role: 'faculty', // Always filter for faculty
+      departmentId: this.selectedDepartment || undefined,
+      employmentType: this.selectedEmploymentType || undefined,
+      search: this.searchTerm || undefined
     };
 
-    console.log('Requesting page:', params);
+    console.log('Requesting faculties with params:', params);
 
     this.userService.getUsers(params).subscribe({
       next: (response) => {
-        console.log('Response:', response);
+        console.log('Faculty response:', response);
         this.users = response.data;
         this.filteredUsers = [...this.users];
         this.totalPages = response.metadata.totalPages;
         this.paginateUsers();
       },
       error: (error) => {
-        console.error('Error fetching faculties:', error);
+        console.error('Error loading faculties:', error);
       }
     });
   }
@@ -176,40 +180,39 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   }
 
   paginateUsers(): void {
-    // Since the data is already paginated from the server, 
-    // we just need to set it to paginatedUsers
+    // Since data is already paginated from server, just set it
     this.paginatedUsers = this.filteredUsers;
   }
 
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
-      this.loadFaculties(); // Reload data with new page
+      this.loadFaculties();
     }
   }
 
   previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
-      this.loadFaculties(); // Reload data with new page
+      this.loadFaculties();
     }
   }
 
   setPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
       this.currentPage = page;
-      this.loadFaculties(); // Reload data with new page
+      this.loadFaculties();
     }
   }
 
   applyFilters(): void {
-    this.currentPage = 1; // Reset to first page
+    this.currentPage = 1;
     this.loadFaculties();
   }
 
   onSearch(): void {
-    this.currentPage = 1; // Reset to first page
-    this.applyFilters();
+    this.currentPage = 1;
+    this.loadFaculties();
   }
 
   private initializeAcademicYears() {
@@ -649,5 +652,17 @@ export class EvaluationComponent implements OnInit, OnDestroy {
     }
 
     return false;
+  }
+
+  // Add method to handle department changes
+  onDepartmentChange(): void {
+    this.currentPage = 1;
+    this.loadFaculties();
+  }
+
+  // Add method to handle employment type changes
+  onEmploymentTypeChange(): void {
+    this.currentPage = 1;
+    this.loadFaculties();
   }
 }

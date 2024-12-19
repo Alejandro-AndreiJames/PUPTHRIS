@@ -27,7 +27,7 @@
     <!-- Department Filter -->
     <select 
       [(ngModel)]="selectedDepartment" 
-      (change)="applyFilters()"
+      (change)="onDepartmentChange()"
       class="filter-select"
     >
       <option value="">All Departments</option>
@@ -39,7 +39,7 @@
     <!-- Employment Type Filter -->
     <select 
       [(ngModel)]="selectedEmploymentType" 
-      (change)="applyFilters()"
+      (change)="onEmploymentTypeChange()"
       class="filter-select"
     >
       <option value="">All Employment Types</option>
