@@ -89,12 +89,13 @@ exports.getUsers = async (req, res) => {
     if (employmentType) {
       whereClause.EmploymentType = employmentType;
     }
-    
+
+    // Handle search with MySQL LIKE
     if (search) {
       whereClause[Op.or] = [
-        { FirstName: { [Op.iLike]: `%${search}%` } },
-        { Surname: { [Op.iLike]: `%${search}%` } },
-        { Fcode: { [Op.iLike]: `%${search}%` } }
+        { FirstName: { [Op.like]: `%${search}%` } },
+        { Surname: { [Op.like]: `%${search}%` } },
+        { Fcode: { [Op.like]: `%${search}%` } }
       ];
     }
 
@@ -124,7 +125,7 @@ exports.getUsers = async (req, res) => {
       distinct: true
     });
 
-    // Get total count
+    // Get total count with filters
     const totalCount = await User.count({
       where: whereClause,
       include: [
@@ -140,9 +141,6 @@ exports.getUsers = async (req, res) => {
       ],
       distinct: true
     });
-
-    console.log('Query executed with role:', role);
-    console.log('Total results:', totalCount);
 
     res.json({
       data: users,

@@ -31,6 +31,8 @@ import { ProfessionalLicense } from '../../model/professional-license.model';
 import { EmploymentInformation } from '../../model/employment-information.model';
 import { Certification } from '../../model/certification.model';
 import { GetUsersParams } from '../../model/get-user-params.model';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-employee',
@@ -72,6 +74,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   professionalLicenses: ProfessionalLicense[] | null = null;
   employmentInfo: EmploymentInformation | null = null;
   certifications: Certification[] | null = null;
+  private searchSubject = new Subject<string>();
+  private readonly DEBOUNCE_TIME = 300; // 300ms delay
 
   constructor(
     private campusContextService: CampusContextService,
@@ -88,7 +92,17 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     private professionalLicenseService: ProfessionalLicenseService,
     private employmentInformationService: EmploymentInformationService,
     private certificationService: CertificationService
-  ) {}
+  ) {
+    // Setup search debouncing in constructor
+    this.searchSubject.pipe(
+      debounceTime(this.DEBOUNCE_TIME), // Wait for 300ms pause
+      distinctUntilChanged() // Only emit if value is different from previous
+    ).subscribe(searchTerm => {
+      this.searchTerm = searchTerm;
+      this.currentPage = 1; // Reset to first page
+      this.loadActiveUsers();
+    });
+  }
 
   ngOnInit(): void {
     this.campusSubscription = this.campusContextService.getCampusId().subscribe(
@@ -107,6 +121,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     if (this.campusSubscription) {
       this.campusSubscription.unsubscribe();
     }
+    this.searchSubject.complete();
   }
 
   loadActiveUsers(): void {
@@ -378,9 +393,9 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     this.loadActiveUsers();
   }
 
-  onSearch(): void {
-    this.currentPage = 1; // Reset to first page when searching
-    this.loadActiveUsers();
+  onSearch(event: any): void {
+    const searchTerm = event.target.value;
+    this.searchSubject.next(searchTerm);
   }
 
   loadDepartments(): void {
