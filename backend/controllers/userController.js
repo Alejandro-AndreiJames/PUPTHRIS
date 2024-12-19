@@ -65,6 +65,9 @@ exports.addUser = async (req, res) => {
 
 exports.getUsers = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
     const { campusId } = req.query;
 
     let whereClause = { isActive: true };
@@ -72,18 +75,12 @@ exports.getUsers = async (req, res) => {
       whereClause.CollegeCampusID = campusId;
     }
 
-    const users = await User.findAll({
+    // Get total count and paginated data
+    const { count, rows } = await User.findAndCountAll({
       attributes: [
-        'UserID',
-        'Fcode',
-        'FirstName',
-        'MiddleName',
-        'Surname',
-        'NameExtension',
-        'Email',
-        'EmploymentType',
-        'isActive',
-        'CollegeCampusID'
+        'UserID', 'Fcode', 'FirstName', 'MiddleName', 
+        'Surname', 'NameExtension', 'Email', 
+        'EmploymentType', 'isActive', 'CollegeCampusID'
       ],
       where: whereClause,
       include: [
@@ -94,7 +91,7 @@ exports.getUsers = async (req, res) => {
         },
         {
           model: Role,
-          as: 'Roles', 
+          as: 'Roles',
           through: { attributes: [] },
           attributes: ['RoleName']
         },
@@ -103,13 +100,29 @@ exports.getUsers = async (req, res) => {
           as: 'CollegeCampus',
           attributes: ['Name']
         }
-      ]
+      ],
+      offset,
+      limit,
     });
 
-    res.json(users);
+    // Calculate pagination metadata
+    const totalPages = Math.ceil(count / limit);
+
+    res.json({
+      data: rows,
+      metadata: {
+        totalItems: count,
+        totalPages: totalPages,
+        currentPage: page,
+        itemsPerPage: limit
+      }
+    });
   } catch (error) {
     console.error('Error fetching users:', error);
-    res.status(500).json({ message: 'Internal server error', error: error.message });
+    res.status(500).json({ 
+      message: 'Internal server error', 
+      error: error.message 
+    });
   }
 };
 

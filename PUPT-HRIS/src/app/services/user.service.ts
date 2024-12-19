@@ -24,12 +24,28 @@ export class UserService {
       .pipe(catchError(this.handleError));
   }
 
-  getUsers(campusId?: number): Observable<User[]> {
-    let url = this.apiUrl;
-    if (campusId) {
-      url += `?campusId=${campusId}`;
+  getUsers(params: { 
+    page?: number; 
+    limit?: number;
+    campusId?: number;
+  }): Observable<{
+    data: User[];
+    metadata: {
+      totalItems: number;
+      totalPages: number;
+      currentPage: number;
+      itemsPerPage: number;
     }
-    return this.http.get<User[]>(url, { headers: this.getHeaders() });
+  }> {
+    let url = this.apiUrl;
+    const queryParams = new URLSearchParams();
+    
+    if (params.page) queryParams.append('page', params.page.toString());
+    if (params.limit) queryParams.append('limit', params.limit.toString());
+    if (params.campusId) queryParams.append('campusId', params.campusId.toString());
+    
+    url += `?${queryParams.toString()}`;
+    return this.http.get<any>(url, { headers: this.getHeaders() });
   }
 
   getUserById(userId: number): Observable<User> {
