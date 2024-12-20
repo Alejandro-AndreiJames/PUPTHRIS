@@ -7,6 +7,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CampusContextService } from '../../services/campus-context.service';
 import { Subscription } from 'rxjs';
+import { GetUsersParams } from '../../model/get-user-params.model';
+import { UserResponse } from '../../model/user-response.model';
+import { Role } from '../../model/role.model';
 
 @Component({
   selector: 'app-coordinator-management',
@@ -79,16 +82,30 @@ export class CoordinatorManagementComponent implements OnInit, OnDestroy {
       console.error('Campus ID is null');
       return;
     }
-    this.userManagementService.getAllUsers(this.campusId).subscribe({
-      next: (users) => {
-        this.facultyUsers = users.filter(user => 
-          user.Roles.some(role => role.RoleName.toLowerCase() === 'faculty') && user.isActive
+
+    const params: GetUsersParams = {
+      campusId: this.campusId,
+      role: 'faculty',
+      page: 1,
+      limit: 1000
+    };
+
+    this.userManagementService.getAllUsers(params).subscribe({
+      next: (response: UserResponse) => {
+        this.facultyUsers = response.data.filter((user: User) => 
+          user.Roles.some((role: Role) => 
+            role.RoleName.toLowerCase() === 'faculty'
+          ) && user.isActive
         );
         this.filteredFacultyUsers = [...this.facultyUsers];
       },
       error: (error) => {
-        console.error('Error fetching active faculty users:', error);
-        this.showToastNotification('Error fetching active faculty users', 'error');
+        if (error.status !== 404) {
+          console.error('Error fetching active faculty users:', error);
+          this.showToastNotification('Error fetching active faculty users', 'error');
+        }
+        this.facultyUsers = [];
+        this.filteredFacultyUsers = [];
       }
     });
   }

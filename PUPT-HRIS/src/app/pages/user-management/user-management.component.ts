@@ -7,6 +7,16 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CampusContextService } from '../../services/campus-context.service';
 import { Subscription } from 'rxjs';
 
+interface UserResponse {
+  data: User[];
+  metadata: {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    itemsPerPage: number;
+  }
+}
+
 @Component({
   selector: 'app-user-management',
   templateUrl: './user-management.component.html',
@@ -28,8 +38,10 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   toastType: 'success' | 'error' | 'warning' = 'success';
 
   currentPage: number = 1;
-  itemsPerPage: number = 5;
+  itemsPerPage: number = 10;
+  totalItems: number = 0;
   totalPages: number = 0;
+  loading: boolean = false;
 
   visiblePages: number = 5; // Number of page buttons to show
 
@@ -37,6 +49,11 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   originalUserStates: Map<number, { roles: number[], employmentType: string }> = new Map();
   modifiedUsers: Set<number> = new Set();
+
+  paginatedUsers: User[] = []; // To hold the users for the current page
+
+  selectedEmploymentType: string = '';
+  selectedRole: string = '';
 
   constructor(
     private userManagementService: UserManagementService,
@@ -78,27 +95,32 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   fetchUsers(): void {
     if (this.campusId === null) {
-      console.error('Campus ID is null, cannot fetch users');
+      console.error('Campus ID is null');
       return;
     }
     
-    this.userManagementService.getAllUsers(this.campusId).subscribe({
-      next: (users) => {
-        this.users = users.filter(user => user.CollegeCampusID === this.campusId);
-        this.filteredUsers = this.users;
-        
-        this.originalUserStates.clear();
-        this.users.forEach(user => {
-          this.originalUserStates.set(user.UserID, {
-            roles: user.Roles.map(role => role.RoleID),
-            employmentType: user.EmploymentType
-          });
-        });
-        
-        this.initializePagination();
+    this.loading = true;
+    const params = {
+      page: this.currentPage,
+      limit: this.itemsPerPage,
+      campusId: this.campusId,
+      search: this.searchTerm || '',
+      employmentType: this.selectedEmploymentType || '',
+      role: this.selectedRole || ''
+    };
+
+    this.userManagementService.getAllUsers(params).subscribe({
+      next: (response: UserResponse) => {
+        this.users = response.data;
+        this.filteredUsers = [...this.users];
+        this.paginatedUsers = this.filteredUsers;
+        this.totalItems = response.metadata.totalItems;
+        this.totalPages = response.metadata.totalPages;
+        this.loading = false;
       },
       error: (error) => {
-        console.error('Error fetching users:', error);
+        console.error('Error loading users:', error);
+        this.loading = false;
       }
     });
   }
@@ -135,8 +157,14 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     this.checkForChanges(user);
   }
 
-  onEmploymentTypeChange(user: User): void {
-    this.checkForChanges(user);
+  onEmploymentTypeChange(): void {
+    this.currentPage = 1; // Reset to first page
+    this.fetchUsers();
+  }
+
+  onRoleChange(): void {
+    this.currentPage = 1; // Reset to first page
+    this.fetchUsers();
   }
 
   private checkForChanges(user: User): void {
@@ -258,51 +286,47 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
-      this.updatePaginatedData();
+      this.fetchUsers();
     }
   }
 
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
-      this.updatePaginatedData();
+      this.fetchUsers();
     }
   }
 
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
-      this.updatePaginatedData();
+      this.fetchUsers();
     }
   }
 
   get totalPagesArray(): number[] {
-    const totalPages = Math.ceil(this.users.length / this.itemsPerPage);
-    if (totalPages <= this.visiblePages) {
-      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    const visiblePages = 5;
+    if (this.totalPages <= visiblePages) {
+      return Array.from({ length: this.totalPages }, (_, i) => i + 1);
     }
 
-    let start = Math.max(this.currentPage - Math.floor(this.visiblePages / 2), 1);
-    let end = start + this.visiblePages - 1;
+    let start = Math.max(this.currentPage - Math.floor(visiblePages / 2), 1);
+    let end = start + visiblePages - 1;
 
-    if (end > totalPages) {
-      end = totalPages;
-      start = Math.max(end - this.visiblePages + 1, 1);
+    if (end > this.totalPages) {
+      end = this.totalPages;
+      start = Math.max(end - visiblePages + 1, 1);
     }
 
     return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   }
 
   onSearch(): void {
-    if (!this.searchTerm.trim()) {
-      this.filteredUsers = this.users;
-    } else {
-      this.filteredUsers = this.users.filter(user => 
-        `${user.FirstName} ${user.Surname}`.toLowerCase().includes(this.searchTerm.toLowerCase())
-      );
-    }
-    this.currentPage = 1;
-    this.totalPages = Math.ceil(this.filteredUsers.length / this.itemsPerPage);
-    this.updatePaginatedData();
+    this.currentPage = 1; // Reset to first page
+    this.fetchUsers();
+  }
+
+  getMaxDisplayedItems(): number {
+    return Math.min(this.currentPage * this.itemsPerPage, this.totalItems);
   }
 }
