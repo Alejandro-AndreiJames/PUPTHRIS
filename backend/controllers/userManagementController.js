@@ -3,6 +3,7 @@ const User = require('../models/userModel');
 const Role = require('../models/roleModel');
 const Coordinator = require('../models/coordinatorModel');
 const { Department, CollegeCampus } = require('../models/associations');
+const { Op } = require('sequelize');
 require('dotenv').config();
 
 exports.updateEmploymentType = async (req, res) => {
@@ -88,12 +89,33 @@ exports.getUserDetails = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
   try {
-    const { campusId } = req.query;
-    console.log('Received campusId:', campusId); // Add this log
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    const { campusId, search, departmentId, employmentType, role } = req.query;
 
+    // Build where clause
     let whereClause = {};
+    
     if (campusId) {
       whereClause.CollegeCampusID = campusId;
+    }
+    
+    if (departmentId) {
+      whereClause.DepartmentID = departmentId;
+    }
+    
+    if (employmentType) {
+      whereClause.EmploymentType = employmentType;
+    }
+
+    // Handle search with MySQL LIKE
+    if (search) {
+      whereClause[Op.or] = [
+        { FirstName: { [Op.like]: `%${search}%` } },
+        { Surname: { [Op.like]: `%${search}%` } },
+        { Fcode: { [Op.like]: `%${search}%` } }
+      ];
     }
 
     const users = await User.findAll({
@@ -109,6 +131,11 @@ exports.getAllUsers = async (req, res) => {
           as: 'Roles',
           through: { attributes: [] },
           attributes: ['RoleID', 'RoleName'],
+          ...(role && {
+            where: {
+              RoleName: { [Op.like]: `%${role}%` }
+            }
+          })
         },
         {
           model: CollegeCampus,
@@ -117,11 +144,40 @@ exports.getAllUsers = async (req, res) => {
         },
       ],
       attributes: { include: ['isActive'] },
+      offset: offset,
+      limit: limit,
+      order: [['UserID', 'ASC']],
+      distinct: true
     });
 
-    console.log(`Found ${users.length} users for campus ID ${campusId}`); // Add this log
+    // Get total count with filters
+    const totalCount = await User.count({
+      where: whereClause,
+      include: [
+        {
+          model: Role,
+          as: 'Roles',
+          ...(role && {
+            where: {
+              RoleName: { [Op.like]: `%${role}%` }
+            }
+          })
+        }
+      ],
+      distinct: true
+    });
 
-    res.status(200).json(users);
+    console.log(`Found ${users.length} users for campus ID ${campusId}`);
+
+    res.status(200).json({
+      data: users,
+      metadata: {
+        totalItems: totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        currentPage: page,
+        itemsPerPage: limit
+      }
+    });
   } catch (error) {
     console.error('Error fetching users:', error);
     res.status(500).json({ message: 'Server error' });

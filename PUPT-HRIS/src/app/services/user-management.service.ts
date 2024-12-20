@@ -6,6 +6,26 @@ import { User } from '../model/user.model';
 import { Role } from '../model/role.model';
 import { throwError } from 'rxjs';
 
+interface UserResponse {
+  data: User[];
+  metadata: {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    itemsPerPage: number;
+  }
+}
+
+interface GetUsersParams {
+  page?: number;
+  limit?: number;
+  campusId?: number;
+  departmentId?: string;
+  employmentType?: string;
+  search?: string;
+  role?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -33,9 +53,18 @@ export class UserManagementService {
     return this.http.put(`${this.apiUrl}/roles`, body, { headers: this.getHeaders() });
   }
 
-  getAllUsers(campusId: number): Observable<User[]> {
-    console.log('Fetching users for campus ID:', campusId);
-    return this.http.get<User[]>(`${this.apiUrl}/users?campusId=${campusId}`);
+  getAllUsers(params: GetUsersParams): Observable<UserResponse> {
+    const queryParams = new URLSearchParams();
+    
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && value !== '') {
+        queryParams.append(key, value.toString());
+      }
+    });
+    
+    const url = `${this.apiUrl}/users?${queryParams.toString()}`;
+    console.log('Fetching users with URL:', url);
+    return this.http.get<UserResponse>(url, { headers: this.getHeaders() });
   }
 
   getAllRoles(): Observable<Role[]> {
