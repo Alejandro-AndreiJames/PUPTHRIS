@@ -5,7 +5,8 @@ import { Role } from '../../model/role.model';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CampusContextService } from '../../services/campus-context.service';
-import { Subscription } from 'rxjs';
+import { Subscription, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 interface UserResponse {
   data: User[];
@@ -55,10 +56,22 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   selectedEmploymentType: string = '';
   selectedRole: string = '';
 
+  private searchSubject = new Subject<string>();
+  private readonly DEBOUNCE_TIME = 300; // 300ms delay
+
   constructor(
     private userManagementService: UserManagementService,
     private campusContextService: CampusContextService
-  ) {}
+  ) {
+    this.searchSubject.pipe(
+      debounceTime(this.DEBOUNCE_TIME),
+      distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      this.searchTerm = searchTerm;
+      this.currentPage = 1; // Reset to first page
+      this.fetchUsers();
+    });
+  }
 
   ngOnInit(): void {
     console.log('UserManagementComponent initialized');
@@ -85,6 +98,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     if (this.campusSubscription) {
       this.campusSubscription.unsubscribe();
     }
+    this.searchSubject.complete();
   }
 
   private initializePagination(): void {
@@ -332,9 +346,9 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   }
 
-  onSearch(): void {
-    this.currentPage = 1; // Reset to first page when searching
-    this.fetchUsers(); // This will now use the searchTerm in the API call
+  onSearch(event: any): void {
+    const searchTerm = event.target.value;
+    this.searchSubject.next(searchTerm);
   }
 
   getMaxDisplayedItems(): number {
