@@ -116,6 +116,17 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         this.paginatedUsers = this.filteredUsers;
         this.totalItems = response.metadata.totalItems;
         this.totalPages = response.metadata.totalPages;
+        
+        // Initialize original states for new users
+        this.paginatedUsers.forEach(user => {
+          if (!this.originalUserStates.has(user.UserID)) {
+            this.originalUserStates.set(user.UserID, {
+              roles: user.Roles.map(role => role.RoleID),
+              employmentType: user.EmploymentType
+            });
+          }
+        });
+        
         this.loading = false;
       },
       error: (error) => {
@@ -167,7 +178,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     this.fetchUsers();
   }
 
-  private checkForChanges(user: User): void {
+  public checkForChanges(user: User): void {
     const originalState = this.originalUserStates.get(user.UserID);
     if (!originalState) return;
 
@@ -322,11 +333,67 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   }
 
   onSearch(): void {
-    this.currentPage = 1; // Reset to first page
-    this.fetchUsers();
+    this.currentPage = 1; // Reset to first page when searching
+    this.fetchUsers(); // This will now use the searchTerm in the API call
   }
 
   getMaxDisplayedItems(): number {
     return Math.min(this.currentPage * this.itemsPerPage, this.totalItems);
+  }
+
+  toggleAdminRole(user: User, roleID: number): void {
+    const superadminRole = this.availableRoles.find(r => r.RoleName.toLowerCase() === 'superadmin');
+    const adminRole = this.availableRoles.find(r => r.RoleName.toLowerCase() === 'admin');
+    
+    if (!superadminRole || !adminRole) return;
+
+    // If selecting superadmin, remove admin role
+    if (roleID === superadminRole.RoleID) {
+      user.Roles = user.Roles.filter(role => role.RoleID !== adminRole.RoleID);
+    }
+    // If selecting admin, remove superadmin role
+    else if (roleID === adminRole.RoleID) {
+      user.Roles = user.Roles.filter(role => role.RoleID !== superadminRole.RoleID);
+    }
+
+    // Toggle the selected role
+    if (this.isUserRoleSelected(user, roleID)) {
+      user.Roles = user.Roles.filter(role => role.RoleID !== roleID);
+    } else {
+      const roleToAdd = this.availableRoles.find(role => role.RoleID === roleID);
+      if (roleToAdd) {
+        user.Roles.push(roleToAdd);
+      }
+    }
+    
+    this.checkForChanges(user);
+  }
+
+  toggleStaffRole(user: User, roleID: number): void {
+    const facultyRole = this.availableRoles.find(r => r.RoleName.toLowerCase() === 'faculty');
+    const staffRole = this.availableRoles.find(r => r.RoleName.toLowerCase() === 'staff');
+    
+    if (!facultyRole || !staffRole) return;
+
+    // If selecting faculty, remove staff role
+    if (roleID === facultyRole.RoleID) {
+      user.Roles = user.Roles.filter(role => role.RoleID !== staffRole.RoleID);
+    }
+    // If selecting staff, remove faculty role
+    else if (roleID === staffRole.RoleID) {
+      user.Roles = user.Roles.filter(role => role.RoleID !== facultyRole.RoleID);
+    }
+
+    // Toggle the selected role
+    if (this.isUserRoleSelected(user, roleID)) {
+      user.Roles = user.Roles.filter(role => role.RoleID !== roleID);
+    } else {
+      const roleToAdd = this.availableRoles.find(role => role.RoleID === roleID);
+      if (roleToAdd) {
+        user.Roles.push(roleToAdd);
+      }
+    }
+    
+    this.checkForChanges(user);
   }
 }

@@ -69,14 +69,39 @@
                 {{ user.isActive ? 'Active' : 'Inactive' }}
               </span>
             </td>
-            <td class="p-4">{{ user.EmploymentType || 'Not set' }}</td>
             <td class="p-4">
-              <div class="flex flex-wrap gap-1">
-                <span *ngFor="let role of user.Roles" 
-                      class="badge badge-sm"
-                      [class.badge-primary]="role.RoleName.toLowerCase() === 'admin'">
-                  {{ role.RoleName }}
-                </span>
+              <select [(ngModel)]="user.EmploymentType" 
+                      (change)="checkForChanges(user)"
+                      class="select select-bordered select-sm w-full">
+                <option value="">Select Type</option>
+                <option *ngFor="let type of employmentTypes" [value]="type">
+                  {{ type | titlecase }}
+                </option>
+              </select>
+            </td>
+            <td class="p-4">
+              <div class="space-y-2">
+                <div class="font-semibold text-sm mb-1">Admin Roles:</div>
+                <div class="flex flex-wrap gap-2">
+                  <label *ngFor="let role of getAdminRoles()" class="flex items-center gap-1">
+                    <input type="checkbox"
+                           class="checkbox checkbox-sm"
+                           [checked]="isUserRoleSelected(user, role.RoleID)"
+                           (change)="toggleAdminRole(user, role.RoleID)">
+                    <span class="text-sm">{{ role.RoleName }}</span>
+                  </label>
+                </div>
+                
+                <div class="font-semibold text-sm mb-1">Other Roles:</div>
+                <div class="flex flex-wrap gap-2">
+                  <label *ngFor="let role of getNonAdminRoles()" class="flex items-center gap-1">
+                    <input type="checkbox"
+                           class="checkbox checkbox-sm"
+                           [checked]="isUserRoleSelected(user, role.RoleID)"
+                           (change)="toggleStaffRole(user, role.RoleID)">
+                    <span class="text-sm">{{ role.RoleName }}</span>
+                  </label>
+                </div>
               </div>
             </td>
             <td class="p-4 flex justify-center space-x-2">
