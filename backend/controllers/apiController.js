@@ -2,14 +2,24 @@ const User = require('../models/userModel');
 
 exports.getAllUserCredentials = async (req, res) => {
     try {
-        // Assuming Taguig campus has ID 1 (adjust this based on your actual campus ID)
         const TAGUIG_CAMPUS_ID = 2;
         
         const users = await User.findAll({
             where: {
                 CollegeCampusID: TAGUIG_CAMPUS_ID,
-                isActive: true  // Optionally only get active users
-            }
+                isActive: true
+            },
+            attributes: [
+                'UserID',
+                'Fcode',
+                'isActive',
+                'Surname',
+                'FirstName',
+                'MiddleName',
+                'NameExtension',
+                'Email',
+                'EmploymentType'
+            ]
         });
         
         const credentials = users.map(user => ({
@@ -21,13 +31,12 @@ exports.getAllUserCredentials = async (req, res) => {
             middle_name: user.MiddleName || null,
             suffix_name: user.NameExtension || null,
             email: user.Email,
-            type: user.EmploymentType.toLowerCase(),
-            password: user.PasswordHash
+            type: user.EmploymentType.toLowerCase()
         }));
         
         res.json(credentials);
     } catch (error) {
         console.error('Error:', error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: 'Internal server error' });
     }
 };
