@@ -17,6 +17,7 @@ const ProfessionalLicense = require('./professionalLicenseModel');
 const EmploymentInformation = require('./employmentInformationModel');
 const Certification = require('./certificationModel');
 const PersonalDetails = require('./personalDetailsModel');
+const Ticket = require('./ticketModel');
 
 // CollegeCampus and User associations
 CollegeCampus.hasMany(User, { foreignKey: 'CollegeCampusID', as: 'Users' });
@@ -135,6 +136,27 @@ PersonalDetails.belongsTo(User, {
     as: 'user'
 });
 
+// Add these Ticket associations after your existing associations
+User.hasMany(Ticket, { 
+    foreignKey: 'UserID',
+    as: 'CreatedTickets'
+});
+
+User.hasMany(Ticket, { 
+    foreignKey: 'RespondedBy',
+    as: 'RespondedTickets'
+});
+
+Ticket.belongsTo(User, { 
+    foreignKey: 'UserID',
+    as: 'Creator'
+});
+
+Ticket.belongsTo(User, { 
+    foreignKey: 'RespondedBy',
+    as: 'Responder'
+});
+
 module.exports = { 
     User, 
     Department, 
@@ -152,5 +174,6 @@ module.exports = {
     EmploymentInformation,
     ProfessionalLicense,
     Certification,
-    PersonalDetails
+    PersonalDetails,
+    Ticket
 };
