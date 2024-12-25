@@ -1,1 +1,242 @@
-<p>ticket-list works!</p>
+<div class="container mx-auto p-6">
+  <!-- Superadmin View -->
+  <div *ngIf="isSuperAdmin" class="mb-8">
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-800">Support Tickets Management</h2>
+        <p class="text-gray-600">Manage and respond to user tickets</p>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex justify-center items-center py-8">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>
+
+    <!-- Tickets Table -->
+    <div *ngIf="!isLoading" class="bg-white rounded-lg shadow overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="table w-full">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>User</th>
+              <th>Subject</th>
+              <th>Status</th>
+              <th>Priority</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let ticket of tickets">
+              <td>#{{ ticket.TicketID }}</td>
+              <td>{{ ticket.Creator?.FirstName }} {{ ticket.Creator?.Surname }}</td>
+              <td>{{ ticket.Subject }}</td>
+              <td>
+                <span class="badge" [ngClass]="{
+                  'bg-red-100 text-red-800': ticket.Status === 'open',
+                  'bg-yellow-100 text-yellow-800': ticket.Status === 'in-progress',
+                  'bg-green-100 text-green-800': ticket.Status === 'resolved',
+                  'bg-gray-100 text-gray-800': ticket.Status === 'closed'
+                }">
+                  {{ ticket.Status }}
+                </span>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="{
+                  'bg-red-100 text-red-800': ticket.Priority === 'high',
+                  'bg-yellow-100 text-yellow-800': ticket.Priority === 'medium',
+                  'bg-blue-100 text-blue-800': ticket.Priority === 'low'
+                }">
+                  {{ ticket.Priority }}
+                </span>
+              </td>
+              <td>{{ ticket.CreatedAt | date:'short' }}</td>
+              <td>
+                <button class="btn btn-sm btn-ghost" (click)="respondToTicket(ticket)">
+                  <i class="fas fa-reply"></i>
+                </button>
+              </td>
+            </tr>
+            <!-- Empty State -->
+            <tr *ngIf="tickets.length === 0">
+              <td colspan="7" class="text-center py-8">
+                <p class="text-gray-500">No tickets found</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Regular User View -->
+  <div *ngIf="!isSuperAdmin" class="max-w-2xl mx-auto">
+    <!-- Help Options -->
+    <div class="space-y-4">
+      <h2 class="text-2xl font-bold text-gray-800">How can we help you?</h2>
+      
+      <!-- Help Button 1 -->
+      <button 
+        (click)="showForm('help')"
+        class="w-full p-4 text-left bg-white rounded-lg shadow hover:shadow-md transition-shadow">
+        <div class="flex items-center">
+          <i class="fas fa-question-circle text-primary text-xl mr-3"></i>
+          <div>
+            <h3 class="font-semibold">Help us improve the system</h3>
+            <p class="text-sm text-gray-600">Submit suggestions or report issues</p>
+          </div>
+        </div>
+      </button>
+
+      <!-- Help Button 2 -->
+      <button 
+        (click)="showForm('issue')"
+        class="w-full p-4 text-left bg-white rounded-lg shadow hover:shadow-md transition-shadow">
+        <div class="flex items-center">
+          <i class="fas fa-exclamation-circle text-red-500 text-xl mr-3"></i>
+          <div>
+            <h3 class="font-semibold">Something went wrong</h3>
+            <p class="text-sm text-gray-600">Report a technical problem</p>
+          </div>
+        </div>
+      </button>
+    </div>
+
+    <!-- Ticket Form Dialog -->
+    <dialog #ticketDialog class="modal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg mb-4">
+          {{ formType === 'help' ? 'Help us improve' : 'Report an issue' }}
+        </h3>
+        
+        <form [formGroup]="ticketForm" (ngSubmit)="onSubmit()">
+          <!-- Subject -->
+          <div class="form-control w-full mb-4">
+            <input 
+              type="text" 
+              formControlName="Subject"
+              class="input input-bordered w-full" 
+              [placeholder]="formType === 'help' ? 'What would you like to suggest?' : 'What problem are you experiencing?'"
+            >
+          </div>
+
+          <!-- Description -->
+          <div class="form-control w-full mb-6">
+            <textarea 
+              formControlName="Description"
+              class="textarea textarea-bordered h-32" 
+              [placeholder]="formType === 'help' ? 'Please describe your suggestion in detail' : 'Please describe the issue in detail'"
+            ></textarea>
+          </div>
+
+          <!-- Error Message -->
+          <div *ngIf="error" class="alert alert-error mb-4">
+            <span>{{ error }}</span>
+          </div>
+
+          <!-- Buttons -->
+          <div class="modal-action">
+            <button 
+              type="button" 
+              class="btn btn-ghost"
+              (click)="closeDialog()">
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              [disabled]="ticketForm.invalid || isSubmitting">
+              {{ isSubmitting ? 'Submitting...' : 'Submit' }}
+            </button>
+          </div>
+        </form>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+
+    <!-- Success Toast -->
+    <div *ngIf="showSuccessToast" 
+         class="toast toast-end">
+      <div class="alert alert-success">
+        <i class="fas fa-check-circle"></i>
+        <span>Thank you for your feedback!</span>
+      </div>
+    </div>
+
+    <!-- Response Dialog -->
+    <dialog id="responseDialog" class="modal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg mb-4">
+          Respond to Ticket #{{ selectedTicket?.TicketID }}
+        </h3>
+        
+        <form [formGroup]="responseForm" (ngSubmit)="submitResponse()">
+          <!-- Status -->
+          <div class="form-control w-full mb-4">
+            <label class="label">
+              <span class="label-text">Status</span>
+            </label>
+            <select formControlName="Status" class="select select-bordered w-full">
+              <option value="open">Open</option>
+              <option value="in-progress">In Progress</option>
+              <option value="resolved">Resolved</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
+
+          <!-- Priority -->
+          <div class="form-control w-full mb-4">
+            <label class="label">
+              <span class="label-text">Priority</span>
+            </label>
+            <select formControlName="Priority" class="select select-bordered w-full">
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+
+          <!-- Response -->
+          <div class="form-control w-full mb-6">
+            <label class="label">
+              <span class="label-text">Response</span>
+            </label>
+            <textarea 
+              formControlName="Response"
+              class="textarea textarea-bordered h-32" 
+              placeholder="Enter your response here..."
+            ></textarea>
+          </div>
+
+          <!-- Error Message -->
+          <div *ngIf="error" class="alert alert-error mb-4">
+            <span>{{ error }}</span>
+          </div>
+
+          <!-- Buttons -->
+          <div class="modal-action">
+            <button 
+              type="button" 
+              class="btn btn-ghost"
+              (click)="closeResponseDialog()">
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              [disabled]="responseForm.invalid || isSubmitting">
+              {{ isSubmitting ? 'Submitting...' : 'Submit Response' }}
+            </button>
+          </div>
+        </form>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
+  </div>
+</div>
