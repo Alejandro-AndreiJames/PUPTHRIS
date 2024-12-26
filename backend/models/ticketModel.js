@@ -1,4 +1,4 @@
-const { Sequelize, DataTypes } = require('sequelize');
+const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db.config');
 
 const Ticket = sequelize.define('Ticket', {
@@ -9,14 +9,10 @@ const Ticket = sequelize.define('Ticket', {
   },
   UserID: {
     type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: 'users',
-      key: 'UserID'
-    }
+    allowNull: false
   },
   Subject: {
-    type: DataTypes.STRING(255),
+    type: DataTypes.STRING,
     allowNull: false
   },
   Description: {
@@ -37,14 +33,10 @@ const Ticket = sequelize.define('Ticket', {
   },
   RespondedBy: {
     type: DataTypes.INTEGER,
-    allowNull: true,
-    references: {
-      model: 'users',
-      key: 'UserID'
-    }
+    allowNull: true
   }
 }, {
-  tableName: 'tickets',
+  tableName: 'Tickets',
   timestamps: true,
   createdAt: 'CreatedAt',
   updatedAt: 'UpdatedAt'

@@ -157,6 +157,17 @@ Ticket.belongsTo(User, {
     as: 'Responder'
 });
 
+// Add this association
+UserRole.belongsTo(Role, {
+  foreignKey: 'RoleID',
+  as: 'Role'
+});
+
+Role.hasMany(UserRole, {
+  foreignKey: 'RoleID',
+  as: 'UserRoles'
+});
+
 module.exports = { 
     User, 
     Department, 

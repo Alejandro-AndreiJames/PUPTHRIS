@@ -9,13 +9,14 @@ const roleMiddleware = (allowedRoles) => {
                 where: { UserID: req.user.userId },
                 include: [{
                     model: Role,
+                    as: 'Role',
                     attributes: ['RoleName']
                 }]
             });
 
             // Extract role names
             const roles = userRoles.map(userRole => 
-                userRole.Role.RoleName.toLowerCase()
+                userRole.Role?.RoleName?.toLowerCase() || ''
             );
 
             // Check if user has any of the allowed roles
