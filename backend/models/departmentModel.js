@@ -30,10 +30,20 @@ const Department = sequelize.define('Department', {
       model: 'collegecampuses',
       key: 'CollegeCampusID'
     }
+  },
+  createdAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    defaultValue: Sequelize.literal('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
   }
 }, {
   tableName: 'departments',
-  timestamps: false
+  timestamps: true
 });
 
 module.exports = Department;

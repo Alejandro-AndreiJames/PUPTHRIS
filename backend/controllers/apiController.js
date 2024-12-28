@@ -1,4 +1,5 @@
 const User = require('../models/userModel');
+const Department = require('../models/departmentModel');
 
 exports.getAllUserCredentials = async (req, res) => {
     try {
@@ -35,6 +36,36 @@ exports.getAllUserCredentials = async (req, res) => {
         }));
         
         res.json(credentials);
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+exports.getAllDepartments = async (req, res) => {
+    try {
+        const TAGUIG_CAMPUS_ID = 2;
+        
+        const departments = await Department.findAll({
+            where: {
+                CollegeCampusID: TAGUIG_CAMPUS_ID
+            },
+            attributes: [
+                'DepartmentID',
+                'DepartmentName',
+                'createdAt',
+                'updatedAt'
+            ]
+        });
+        
+        const formattedDepartments = departments.map(dept => ({
+            department_id: dept.DepartmentID,
+            name: dept.DepartmentName,
+            created_at: dept.createdAt,
+            updated_at: dept.updatedAt
+        }));
+        
+        res.json({ department: formattedDepartments });
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ message: 'Internal server error' });
