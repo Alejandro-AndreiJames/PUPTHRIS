@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -29,5 +29,18 @@ export class TicketService {
   // Update ticket
   updateTicket(ticketId: number, updateData: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/${ticketId}`, updateData);
+  }
+
+  // Add delete ticket method
+  deleteTicket(ticketId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${ticketId}`);
+  }
+
+  // Add filter tickets method
+  getFilteredTickets(filters: { status?: string; priority?: string }): Observable<any> {
+    let params = new HttpParams();
+    if (filters.status) params = params.append('status', filters.status);
+    if (filters.priority) params = params.append('priority', filters.priority);
+    return this.http.get(`${this.apiUrl}/all`, { params });
   }
 }

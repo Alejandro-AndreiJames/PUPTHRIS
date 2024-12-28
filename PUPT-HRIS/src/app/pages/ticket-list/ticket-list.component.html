@@ -15,6 +15,52 @@
 
     <!-- Tickets Table -->
     <div class="bg-white rounded-lg shadow-lg p-6">
+      <div class="flex flex-wrap gap-4 mb-4">
+        <!-- Status Filter -->
+        <div class="form-control">
+          <select 
+            [(ngModel)]="statusFilter" 
+            (ngModelChange)="applyFilter('status', $event)"
+            class="select select-bordered"
+            [class.select-primary]="isFilterActive('status')"
+          >
+            <option *ngFor="let option of statusOptions" 
+                    [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Priority Filter -->
+        <div class="form-control">
+          <select 
+            [(ngModel)]="priorityFilter" 
+            (ngModelChange)="applyFilter('priority', $event)"
+            class="select select-bordered"
+            [class.select-primary]="isFilterActive('priority')"
+          >
+            <option *ngFor="let option of priorityOptions" 
+                    [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Reset Filters Button (only show when filters are active) -->
+        <button 
+          *ngIf="getActiveFiltersCount() > 0"
+          class="btn btn-ghost gap-2" 
+          (click)="resetFilters()"
+        >
+          <i class="fas fa-times"></i>
+          Clear Filters ({{ getActiveFiltersCount() }})
+        </button>
+      </div>
+
+      <!-- Loading indicator -->
+      <div *ngIf="isLoading" class="flex justify-center items-center py-4">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
 
       <div class="overflow-x-auto">
         <table class="table w-full">
@@ -55,9 +101,14 @@
               </td>
               <td>{{ ticket.CreatedAt | date:'short' }}</td>
               <td>
-                <button class="btn btn-sm btn-ghost" (click)="viewTicketDetails(ticket)">
-                  <i class="fas fa-eye"></i>
-                </button>
+                <div class="flex gap-2">
+                  <button class="btn btn-sm btn-ghost" (click)="viewTicketDetails(ticket)">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="btn btn-sm btn-error btn-ghost" (click)="deleteTicket(ticket.TicketID)">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
               </td>
             </tr>
             <!-- Empty State -->

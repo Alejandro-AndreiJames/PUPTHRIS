@@ -27,4 +27,11 @@ router.put('/:id',
     ticketController.updateTicket
 );
 
+// Delete ticket (superadmin only)
+router.delete('/:id', 
+    authMiddleware, 
+    roleMiddleware(['superadmin']), 
+    ticketController.deleteTicket
+);
+
 module.exports = router;

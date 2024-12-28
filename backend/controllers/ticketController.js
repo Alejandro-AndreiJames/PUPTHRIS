@@ -34,7 +34,14 @@ const ticketController = {
     // Get all tickets (for superadmin)
     getAllTickets: async (req, res) => {
         try {
+            const { status, priority } = req.query;
+            const whereClause = {};
+
+            if (status) whereClause.Status = status;
+            if (priority) whereClause.Priority = priority;
+
             const tickets = await Ticket.findAll({
+                where: whereClause,
                 include: [{
                     model: User,
                     as: 'Creator',
@@ -108,6 +115,34 @@ const ticketController = {
             res.status(500).json({
                 success: false,
                 message: 'Failed to update ticket'
+            });
+        }
+    },
+
+    // Add delete method
+    deleteTicket: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const ticket = await Ticket.findByPk(id);
+            
+            if (!ticket) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Ticket not found'
+                });
+            }
+
+            await ticket.destroy();
+
+            res.json({
+                success: true,
+                message: 'Ticket deleted successfully'
+            });
+        } catch (error) {
+            console.error('Error deleting ticket:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Failed to delete ticket'
             });
         }
     }
