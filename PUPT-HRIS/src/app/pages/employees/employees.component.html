@@ -10,8 +10,8 @@
     <div class="w-1/3">
       <div class="relative">
         <input type="text" 
-               [(ngModel)]="searchTerm" 
-               (input)="onSearch()"
+               [value]="searchTerm"
+               (input)="onSearch($event)"
                placeholder="Search employee by name or Fcode..." 
                class="w-full py-2 pl-8 pr-4 text-sm rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
         >
@@ -114,13 +114,12 @@
         <a class="tab" [class.tab-active]="activeTab === 'basic'" (click)="setActiveTab('basic')">Basic Details</a>
         <a class="tab" [class.tab-active]="activeTab === 'education'" (click)="setActiveTab('education')">Educational Background</a>
         <a class="tab" [class.tab-active]="activeTab === 'personal'" (click)="setActiveTab('personal')">Personal Details</a>
-        <a class="tab" [class.tab-active]="activeTab === 'contact'" (click)="setActiveTab('contact')">Contact Details</a>
-        <a class="tab" [class.tab-active]="activeTab === 'family'" (click)="setActiveTab('family')">Family Background</a>
-        <a class="tab" [class.tab-active]="activeTab === 'civil'" (click)="setActiveTab('civil')">Civil Service Eligibilities</a>
-        <a class="tab" [class.tab-active]="activeTab === 'learning'" (click)="setActiveTab('learning')">Learning & Development</a>
-        <a class="tab" [class.tab-active]="activeTab === 'work'" (click)="setActiveTab('work')">Work Experience</a>
-        <a class="tab" [class.tab-active]="activeTab === 'voluntary'" (click)="setActiveTab('voluntary')">Voluntary Work</a>
-        <a class="tab" [class.tab-active]="activeTab === 'character'" (click)="setActiveTab('character')">Character References</a>
+        <a class="tab" [class.tab-active]="activeTab === 'trainings'" (click)="setActiveTab('trainings')">Trainings and Seminars</a>
+        <a class="tab" [class.tab-active]="activeTab === 'achievements'" (click)="setActiveTab('achievements')">Outstanding Achievements</a>
+        <a class="tab" [class.tab-active]="activeTab === 'memberships'" (click)="setActiveTab('memberships')">Officership and Memberships</a>
+        <a class="tab" [class.tab-active]="activeTab === 'licenses'" (click)="setActiveTab('licenses')">Professional Licenses</a>
+        <a class="tab" [class.tab-active]="activeTab === 'employment'" (click)="setActiveTab('employment')">Employment Information</a>
+        <a class="tab" [class.tab-active]="activeTab === 'certifications'" (click)="setActiveTab('certifications')">Certifications</a>
       </div>
     </div>
     
@@ -183,24 +182,59 @@
           <table class="table w-full">
             <thead>
               <tr>
-                <th>School Name</th>
                 <th>Level</th>
-                <th>Inclusive Dates of Attendance</th>
+                <th>Name of School</th>
+                <th>Details</th>
+                <th>Additional Information</th>
+                <th>Year Graduated</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngIf="!educationDetails?.length">
-                <td colspan="3" class="text-center">No information entered</td>
+                <td colspan="5" class="text-center">No education records found</td>
               </tr>
               <tr *ngFor="let education of educationDetails">
+                <td>{{ education.Level }}</td>
                 <td>{{ education.NameOfSchool || 'No information entered' }}</td>
-                <td>{{ education.Level || 'No information entered' }}</td>
+                
+                <!-- Dynamic content based on education level -->
                 <td>
-                  {{ (education.PeriodOfAttendanceFrom || education.PeriodOfAttendanceTo) ? 
-                     ((education.PeriodOfAttendanceFrom | date:'yyyy') + ' - ' + 
-                      (education.PeriodOfAttendanceTo | date:'yyyy')) : 
-                     'No information entered' }}
+                  <ng-container [ngSwitch]="education.Level">
+                    <!-- Bachelors Degree -->
+                    <span *ngSwitchCase="'Bachelors Degree'">
+                      Course: {{ education.Course || 'N/A' }}
+                    </span>
+                    
+                    <!-- Masters or Doctoral -->
+                    <span *ngSwitchCase="'Masters'">
+                      Type: {{ education.ThesisType || 'N/A' }}
+                    </span>
+                    
+                    <span *ngSwitchCase="'Doctoral'">
+                      Type: {{ education.ThesisType || 'N/A' }}<br>
+                      Units Earned: {{ education.UnitsEarned || 'N/A' }}
+                    </span>
+                    
+                    <!-- Default case -->
+                    <span *ngSwitchDefault>N/A</span>
+                  </ng-container>
                 </td>
+                
+                <!-- Additional Information -->
+                <td>
+                  <ng-container *ngIf="['Post-Baccalaureate', 'Masters', 'Doctoral'].includes(education.Level)">
+                    <div class="text-sm">
+                      <p><strong>Support:</strong> {{ education.MeansOfEducationSupport || 'N/A' }}</p>
+                      <p><strong>Agency:</strong> {{ education.FundingAgency || 'N/A' }}</p>
+                      <p><strong>Duration:</strong> {{ education.DurationOfFundingSupport || 'N/A' }}</p>
+                    </div>
+                  </ng-container>
+                  <span *ngIf="!['Post-Baccalaureate', 'Masters', 'Doctoral'].includes(education.Level)">
+                    N/A
+                  </span>
+                </td>
+                
+                <td>{{ education.YearGraduated || 'No information entered' }}</td>
               </tr>
             </tbody>
           </table>
@@ -238,223 +272,278 @@
           </table>
         </div>
 
-        <!-- Contact Details Content -->
-        <div *ngIf="activeTab === 'contact'">
-          <table class="table w-full">
-            <tbody>
-              <tr>
-                <td><strong>Telephone Number:</strong></td>
-                <td>{{ contactDetails?.TelephoneNumber || 'No information entered' }}</td>
-              </tr>
-              <tr>
-                <td><strong>Mobile Number:</strong></td>
-                <td>{{ contactDetails?.MobileNumber || 'No information entered' }}</td>
-              </tr>
-              <tr>
-                <td><strong>Email Address:</strong></td>
-                <td>{{ contactDetails?.EmailAddress || 'No information entered' }}</td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- Employment Information Content -->
+        <div *ngIf="activeTab === 'employment'">
+          <div class="card">
+            <div class="card-body">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="info-group">
+                  <label class="font-semibold">Annual Salary:</label>
+                  <p>{{ (employmentInfo && employmentInfo.AnnualSalary) ? 
+                      (employmentInfo.AnnualSalary | currency:'PHP':'symbol-narrow':'1.2-2') : 
+                      'No information entered' }}</p>
+                </div>
+
+                <div class="info-group">
+                  <label class="font-semibold">Salary Grade & Step:</label>
+                  <p>{{ employmentInfo?.SalaryGradeStep || 'No information entered' }}</p>
+                </div>
+
+                <div class="info-group">
+                  <label class="font-semibold">Rate Per Hour:</label>
+                  <p>{{ (employmentInfo && employmentInfo.RatePerHour) ? 
+                      (employmentInfo.RatePerHour | currency:'PHP':'symbol-narrow':'1.2-2') : 
+                      'No information entered' }}</p>
+                </div>
+
+                <div class="info-group">
+                  <label class="font-semibold">Date of Last Promotion:</label>
+                  <p>{{ (employmentInfo && employmentInfo.DateOfLastPromotion) ? 
+                      (employmentInfo.DateOfLastPromotion | date) : 
+                      'No information entered' }}</p>
+                </div>
+
+                <div class="info-group">
+                  <label class="font-semibold">Initial Year of Teaching:</label>
+                  <p>{{ (employmentInfo && employmentInfo.InitialYearOfTeaching) ? 
+                      employmentInfo.InitialYearOfTeaching : 
+                      'No information entered' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="!employmentInfo" class="text-center py-4">
+            <p>No employment information available.</p>
+          </div>
         </div>
 
-        <!-- Family Background & Children Content -->
-        <div *ngIf="activeTab === 'family'">
-          <table class="table w-full">
-            <tbody>
-              <tr>
-                <td><strong>Spouse's Name:</strong></td>
-                <td>{{ (familyBackground?.SpouseFirstName || familyBackground?.SpouseMiddleName || familyBackground?.SpouseLastName) ? 
-                       (familyBackground?.SpouseFirstName + ' ' + familyBackground?.SpouseMiddleName + ' ' + familyBackground?.SpouseLastName).trim() : 
-                       'No information entered' }}</td>
-              </tr>
-              <tr>
-                <td><strong>Spouse's Occupation:</strong></td>
-                <td>{{ familyBackground?.SpouseOccupation || 'No information entered' }}</td>
-              </tr>
-              <tr>
-                <td><strong>Father's Name:</strong></td>
-                <td>{{ (familyBackground?.FatherFirstName || familyBackground?.FatherMiddleName || familyBackground?.FatherLastName) ? 
-                       (familyBackground?.FatherFirstName + ' ' + familyBackground?.FatherMiddleName + ' ' + familyBackground?.FatherLastName).trim() : 
-                       'No information entered' }}</td>
-              </tr>
-              <tr>
-                <td><strong>Mother's Name:</strong></td>
-                <td>{{ (familyBackground?.MotherFirstName || familyBackground?.MotherMiddleName || familyBackground?.MotherLastName) ? 
-                       (familyBackground?.MotherFirstName + ' ' + familyBackground?.MotherMiddleName + ' ' + familyBackground?.MotherLastName).trim() : 
-                       'No information entered' }}</td>
-              </tr>
-            </tbody>
-          </table>
-    
-          <h4 class="font-bold mt-4 mb-2">Children</h4>
+        <!-- Trainings and Seminars Content -->
+        <div *ngIf="activeTab === 'trainings'">
           <table class="table w-full">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Birth Date</th>
+                <th>Title</th>
+                <th>Classification</th>
+                <th>Organizer</th>
+                <th>Date</th>
+                <th>Hours</th>
+                <th>Venue</th>
+                <th>Proof</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngIf="!childrenDetails?.length">
-                <td colspan="2" class="text-center">No information entered</td>
+              <tr *ngIf="!trainingSeminars?.length">
+                <td colspan="7" class="text-center">No trainings or seminars recorded</td>
               </tr>
-              <tr *ngFor="let child of childrenDetails">
-                <td>{{ child.ChildName || 'No information entered' }}</td>
-                <td>{{ child.BirthDate ? (child.BirthDate | date:'longDate') : 'No information entered' }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Civil Service Eligibilities Content -->
-        <div *ngIf="activeTab === 'civil'">
-          <table class="table w-full">
-            <thead>
-              <tr>
-                <th>Career Service</th>
-                <th>Rating</th>
-                <th>Date of Examination</th>
-                <th>Place of Examination</th>
-                <th>License Number</th>
-                <th>License Validity Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngIf="!civilServiceEligibilities?.length">
-                <td colspan="6" class="text-center">No information entered</td>
-              </tr>
-              <tr *ngFor="let eligibility of civilServiceEligibilities">
-                <td>{{ eligibility.CareerService || 'No information entered' }}</td>
-                <td>{{ eligibility.Rating || 'No information entered' }}</td>
-                <td>{{ eligibility.DateOfExamination ? (eligibility.DateOfExamination | date:'longDate') : 'No information entered' }}</td>
-                <td>{{ eligibility.PlaceOfExamination || 'No information entered' }}</td>
-                <td>{{ eligibility.LicenseNumber || 'No information entered' }}</td>
-                <td>{{ eligibility.LicenseValidityDate ? (eligibility.LicenseValidityDate | date:'longDate') : 'No information entered' }}</td>
+              <tr *ngFor="let training of trainingSeminars">
+                <td>{{ training.Title || 'No information entered' }}</td>
+                <td>{{ training.Classification || 'No information entered' }}</td>
+                <td>{{ training.Organizer || 'No information entered' }}</td>
+                <td>
+                  {{ training.DateFrom ? (training.DateFrom | date:'mediumDate') : 'No date' }}
+                  {{ training.DateTo ? ' - ' + (training.DateTo | date:'mediumDate') : '' }}
+                </td>
+                <td>{{ training.NumberOfHours || 'N/A' }}</td>
+                <td>{{ training.Venue || 'No information entered' }}</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Learning & Development Content -->
-        <div *ngIf="activeTab === 'learning'">
+        <!-- Outstanding Achievements Content -->
+        <div *ngIf="activeTab === 'achievements'">
           <table class="table w-full">
             <thead>
               <tr>
-                <th>Title of Learning & Development</th>
+                <th>Nature of Achievement</th>
+                <th>Classification</th>
+                <th>Level</th>
+                <th>Awarding Body</th>
                 <th>Inclusive Dates</th>
-                <th>Number of Hours</th>
-                <th>Type of LD</th>
-                <th>Conducted/Sponsored By</th>
+                <th>Proof</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngIf="!learningDetails?.length">
-                <td colspan="5" class="text-center">No information entered</td>
+              <tr *ngIf="!achievements?.length">
+                <td colspan="6" class="text-center">No achievements recorded</td>
               </tr>
-              <tr *ngFor="let learning of learningDetails">
-                <td>{{ learning.TitleOfLearningDevelopment || 'No information entered' }}</td>
-                <td>{{ (learning.InclusiveDatesFrom && learning.InclusiveDatesTo) ? 
-                       ((learning.InclusiveDatesFrom | date:'longDate') + ' - ' + 
-                        (learning.InclusiveDatesTo | date:'longDate')) : 
-                       'No information entered' }}</td>
-                <td>{{ learning.NumberOfHours || 'No information entered' }}</td>
-                <td>{{ learning.TypeOfLD || 'No information entered' }}</td>
-                <td>{{ learning.ConductedSponsoredBy || 'No information entered' }}</td>
+              <tr *ngFor="let achievement of achievements">
+                <td>{{ achievement.NatureOfAchievement || 'No information entered' }}</td>
+                <td>{{ achievement.Classification || 'No information entered' }}</td>
+                <td>{{ achievement.Level || 'No information entered' }}</td>
+                <td>{{ achievement.AwardingBody || 'No information entered' }}</td>
+                <td>{{ achievement.InclusiveDates || 'No information entered' }}</td>
+                <td>
+                  <ng-container *ngIf="achievement.Proof; else noProof">
+                    <button *ngIf="achievement.ProofType === 'file'" 
+                            (click)="openProofModal(achievement.Proof, achievement.SupportingDocument)" 
+                            class="btn btn-link">
+                      View File
+                    </button>
+                    <a *ngIf="achievement.ProofType === 'link'" 
+                       [href]="achievement.Proof" 
+                       target="_blank" 
+                       class="btn btn-link">
+                      View Link
+                    </a>
+                  </ng-container>
+                  <ng-template #noProof>
+                    No proof available
+                  </ng-template>
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Work Experience Content -->
-        <div *ngIf="activeTab === 'work'">
+        <!-- Memberships Content -->
+        <div *ngIf="activeTab === 'memberships'">
           <table class="table w-full">
             <thead>
               <tr>
-                <th>Position Title</th>
-                <th>Department/Agency/Office/Company</th>
-                <th>Inclusive Dates</th>
-                <th>Monthly Salary</th>
-                <th>Salary/Job/Pay Grade</th>
-                <th>Status of Appointment</th>
-                <th>Govt. Service (Y/N)</th>
+                <th>Organization Name</th>
+                <th>Position</th>
+                <th>Level</th>
+                <th>Classification</th>
+                <th>Inclusive Dates From</th>
+                <th>Inclusive Dates To</th>
+                <th>Proof</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngIf="!workExperiences?.length">
-                <td colspan="7" class="text-center">No information entered</td>
+              <tr *ngIf="!memberships?.length">
+                <td colspan="7" class="text-center">No officership or membership records found</td>
               </tr>
-              <tr *ngFor="let work of workExperiences">
-                <td>{{ work.PositionTitle || 'No information entered' }}</td>
-                <td>{{ work.DepartmentAgencyOfficeCompany || 'No information entered' }}</td>
-                <td>{{ (work.InclusiveDatesFrom && work.InclusiveDatesTo) ? 
-                       ((work.InclusiveDatesFrom | date:'yyyy') + ' - ' + 
-                        (work.InclusiveDatesTo | date:'yyyy')) : 
-                       'No information entered' }}</td>
-                <td>{{ work.MonthlySalary ? (work.MonthlySalary | currency) : 'No information entered' }}</td>
-                <td>{{ work.SalaryJobPayGrade || 'No information entered' }}</td>
-                <td>{{ work.StatusOfAppointment || 'No information entered' }}</td>
-                <td>{{ work.GovtService !== null ? (work.GovtService ? 'Y' : 'N') : 'No information entered' }}</td>
+              <tr *ngFor="let membership of memberships">
+                <td>{{ membership.OrganizationName || 'No information entered' }}</td>
+                <td>{{ membership.Position || 'No information entered' }}</td>
+                <td>{{ membership.Level || 'No information entered' }}</td>
+                <td>{{ membership.Classification || 'No information entered' }}</td>
+                <td>{{ membership.InclusiveDatesFrom ? (membership.InclusiveDatesFrom | date) : 'No date' }}</td>
+                <td>{{ membership.InclusiveDatesTo ? (membership.InclusiveDatesTo | date) : 'No date' }}</td>
+                <td>
+                  <ng-container *ngIf="membership.Proof; else noProof">
+                    <button *ngIf="membership.ProofType === 'file'" 
+                            (click)="openProofModal(membership.Proof, membership.SupportingDocument)" 
+                            class="btn btn-link">
+                      View File
+                    </button>
+                    <a *ngIf="membership.ProofType === 'link'" 
+                       [href]="membership.Proof" 
+                       target="_blank" 
+                       class="btn btn-link">
+                      View Link
+                    </a>
+                  </ng-container>
+                  <ng-template #noProof>
+                    No proof available
+                  </ng-template>
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Voluntary Work Content -->
-        <div *ngIf="activeTab === 'voluntary'">
+        <!-- Professional Licenses Content -->
+        <div *ngIf="activeTab === 'licenses'">
           <table class="table w-full">
             <thead>
               <tr>
-                <th>Organization Name & Address</th>
-                <th>Inclusive Dates</th>
-                <th>Number of Hours</th>
-                <th>Position/Nature of Work</th>
+                <th>Professional License</th>
+                <th>Year Obtained</th>
+                <th>Expiration Date</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngIf="!voluntaryWorks?.length">
-                <td colspan="4" class="text-center">No information entered</td>
+              <tr *ngIf="!professionalLicenses?.length">
+                <td colspan="3" class="text-center">No professional licenses found</td>
               </tr>
-              <tr *ngFor="let voluntary of voluntaryWorks">
-                <td>{{ voluntary.OrganizationNameAddress || 'No information entered' }}</td>
-                <td>{{ (voluntary.InclusiveDatesFrom && voluntary.InclusiveDatesTo) ? 
-                       ((voluntary.InclusiveDatesFrom | date:'yyyy') + ' - ' + 
-                        (voluntary.InclusiveDatesTo | date:'yyyy')) : 
-                       'No information entered' }}</td>
-                <td>{{ voluntary.NumberOfHours || 'No information entered' }}</td>
-                <td>{{ voluntary.PositionNatureOfWork || 'No information entered' }}</td>
+              <tr *ngFor="let license of professionalLicenses">
+                <td>{{ license.ProfessionalLicenseEarned || 'No information entered' }}</td>
+                <td>{{ license.YearObtained || 'No information entered' }}</td>
+                <td>{{ license.ExpirationDate ? (license.ExpirationDate | date) : 'No expiration date' }}</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Character References Content -->
-        <div *ngIf="activeTab === 'character'">
-          <table class="table w-full">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Address</th>
-                <th>Telephone Number</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngIf="!characterReferences?.length">
-                <td colspan="3" class="text-center">No information entered</td>
-              </tr>
-              <tr *ngFor="let reference of characterReferences">
-                <td>{{ reference.Name || 'No information entered' }}</td>
-                <td>{{ reference.Address || 'No information entered' }}</td>
-                <td>{{ reference.TelephoneNumber || 'No information entered' }}</td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- Certifications Content -->
+        <div *ngIf="activeTab === 'certifications'">
+          <div class="card">
+            <div class="card-body">
+              <table class="table w-full">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Issuing Organization</th>
+                    <th>Issue Date</th>
+                    <th>Expiration Date</th>
+                    <th>Credential ID</th>
+                    <th>Credential URL</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngIf="!certifications?.length">
+                    <td colspan="6" class="text-center">No certifications found</td>
+                  </tr>
+                  <tr *ngFor="let cert of certifications">
+                    <td>{{ cert.Name || 'No information entered' }}</td>
+                    <td>{{ cert.IssuingOrganization || 'No information entered' }}</td>
+                    <td>{{ cert.IssueDate ? (cert.IssueDate | date) : 'No information entered' }}</td>
+                    <td>{{ cert.ExpirationDate ? (cert.ExpirationDate | date) : 'No information entered' }}</td>
+                    <td>{{ cert.CredentialID || 'No information entered' }}</td>
+                    <td>
+                      <a *ngIf="cert.CredentialURL" 
+                         [href]="cert.CredentialURL" 
+                         target="_blank" 
+                         class="btn btn-link">
+                        View Credential
+                      </a>
+                      <span *ngIf="!cert.CredentialURL">No URL provided</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div *ngIf="!certifications" class="text-center py-4">
+            <p>Loading certifications...</p>
+          </div>
         </div>
       </div>
 
-      <div class="modal-footer">
+      <!-- Close Button -->
+      <div class="modal-action">
         <button class="btn" (click)="closeModal()">Close</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add this modal for viewing proofs -->
+<div *ngIf="isProofModalOpen" class="modal modal-open">
+  <div class="modal-box">
+    <h3 class="font-bold text-lg">Proof Document</h3>
+    <div class="modal-body">
+      <p class="py-4">
+        <strong>Description:</strong> {{ selectedSupportingDocument || 'No description available' }}
+      </p>
+      <ng-container *ngIf="selectedProofType === 'file'; else linkProof">
+        <ng-container *ngIf="isImage(selectedProofUrl || ''); else pdfTemplate">
+          <img [src]="selectedProofUrl || ''" alt="Proof Image" class="img-fluid" (error)="onProofImageError()" />
+        </ng-container>
+        <ng-template #pdfTemplate>
+          <iframe [src]="selectedProofUrl || ''" width="100%" height="500px"></iframe>
+        </ng-template>
+      </ng-container>
+      <ng-template #linkProof>
+        <a [href]="selectedProofUrl" target="_blank" class="btn btn-primary">Open Link</a>
+      </ng-template>
+    </div>
+    <div class="modal-action">
+      <button class="btn" (click)="closeProofModal()">Close</button>
     </div>
   </div>
 </div>

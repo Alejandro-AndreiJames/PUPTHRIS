@@ -1,0 +1,95 @@
+<div class="container bg-base-200 rounded-lg shadow-lg p-0 mx-auto max-w-7xl mb-10">
+  <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
+    <h1 class="text-2xl font-bold">Professional License</h1>
+  </div>
+
+  <!-- Display Mode -->
+  <ng-container *ngIf="!isEditing; else editForm">
+    <div *ngIf="professionalLicense" class="p-6">
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex flex-col pb-2 border-b border-gray-200">
+            <span class="text-gray-600 font-medium text-sm">Professional License</span>
+            <span class="text-gray-900 font-semibold">{{ professionalLicense.ProfessionalLicenseEarned || 'No Information Entered' }}</span>
+          </div>
+          <div class="flex flex-col pb-2 border-b border-gray-200">
+            <span class="text-gray-600 font-medium text-sm">Year Obtained</span>
+            <span class="text-gray-900 font-semibold">{{ professionalLicense.YearObtained || 'No Information Entered' }}</span>
+          </div>
+          <div class="flex flex-col pb-2 border-b border-gray-200">
+            <span class="text-gray-600 font-medium text-sm">Expiration Date</span>
+            <span class="text-gray-900 font-semibold">{{ (professionalLicense.ExpirationDate | date) || 'No Information Entered' }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end mt-6">
+        <button class="btn bg-black text-white hover:bg-gray-800" (click)="edit()">Edit</button>
+      </div>
+    </div>
+
+    <div *ngIf="!professionalLicense" class="p-6 space-y-6">
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <p class="text-lg">No professional license information available.</p>
+      </div>
+      <div class="flex justify-end">
+        <button class="btn btn-add-info bg-black text-white" (click)="edit()">Add Info</button>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Edit Mode -->
+  <ng-template #editForm>
+    <div class="p-6">
+      <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
+        <p class="font-bold">Note: You are currently editing your Professional License details.</p>
+      </div>
+      <form [formGroup]="professionalLicenseForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <p class="text-sm text-gray-600 mb-4">Note: Fields marked with an asterisk (*) are required.</p>
+
+          <div class="grid grid-cols-2 gap-6">
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Professional License <span class="text-red-500">*</span></span>
+              </label>
+              <input formControlName="ProfessionalLicenseEarned" class="input input-bordered w-full" type="text">
+            </div>
+
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Year Obtained <span class="text-red-500">*</span></span>
+              </label>
+              <input formControlName="YearObtained" class="input input-bordered w-full" type="number">
+            </div>
+
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Expiration Date</span>
+              </label>
+              <input formControlName="ExpirationDate" class="input input-bordered w-full" type="date">
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-end mt-6">
+          <button type="submit" class="btn bg-black text-white hover:bg-gray-800 mr-4">Save</button>
+          <button type="button" class="btn bg-maroon text-white hover:bg-red-900" (click)="cancelEdit()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </ng-template>
+</div>
+
+<!-- Toast Notifications -->
+<div *ngIf="showToast" class="toast toast-end">
+  <div *ngIf="toastType === 'success'" class="alert alert-success">
+    <span>{{ toastMessage }}</span>
+  </div>
+  <div *ngIf="toastType === 'error'" class="alert alert-error">
+    <span>{{ toastMessage }}</span>
+  </div>
+  <div *ngIf="toastType === 'warning'" class="alert alert-warning">
+    <span>{{ toastMessage }}</span>
+  </div>
+</div>

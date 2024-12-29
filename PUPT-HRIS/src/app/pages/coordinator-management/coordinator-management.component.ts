@@ -7,6 +7,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CampusContextService } from '../../services/campus-context.service';
 import { Subscription } from 'rxjs';
+import { GetUsersParams } from '../../model/get-user-params.model';
+import { UserResponse } from '../../model/user-response.model';
+import { Role } from '../../model/role.model';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-coordinator-management',
@@ -29,12 +34,38 @@ export class CoordinatorManagementComponent implements OnInit, OnDestroy {
   filteredDepartments: Department[] = [];
   facultySearchTerm: string = '';
   filteredFacultyUsers: User[] = [];
+  private departmentSearchSubject = new Subject<string>();
+  private facultySearchSubject = new Subject<string>();
+  private readonly DEBOUNCE_TIME = 300;
+  loading: boolean = false;
+  currentPage: number = 1;
+  itemsPerPage: number = 10;
+  totalItems: number = 0;
+  totalPages: number = 0;
+  paginatedFacultyUsers: User[] = [];
 
   constructor(
     private coordinatorService: CoordinatorService,
     private userManagementService: UserManagementService,
     private campusContextService: CampusContextService
-  ) {}
+  ) {
+    this.departmentSearchSubject.pipe(
+      debounceTime(this.DEBOUNCE_TIME),
+      distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      this.searchTerm = searchTerm;
+      this.filterDepartments();
+    });
+
+    this.facultySearchSubject.pipe(
+      debounceTime(this.DEBOUNCE_TIME),
+      distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      this.facultySearchTerm = searchTerm;
+      this.currentPage = 1;
+      this.loadActiveFacultyUsers();
+    });
+  }
 
   ngOnInit(): void {
     this.campusSubscription = this.campusContextService.getCampusId().subscribe(
@@ -53,6 +84,8 @@ export class CoordinatorManagementComponent implements OnInit, OnDestroy {
     if (this.campusSubscription) {
       this.campusSubscription.unsubscribe();
     }
+    this.departmentSearchSubject.complete();
+    this.facultySearchSubject.complete();
   }
 
   loadDepartments(): void {
@@ -79,16 +112,28 @@ export class CoordinatorManagementComponent implements OnInit, OnDestroy {
       console.error('Campus ID is null');
       return;
     }
-    this.userManagementService.getAllUsers(this.campusId).subscribe({
-      next: (users) => {
-        this.facultyUsers = users.filter(user => 
-          user.Roles.some(role => role.RoleName.toLowerCase() === 'faculty') && user.isActive
-        );
-        this.filteredFacultyUsers = [...this.facultyUsers];
+
+    this.loading = true;
+    const params: GetUsersParams = {
+      campusId: this.campusId,
+      role: 'faculty',
+      page: this.currentPage,
+      limit: this.itemsPerPage,
+      search: this.facultySearchTerm
+    };
+
+    this.userManagementService.getAllUsers(params).subscribe({
+      next: (response: UserResponse) => {
+        this.facultyUsers = response.data;
+        this.paginatedFacultyUsers = response.data;
+        this.totalItems = response.metadata.totalItems;
+        this.totalPages = response.metadata.totalPages;
+        this.loading = false;
       },
       error: (error) => {
-        console.error('Error fetching active faculty users:', error);
-        this.showToastNotification('Error fetching active faculty users', 'error');
+        console.error('Error fetching faculty users:', error);
+        this.showToastNotification('Error fetching faculty users', 'error');
+        this.loading = false;
       }
     });
   }
@@ -167,7 +212,17 @@ export class CoordinatorManagementComponent implements OnInit, OnDestroy {
     }, 3000);
   }
 
-  onSearch(): void {
+  onDepartmentSearch(event: any): void {
+    const searchTerm = event.target.value;
+    this.departmentSearchSubject.next(searchTerm);
+  }
+
+  onFacultySearch(event: any): void {
+    const searchTerm = event.target.value;
+    this.facultySearchSubject.next(searchTerm);
+  }
+
+  private filterDepartments(): void {
     if (!this.searchTerm.trim()) {
       this.filteredDepartments = [...this.departments];
       return;
@@ -184,7 +239,7 @@ export class CoordinatorManagementComponent implements OnInit, OnDestroy {
     );
   }
 
-  onFacultySearch(): void {
+  private filterFacultyUsers(): void {
     if (!this.facultySearchTerm.trim()) {
       this.filteredFacultyUsers = [...this.facultyUsers];
       return;
@@ -194,5 +249,30 @@ export class CoordinatorManagementComponent implements OnInit, OnDestroy {
     this.filteredFacultyUsers = this.facultyUsers.filter(user => 
       `${user.FirstName} ${user.Surname}`.toLowerCase().includes(searchTermLower)
     );
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.loadActiveFacultyUsers();
+    }
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.loadActiveFacultyUsers();
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.loadActiveFacultyUsers();
+    }
+  }
+
+  get pageNumbers(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
   }
 }

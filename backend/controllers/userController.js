@@ -4,6 +4,7 @@ const { Department, CollegeCampus } = require('../models/associations');
 const Role = require('../models/roleModel');
 const bcrypt = require('bcrypt');
 require('dotenv').config();
+const { Op } = require('sequelize');
 
 // Add this constant at the top of your file
 const ADMIN_ROLE_NAME = 'admin'; // Adjust this if your admin role has a different name
@@ -65,26 +66,41 @@ exports.addUser = async (req, res) => {
 
 exports.getUsers = async (req, res) => {
   try {
-    const { campusId } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    const campusId = req.query.campusId;
+    const departmentId = req.query.departmentId;
+    const employmentType = req.query.employmentType;
+    const search = req.query.search;
+    const role = req.query.role;
 
+    // Build where clause
     let whereClause = { isActive: true };
+    
     if (campusId) {
       whereClause.CollegeCampusID = campusId;
     }
+    
+    if (departmentId) {
+      whereClause.DepartmentID = departmentId;
+    }
+    
+    if (employmentType) {
+      whereClause.EmploymentType = employmentType;
+    }
 
+    // Handle search with MySQL LIKE
+    if (search) {
+      whereClause[Op.or] = [
+        { FirstName: { [Op.like]: `%${search}%` } },
+        { Surname: { [Op.like]: `%${search}%` } },
+        { Fcode: { [Op.like]: `%${search}%` } }
+      ];
+    }
+
+    // Get users with role filtering
     const users = await User.findAll({
-      attributes: [
-        'UserID',
-        'Fcode',
-        'FirstName',
-        'MiddleName',
-        'Surname',
-        'NameExtension',
-        'Email',
-        'EmploymentType',
-        'isActive',
-        'CollegeCampusID'
-      ],
       where: whereClause,
       include: [
         {
@@ -94,22 +110,51 @@ exports.getUsers = async (req, res) => {
         },
         {
           model: Role,
-          as: 'Roles', 
+          as: 'Roles',
           through: { attributes: [] },
-          attributes: ['RoleName']
-        },
-        {
-          model: CollegeCampus,
-          as: 'CollegeCampus',
-          attributes: ['Name']
+          ...(role && {
+            where: {
+              RoleName: { [Op.like]: `%${role}%` }
+            }
+          })
         }
-      ]
+      ],
+      offset: offset,
+      limit: limit,
+      order: [['UserID', 'ASC']],
+      distinct: true
     });
 
-    res.json(users);
+    // Get total count with filters
+    const totalCount = await User.count({
+      where: whereClause,
+      include: [
+        {
+          model: Role,
+          as: 'Roles',
+          ...(role && {
+            where: {
+              RoleName: { [Op.like]: `%${role}%` }
+            }
+          })
+        }
+      ],
+      distinct: true
+    });
+
+    res.json({
+      data: users,
+      metadata: {
+        totalItems: totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+        currentPage: page,
+        itemsPerPage: limit
+      }
+    });
+
   } catch (error) {
-    console.error('Error fetching users:', error);
-    res.status(500).json({ message: 'Internal server error', error: error.message });
+    console.error('Error in getUsers:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
 

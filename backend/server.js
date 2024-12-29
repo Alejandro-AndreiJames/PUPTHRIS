@@ -5,35 +5,21 @@ const dotenv = require('dotenv');
 const { sequelize } = require('./config/db.config');
 require('./utils/databaseCleanup');
 const checkDatabaseConnection = require('./middleware/databaseConnectionCheck');
-
-
 const educationRoutes = require('./routes/educationRoutes');
-const familybackgroundRoutes = require('./routes/familybackgroundRoutes');
-const civilserviceeligibilityRoutes = require('./routes/civilserviceeligibilityRoutes');
-const workexperienceRoutes = require('./routes/workexperienceRoutes');
 const voluntaryworkRoutes = require('./routes/voluntaryworkRoutes');
-const learningdevelopmentRoutes = require('./routes/learningdevelopmentRoutes');
-const childrenRoutes = require('./routes/childrenRoutes');
 const userRoutes = require('./routes/userRoutes');
 const authRoutes = require('./routes/authRoutes');
 const basicDetailsRoutes = require('./routes/basicDetailsRoutes');
-const contactDetailsRoutes = require('./routes/contactDetailsRoutes');
-const characterReferenceRoutes = require('./routes/characterReferenceRoutes');
-const additionalQuestionRoutes = require('./routes/additionalQuestionRoutes');
 const personalDetailsRoutes = require('./routes/personalDetailsRoutes');
 const trainingsRoutes = require('./routes/trainingsRoute');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const specialSkillRoutes = require('./routes/specialSkillRoutes');
-const nonAcademicRoutes = require('./routes/nonAcademicRoutes');
-const membershipRoutes = require('./routes/membershipRoutes');
 const achievementAwardsRoutes = require('./routes/achievementAwardsRoutes');
 const officershipMembershipRoutes = require('./routes/officerMembershipRoutes');
 const departmentRoutes = require('./routes/departmentRoutes');
 const profileImageRoutes = require('./routes/profileImageRoutes');
-const userSignatureRoutes = require('./routes/userSignatureRoutes');
 const roleRoutes = require('./routes/roleRoutes');
 const userManagementRoutes = require('./routes/userManagementRoutes');
-const pdsRoutes = require('./routes/pdsRoutes'); 
 const coordinatorRoutes = require('./routes/coordinatorRoute');
 const academicRanksRoutes = require('./routes/academicRanksRoute');
 const excelImportRoutes = require('./routes/excelImportRoute');
@@ -44,46 +30,33 @@ const researchPaperRoutes = require('./routes/researchPaperRoutes');
 const bookRoutes = require('./routes/bookRoutes');
 const lectureMaterialRoutes = require('./routes/lectureMaterialRoutes');
 const configRoutes = require('./routes/configRoutes');
+const professionalLicenseRoutes = require('./routes/professionalLicenseRoutes');
+const employmentInformationRoutes = require('./routes/employmentInformationRoutes');
+const certificationRoutes = require('./routes/certificationRoutes');
+const ticketRoutes = require('./routes/ticketRoutes');
 
 require('./models/associations');
-
 dotenv.config();
-
 const app = express();
 const port = process.env.PORT || 3000;
-
 app.use(cors());
 app.use(bodyParser.json());
-
 app.use(checkDatabaseConnection);
-
 app.use('/api/basic-details', basicDetailsRoutes);
 app.use('/api/personaldetails', personalDetailsRoutes);
 app.use('/api/trainings', trainingsRoutes);
-app.use('/api/contact-details', contactDetailsRoutes);
 app.use('/api/education', educationRoutes);
-app.use('/api/familybackground', familybackgroundRoutes);
-app.use('/api/civilservice', civilserviceeligibilityRoutes);
-app.use('/api/workexperience', workexperienceRoutes);
 app.use('/api/voluntarywork', voluntaryworkRoutes);
-app.use('/api/learningdevelopment', learningdevelopmentRoutes);
-app.use('/api/character-reference', characterReferenceRoutes);
-app.use('/api/additionalquestion', additionalQuestionRoutes);
-app.use('/api/children', childrenRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/specialskills', specialSkillRoutes);
-app.use('/api/nonacademic', nonAcademicRoutes);
-app.use('/api/membership', membershipRoutes);
 app.use('/api/achievement-awards', achievementAwardsRoutes);
 app.use('/api/officership-membership', officershipMembershipRoutes);
 app.use('/api/department', departmentRoutes);
 app.use('/api/profile-image', profileImageRoutes);
-app.use('/api/user-signature', userSignatureRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/user-management', userManagementRoutes);
-app.use('/api/pds', pdsRoutes);
 app.use('/api/coordinators', coordinatorRoutes);
 app.use('/api/academic-ranks', academicRanksRoutes);
 app.use('/api/excel-import', excelImportRoutes);
@@ -94,6 +67,10 @@ app.use('/api/research-papers', researchPaperRoutes);
 app.use('/api/books', bookRoutes);
 app.use('/api/lecture-materials', lectureMaterialRoutes);
 app.use('/api/config', configRoutes);
+app.use('/api/professional-licenses', professionalLicenseRoutes);
+app.use('/api/employment-information', employmentInformationRoutes);
+app.use('/api/certifications', certificationRoutes);
+app.use('/api/tickets', ticketRoutes);
 
 sequelize.sync().then(() => {
   console.log('Database synced successfully');
@@ -104,7 +81,6 @@ app.listen(port, () => {
 }).catch(err => {
     console.error('Unable to sync database:', err);
 });
-
 //app.listen(port, () => {
 //   console.log(`Server running at http://localhost:${port}/`);
 //});

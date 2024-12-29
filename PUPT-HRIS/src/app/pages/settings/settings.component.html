@@ -6,6 +6,41 @@
   </div>
 
   <div class="p-6 space-y-8">
+    <!-- Support & Help Section -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <div class="border-b border-gray-200 pb-2 mb-6">
+        <h2 class="text-xl font-semibold text-maroon">Support & Help</h2>
+      </div>
+      
+      <!-- Regular User View -->
+      <div *ngIf="!isSuperAdmin" class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-600">Need help or want to report an issue?</p>
+          <p class="text-sm text-gray-500">Submit a ticket to get assistance from our support team.</p>
+        </div>
+        <button 
+          routerLink="/tickets" 
+          class="btn btn-primary">
+          <i class="fas fa-ticket-alt mr-2"></i>
+          Submit Ticket
+        </button>
+      </div>
+
+      <!-- Superadmin View -->
+      <div *ngIf="isSuperAdmin" class="flex items-center justify-between">
+        <div>
+          <p class="text-gray-600">Manage support tickets</p>
+          <p class="text-sm text-gray-500">View and respond to user support requests.</p>
+        </div>
+        <button 
+          routerLink="/tickets" 
+          class="btn btn-primary">
+          <i class="fas fa-ticket-alt mr-2"></i>
+          Handle Tickets
+        </button>
+      </div>
+    </div>
+
     <!-- Campus Selection Form -->
     <div class="bg-white rounded-lg shadow-md p-6" *ngIf="showCampusSelection()">
       <div class="border-b border-gray-200 pb-2 mb-6">

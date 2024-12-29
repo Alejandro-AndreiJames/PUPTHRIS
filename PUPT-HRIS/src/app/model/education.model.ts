@@ -1,12 +1,13 @@
 export interface Education {
   EducationID?: number;
   UserID: number;
-  Level: string;
+  Level: 'Bachelors Degree' | 'Post-Baccalaureate' | 'Masters' | 'Doctoral';
   NameOfSchool: string;
-  BasicEducationDegreeCourse: string;
-  PeriodOfAttendanceFrom: Date;
-  PeriodOfAttendanceTo: Date;
-  HighestLevelUnitsEarned: string;
+  Course?: string;
+  ThesisType?: 'Thesis' | 'Non-Thesis';
+  MeansOfEducationSupport?: string | string[];
+  FundingAgency?: string;
+  DurationOfFundingSupport?: string;
+  UnitsEarned?: string;
   YearGraduated: string;
-  AcademicHonors: string;
 }

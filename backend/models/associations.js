@@ -1,8 +1,6 @@
 const User = require('./userModel');
 const Department = require('./departmentModel');
 const Coordinator = require('./coordinatorModel');
-const CivilServiceEligibility = require('./CivilServiceEligibility');
-const WorkExperience = require('./workexperienceModel');
 const BasicDetails = require('./basicDetailsModel');
 const AcademicRank = require('./academicRanksModel');
 const CollegeCampus = require('./collegeCampusModel');
@@ -15,6 +13,11 @@ const Education = require('./educationModel');
 const ResearchPaper = require('./researchPaperModel');
 const Book = require('./bookModel');
 const LectureMaterial = require('./lectureMaterialModel');
+const ProfessionalLicense = require('./professionalLicenseModel');
+const EmploymentInformation = require('./employmentInformationModel');
+const Certification = require('./certificationModel');
+const PersonalDetails = require('./personalDetailsModel');
+const Ticket = require('./ticketModel');
 
 // CollegeCampus and User associations
 CollegeCampus.hasMany(User, { foreignKey: 'CollegeCampusID', as: 'Users' });
@@ -35,13 +38,6 @@ User.hasOne(Department, {
     as: 'CoordinatedDepartment'
 });
 
-// Civil Service Eligibility associations
-User.hasMany(CivilServiceEligibility, { foreignKey: 'userID' });
-CivilServiceEligibility.belongsTo(User, { foreignKey: 'userID' });
-
-// Work Experience associations
-User.hasMany(WorkExperience, { foreignKey: 'userID' });
-WorkExperience.belongsTo(User, { foreignKey: 'userID' });
 
 User.hasOne(BasicDetails, { foreignKey: 'UserID' });
 BasicDetails.belongsTo(User, { foreignKey: 'UserID' });
@@ -98,13 +94,84 @@ Book.belongsTo(User, { foreignKey: 'UserID' });
 
 User.hasMany(LectureMaterial, { foreignKey: 'UserID' });
 LectureMaterial.belongsTo(User, { foreignKey: 'UserID' });
+User.hasOne(EmploymentInformation, {
+  foreignKey: 'UserID',
+  as: 'employmentInformation'
+});
+
+User.hasMany(ProfessionalLicense, {
+  foreignKey: 'UserID',
+  as: 'professionalLicenses'
+});
+
+// Employment Information associations
+EmploymentInformation.belongsTo(User, {
+  foreignKey: 'UserID',
+  as: 'user'
+});
+
+// Professional License associations
+ProfessionalLicense.belongsTo(User, {
+  foreignKey: 'UserID',
+  as: 'user'
+});
+
+User.hasMany(Certification, {
+    foreignKey: 'UserID',
+    as: 'certifications'
+});
+
+Certification.belongsTo(User, {
+    foreignKey: 'UserID',
+    as: 'user'
+});
+
+User.hasOne(PersonalDetails, { 
+    foreignKey: 'UserID',
+    as: 'personalDetails'
+});
+
+PersonalDetails.belongsTo(User, {
+    foreignKey: 'UserID',
+    as: 'user'
+});
+
+// Add these Ticket associations after your existing associations
+User.hasMany(Ticket, { 
+    foreignKey: 'UserID',
+    as: 'CreatedTickets'
+});
+
+User.hasMany(Ticket, { 
+    foreignKey: 'RespondedBy',
+    as: 'RespondedTickets'
+});
+
+Ticket.belongsTo(User, { 
+    foreignKey: 'UserID',
+    as: 'Creator'
+});
+
+Ticket.belongsTo(User, { 
+    foreignKey: 'RespondedBy',
+    as: 'Responder'
+});
+
+// Add this association
+UserRole.belongsTo(Role, {
+  foreignKey: 'RoleID',
+  as: 'Role'
+});
+
+Role.hasMany(UserRole, {
+  foreignKey: 'RoleID',
+  as: 'UserRoles'
+});
 
 module.exports = { 
     User, 
     Department, 
     Coordinator, 
-    CivilServiceEligibility, 
-    WorkExperience, 
     BasicDetails, 
     AcademicRank, 
     CollegeCampus, 
@@ -114,5 +181,10 @@ module.exports = {
     Education,
     ResearchPaper,
     Book,
-    LectureMaterial
+    LectureMaterial,
+    EmploymentInformation,
+    ProfessionalLicense,
+    Certification,
+    PersonalDetails,
+    Ticket
 };

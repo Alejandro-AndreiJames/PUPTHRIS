@@ -7,13 +7,18 @@ import { CommonModule } from '@angular/common';
 import { jwtDecode } from 'jwt-decode';
 import { CollegeCampus } from '../../model/college-campus.model';
 import { CampusContextService } from '../../services/campus-context.service';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.css'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule]
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule
+  ]
 })
 export class SettingsComponent implements OnInit {
   changePasswordForm: FormGroup;
@@ -24,6 +29,7 @@ export class SettingsComponent implements OnInit {
   campuses: CollegeCampus[] = [];
   userID: number;
   userRole: string = '';
+  isSuperAdmin = false;
 
   @Output() campusChanged = new EventEmitter<number>();
 
@@ -34,6 +40,7 @@ export class SettingsComponent implements OnInit {
     private collegeCampusService: CollegeCampusService,
     private campusContextService: CampusContextService,
   ) {
+    this.isSuperAdmin = this.authService.hasRole('superadmin');
     this.changePasswordForm = this.fb.group({
       currentPassword: ['', Validators.required],
       newPassword: ['', [Validators.required, Validators.minLength(8)]],

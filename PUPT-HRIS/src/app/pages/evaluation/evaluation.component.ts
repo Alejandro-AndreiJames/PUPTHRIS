@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CampusContextService } from '../../services/campus-context.service';
-import { Subscription } from 'rxjs';
+import { Subscription, Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { UserService } from '../../services/user.service';
 import { User } from '../../model/user.model';
 import { DepartmentService } from '../../services/department.service';
@@ -11,6 +11,7 @@ import { AuthService } from '../../services/auth.service';
 import { EvaluationSubmission, FacultyEvaluation } from '../../model/evaluation.model';
 import { EVALUATION_CATEGORIES } from '../../model/evaluation-criteria.model';
 import { Chart } from 'chart.js/auto';
+import { GetUsersParams } from '../../model/get-user-params.model';
 
 // Add this interface to define the return type
 interface RatingDescription {
@@ -100,13 +101,25 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   toastType: 'success' | 'error' | 'warning' = 'success';
   private toastTimeout: any;
 
+  private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();
+
   constructor(
     private campusContextService: CampusContextService,
     private userService: UserService,
     private departmentService: DepartmentService,
     private evaluationService: EvaluationService,
     private authService: AuthService
-  ) {}
+  ) {
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.currentPage = 1; // Reset to first page when searching
+      this.loadFaculties();
+    });
+  }
 
   ngOnInit(): void {
     this.campusSubscription = this.campusContextService.getCampusId().subscribe(
@@ -129,6 +142,8 @@ export class EvaluationComponent implements OnInit, OnDestroy {
     if (this.chart) {
       this.chart.destroy();
     }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadFaculties(): void {
@@ -136,19 +151,31 @@ export class EvaluationComponent implements OnInit, OnDestroy {
       console.error('Campus ID is null');
       return;
     }
-    this.userService.getUsers(this.campusId).subscribe(
-      (data) => {
-        this.users = data.filter(user => 
-          user.Roles?.some(role => role.RoleName.toLowerCase() === 'faculty')
-        );
-        this.filteredUsers = this.users;
-        this.totalPages = Math.ceil(this.users.length / this.itemsPerPage);
+    
+    const params: GetUsersParams = {
+      page: this.currentPage,
+      limit: this.itemsPerPage,
+      campusId: this.campusId,
+      role: 'faculty',
+      departmentId: this.selectedDepartment || undefined,
+      employmentType: this.selectedEmploymentType || undefined,
+      search: this.searchTerm || undefined
+    };
+
+    console.log('Requesting faculties with params:', params);
+
+    this.userService.getUsers(params).subscribe({
+      next: (response) => {
+        console.log('Faculty response:', response);
+        this.users = response.data;
+        this.filteredUsers = [...this.users];
+        this.totalPages = response.metadata.totalPages;
         this.paginateUsers();
       },
-      (error) => {
-        console.error('Error fetching faculties', error);
+      error: (error) => {
+        console.error('Error loading faculties:', error);
       }
-    );
+    });
   }
 
   loadDepartments(): void {
@@ -167,59 +194,41 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   }
 
   paginateUsers(): void {
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-    this.paginatedUsers = this.filteredUsers.slice(start, end);
+    // Since the data is already paginated from the server, 
+    // we just need to set it to paginatedUsers
+    this.paginatedUsers = this.filteredUsers;
   }
 
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
-      this.paginateUsers();
+      this.loadFaculties(); // Reload data with new page
     }
   }
 
   previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
-      this.paginateUsers();
+      this.loadFaculties(); // Reload data with new page
     }
   }
 
   setPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
-      this.paginateUsers();
+      this.loadFaculties(); // Reload data with new page
     }
   }
 
   applyFilters(): void {
-    this.filteredUsers = this.users.filter(user => {
-      // Search by name or Fcode
-      const searchText = this.searchTerm.toLowerCase().trim();
-      const matchesSearch = !searchText || 
-        `${user.FirstName} ${user.MiddleName} ${user.Surname} ${user.NameExtension} ${user.Fcode}`
-          .toLowerCase()
-          .includes(searchText);
-
-      const matchesDepartment = !this.selectedDepartment || 
-        user.Department?.DepartmentName === this.departments.find(d => 
-          d.DepartmentID.toString() === this.selectedDepartment
-        )?.DepartmentName;
-
-      const matchesEmploymentType = !this.selectedEmploymentType || 
-        user.EmploymentType?.toLowerCase() === this.selectedEmploymentType.toLowerCase();
-
-      return matchesSearch && matchesDepartment && matchesEmploymentType;
-    });
-
-    this.currentPage = 1;
-    this.totalPages = Math.ceil(this.filteredUsers.length / this.itemsPerPage);
-    this.paginateUsers();
+    this.currentPage = 1; // Reset to first page
+    this.loadFaculties();
   }
 
-  onSearch(): void {
-    this.applyFilters();
+  onSearch(event: any): void {
+    const searchValue = event.target.value;
+    this.searchTerm = searchValue;
+    this.searchSubject.next(searchValue);
   }
 
   private initializeAcademicYears() {
@@ -659,5 +668,16 @@ export class EvaluationComponent implements OnInit, OnDestroy {
     }
 
     return false;
+  }
+
+  // Change handlers
+  onDepartmentChange(): void {
+    this.currentPage = 1;
+    this.loadFaculties();
+  }
+
+  onEmploymentTypeChange(): void {
+    this.currentPage = 1;
+    this.loadFaculties();
   }
 }

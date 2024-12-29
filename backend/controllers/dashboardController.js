@@ -11,19 +11,11 @@ const VoluntaryWork = require('../models/voluntaryworkModel');
 const OfficerMembership = require('../models/officerMembershipModel');
 const PersonalDetails = require('../models/personalDetailsModel');
 const Education = require('../models/educationModel');
-const WorkExperience = require('../models/workexperienceModel');
-const ContactDetails = require('../models/contactDetailsModel');
-const FamilyBackground = require('../models/familybackgroundModel');
-const Children = require('../models/childrenModel');
-const UserSignatures = require('../models/userSignaturesModel');
 const ProfileImage = require('../models/profileImageModel');
 const SpecialSkill = require('../models/specialSkillModel');
-const Membership = require('../models/membershipModel');
-const CivilServiceEligibility = require('../models/CivilServiceEligibility');
-const LearningDevelopment = require('../models/learningdevelopmentModel');
-const AdditionalQuestion = require('../models/additionalQuestionModel');
-const CharacterReference = require('../models/characterReferenceModel');
 const moment = require('moment');
+const EmploymentInformation = require('../models/employmentInformationModel');
+const ProfessionalLicense = require('../models/professionalLicenseModel');
 
 exports.getDashboardData = async (req, res) => {
   try {
@@ -120,7 +112,7 @@ exports.getDashboardData = async (req, res) => {
 
     // Count users with Master's degree
     const masters = await Education.count({
-      where: { Level: 'MASTER\'S' },
+      where: { Level: 'MASTERS' },
       include: [{
         model: User,
         where: userWhereClause,
@@ -130,7 +122,7 @@ exports.getDashboardData = async (req, res) => {
 
     // Count users with Doctorate degree
     const doctorate = await Education.count({
-      where: { Level: 'DOCTORATE' },
+      where: { Level: 'DOCTORAL' },
       include: [{
         model: User,
         where: userWhereClause,
@@ -299,20 +291,10 @@ exports.getProfileCompletion = async (req, res) => {
     const specialSkills = await SpecialSkill.findAll({ where: { userID: userId } });
     const voluntaryWork = await VoluntaryWork.findAll({ where: { userID: userId } });
     const achievementAwards = await AchievementAward.findAll({ where: { UserID: userId } });
-    const workExperience = await WorkExperience.findAll({ where: { userID: userId } });
-    const userSignatures = await UserSignatures.findOne({ where: { UserID: userId } });
-    const contactDetails = await ContactDetails.findOne({ where: { UserID: userId } });
     const personalDetails = await PersonalDetails.findOne({ where: { UserID: userId } });
     const officershipMembership = await OfficerMembership.findAll({ where: { UserID: userId } });
-    const familyBackground = await FamilyBackground.findOne({ where: { UserID: userId } });
-    const characterReference = await CharacterReference.findAll({ where: { UserID: userId } });
-    const additionalQuestion = await AdditionalQuestion.findOne({ where: { UserID: userId } });
-    const learningDevelopment = await LearningDevelopment.findAll({ where: { UserID: userId } });
     const profileImage = await ProfileImage.findOne({ where: { UserID: userId } });
     const academicRank = await AcademicRank.findOne({ where: { UserID: userId } });
-    const membership = await Membership.findAll({ where: { userID: userId } });
-    const civilServiceEligibility = await CivilServiceEligibility.findAll({ where: { userID: userId } });
-    const children = await Children.findAll({ where: { UserID: userId } });
     const education = await Education.findAll({ where: { UserID: userId } });
 
     // Define the total number of sections
@@ -324,21 +306,11 @@ exports.getProfileCompletion = async (req, res) => {
     if (basicDetails) completedSections++; else incompleteSections.push('Add your basic details');
     if (personalDetails) completedSections++; else incompleteSections.push('Add your personal details');
     if (education.length > 0) completedSections++; else incompleteSections.push('Add your education details');
-    if (workExperience.length > 0) completedSections++; else incompleteSections.push('Add your work experience');
-    if (contactDetails) completedSections++; else incompleteSections.push('Add your contact details');
-    if (familyBackground) completedSections++; else incompleteSections.push('Add your family background');
-    if (children.length > 0) completedSections++; else incompleteSections.push('Add your children details');
-    if (userSignatures) completedSections++; else incompleteSections.push('Add your signature');
     if (profileImage) completedSections++; else incompleteSections.push('Add your profile image');
     if (academicRank) completedSections++; else incompleteSections.push('Add your academic rank');
-    if (membership.length > 0) completedSections++; else incompleteSections.push('Add your memberships');
-    if (civilServiceEligibility.length > 0) completedSections++; else incompleteSections.push('Add your civil service eligibility');
-    if (additionalQuestion) completedSections++; else incompleteSections.push('Answer additional questions');
-    if (learningDevelopment.length > 0) completedSections++; else incompleteSections.push('Add your learning and development');
     if (specialSkills.length > 0) completedSections++; else incompleteSections.push('Add your special skills');
     if (voluntaryWork.length > 0) completedSections++; else incompleteSections.push('Add your voluntary work');
     if (achievementAwards.length > 0) completedSections++; else incompleteSections.push('Add your achievement awards');
-    if (characterReference.length > 0) completedSections++; else incompleteSections.push('Add your character references');
     if (officershipMembership.length > 0) completedSections++; else incompleteSections.push('Add your officership memberships');
 
     // Calculate the completion percentage
@@ -348,5 +320,455 @@ exports.getProfileCompletion = async (req, res) => {
   } catch (error) {
     console.error('Error calculating profile completion:', error);
     res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+exports.getGovernmentIdCounts = async (req, res) => {
+  try {
+    const { campusId } = req.query;
+
+    const userWhereClause = {
+      isActive: true,
+      ...(campusId && { CollegeCampusID: campusId })
+    };
+
+    const gsisCounts = await User.count({
+      where: userWhereClause,
+      include: [{
+        model: PersonalDetails,
+        as: 'personalDetails',
+        where: {
+          GSISNumber: {
+            [Op.and]: {
+              [Op.ne]: null,
+              [Op.ne]: ''
+            }
+          }
+        },
+        required: true
+      }]
+    });
+
+    const pagIbigCounts = await User.count({
+      where: userWhereClause,
+      include: [{
+        model: PersonalDetails,
+        as: 'personalDetails',
+        where: {
+          PagIbigNumber: {
+            [Op.and]: {
+              [Op.ne]: null,
+              [Op.ne]: ''
+            }
+          }
+        },
+        required: true
+      }]
+    });
+
+    const philHealthCounts = await User.count({
+      where: userWhereClause,
+      include: [{
+        model: PersonalDetails,
+        as: 'personalDetails',
+        where: {
+          PhilHealthNumber: {
+            [Op.and]: {
+              [Op.ne]: null,
+              [Op.ne]: ''
+            }
+          }
+        },
+        required: true
+      }]
+    });
+
+    const sssCounts = await User.count({
+      where: userWhereClause,
+      include: [{
+        model: PersonalDetails,
+        as: 'personalDetails',
+        where: {
+          SSSNumber: {
+            [Op.and]: {
+              [Op.ne]: null,
+              [Op.ne]: ''
+            }
+          }
+        },
+        required: true
+      }]
+    });
+
+    const tinCounts = await User.count({
+      where: userWhereClause,
+      include: [{
+        model: PersonalDetails,
+        as: 'personalDetails',
+        where: {
+          TINNumber: {
+            [Op.and]: {
+              [Op.ne]: null,
+              [Op.ne]: ''
+            }
+          }
+        },
+        required: true
+      }]
+    });
+
+    const agencyEmployeeCounts = await User.count({
+      where: userWhereClause,
+      include: [{
+        model: PersonalDetails,
+        as: 'personalDetails',
+        where: {
+          AgencyEmployeeNumber: {
+            [Op.and]: {
+              [Op.ne]: null,
+              [Op.ne]: ''
+            }
+          }
+        },
+        required: true
+      }]
+    });
+
+    res.status(200).json({
+      governmentIds: {
+        gsis: gsisCounts,
+        pagIbig: pagIbigCounts,
+        philHealth: philHealthCounts,
+        sss: sssCounts,
+        tin: tinCounts,
+        agencyEmployee: agencyEmployeeCounts
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching government ID counts:', error);
+    res.status(500).json({ 
+      message: 'Error fetching government ID counts', 
+      error: error.message 
+    });
+  }
+};
+
+exports.getFemaleUsers = async (req, res) => {
+  try {
+    const { campusId } = req.query;
+
+    const femaleUsers = await User.findAll({
+      attributes: ['UserID', 'EmploymentType', 'Fcode'],
+      where: {
+        isActive: true,
+        ...(campusId && { CollegeCampusID: campusId })
+      },
+      include: [
+        {
+          model: BasicDetails,
+          where: { Sex: 'Female' },
+          required: true,
+          attributes: ['LastName', 'FirstName', 'MiddleInitial']
+        },
+        {
+          model: Department,
+          as: 'Department',
+          attributes: ['DepartmentName']
+        }
+      ],
+      order: [
+        [BasicDetails, 'LastName', 'ASC'],
+        [BasicDetails, 'FirstName', 'ASC']
+      ]
+    });
+
+    const detailedUsers = await getUserDetailsWithEducation(femaleUsers);
+    res.status(200).json(detailedUsers);
+  } catch (error) {
+    console.error('Error fetching female users:', error);
+    res.status(500).json({ message: 'Error fetching female users', error: error.message });
+  }
+};
+
+exports.getMaleUsers = async (req, res) => {
+  try {
+    const { campusId } = req.query;
+    console.log('Fetching male users for campus:', campusId);
+
+    const maleUsers = await User.findAll({
+      attributes: ['UserID', 'EmploymentType', 'Fcode'],
+      where: {
+        isActive: true,
+        ...(campusId && { CollegeCampusID: campusId })
+      },
+      include: [
+        {
+          model: BasicDetails,
+          where: { Sex: 'Male' },
+          required: true,
+          attributes: ['LastName', 'FirstName', 'MiddleInitial']
+        },
+        {
+          model: Department,
+          as: 'Department',
+          attributes: ['DepartmentName']
+        }
+      ],
+      order: [
+        [BasicDetails, 'LastName', 'ASC'],
+        [BasicDetails, 'FirstName', 'ASC']
+      ]
+    });
+
+    const detailedUsers = await getUserDetailsWithEducation(maleUsers);
+    res.status(200).json(detailedUsers);
+  } catch (error) {
+    console.error('Error fetching male users:', error);
+    res.status(500).json({ message: 'Error fetching male users', error: error.message });
+  }
+};
+
+// Helper function to format education details
+const getEducationDetails = async (userId) => {
+  const education = await Education.findAll({
+    where: { UserID: userId },
+    order: [['YearGraduated', 'DESC']]
+  });
+
+  return {
+    masters: education.find(e => e.Level === 'Masters'),
+    doctoral: education.find(e => e.Level === 'Doctoral')
+  };
+};
+
+// Helper function to get employment information
+const getEmploymentInfo = async (userId) => {
+  return await EmploymentInformation.findOne({
+    where: { UserID: userId }
+  });
+};
+
+// Helper function to get academic rank
+const getAcademicRank = async (userId) => {
+  return await AcademicRank.findOne({
+    where: { UserID: userId }
+  });
+};
+
+// Helper function to get professional license
+const getProfessionalLicense = async (userId) => {
+  return await ProfessionalLicense.findOne({
+    where: { UserID: userId }
+  });
+};
+
+// Update the existing user query functions to include detailed information
+const getUserDetailsWithEducation = async (users) => {
+  const detailedUsers = await Promise.all(users.map(async (user) => {
+    const educationDetails = await getEducationDetails(user.UserID);
+    const employmentInfo = await getEmploymentInfo(user.UserID);
+    const academicRank = await getAcademicRank(user.UserID);
+    const license = await getProfessionalLicense(user.UserID);
+    const basicDetails = user.BasicDetail || {};
+
+    return {
+      id: user.UserID,
+      name: `${basicDetails.LastName || ''}, ${basicDetails.FirstName || ''} ${basicDetails.MiddleInitial || ''}`.trim(),
+      fcode: user.Fcode || 'N/A',
+      department: user.Department?.DepartmentName || 'N/A',
+      employmentType: user.EmploymentType || 'N/A',
+      rank: academicRank?.Rank || 'N/A',
+      initialEmploymentDate: employmentInfo?.DateHired || 'N/A',
+      licenseNumber: license?.LicenseNumber || 'N/A',
+      education: {
+        masters: educationDetails.masters ? {
+          school: educationDetails.masters.NameOfSchool,
+          graduationDate: educationDetails.masters.YearGraduated
+        } : null,
+        doctoral: educationDetails.doctoral ? {
+          school: educationDetails.doctoral.NameOfSchool,
+          graduationDate: educationDetails.doctoral.YearGraduated
+        } : null
+      }
+    };
+  }));
+
+  return detailedUsers;
+};
+
+// Update the existing controller methods
+exports.getFacultyUsers = async (req, res) => {
+  try {
+    const { campusId } = req.query;
+    const users = await User.findAll({
+      where: {
+        CollegeCampusID: campusId,
+        isActive: true
+      },
+      include: [
+        {
+          model: Role,
+          where: { RoleName: 'faculty' },
+          through: UserRole
+        },
+        {
+          model: BasicDetails,
+          attributes: ['LastName', 'FirstName', 'MiddleInitial']
+        },
+        {
+          model: Department,
+          as: 'Department',
+          attributes: ['DepartmentName']
+        }
+      ]
+    });
+
+    const detailedUsers = await getUserDetailsWithEducation(users);
+    res.status(200).json(detailedUsers);
+  } catch (error) {
+    console.error('Error fetching faculty users:', error);
+    res.status(500).json({ message: 'Error fetching faculty users', error: error.message });
+  }
+};
+
+// Do the same for staff users
+exports.getStaffUsers = async (req, res) => {
+  try {
+    const { campusId } = req.query;
+    const users = await User.findAll({
+      where: {
+        CollegeCampusID: campusId,
+        isActive: true
+      },
+      include: [
+        {
+          model: Role,
+          where: { RoleName: 'staff' },
+          through: UserRole
+        },
+        {
+          model: BasicDetails,
+          attributes: ['LastName', 'FirstName', 'MiddleInitial']
+        },
+        {
+          model: Department,
+          as: 'Department',
+          attributes: ['DepartmentName']
+        }
+      ]
+    });
+
+    const detailedUsers = await getUserDetailsWithEducation(users);
+    res.status(200).json(detailedUsers);
+  } catch (error) {
+    console.error('Error fetching staff users:', error);
+    res.status(500).json({ message: 'Error fetching staff users', error: error.message });
+  }
+};
+
+exports.getDoctorateUsers = async (req, res) => {
+  try {
+    const { campusId } = req.query;
+    console.log('Fetching doctorate users for campus:', campusId);
+
+    const doctorateUsers = await User.findAll({
+      attributes: [
+        'UserID', 
+        'EmploymentType', 
+        'Fcode'
+      ],
+      where: {
+        isActive: true,
+        ...(campusId && { CollegeCampusID: campusId })
+      },
+      include: [
+        {
+          model: BasicDetails,
+          attributes: [
+            'LastName',
+            'FirstName',
+            'MiddleInitial'
+          ],
+          required: false
+        },
+        {
+          model: Department,
+          as: 'Department',
+          attributes: ['DepartmentName'],
+          required: false
+        },
+        {
+          model: Education,
+          where: { Level: 'Doctoral' },
+          required: true
+        }
+      ]
+    });
+
+    const detailedUsers = await getUserDetailsWithEducation(doctorateUsers);
+    res.status(200).json(detailedUsers);
+
+  } catch (error) {
+    console.error('Error fetching doctorate users:', error);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Error fetching doctorate users', 
+      error: error.message,
+      stack: error.stack 
+    });
+  }
+};
+
+exports.getMastersUsers = async (req, res) => {
+  try {
+    const { campusId } = req.query;
+    console.log('Fetching masters users for campus:', campusId);
+
+    const mastersUsers = await User.findAll({
+      attributes: [
+        'UserID', 
+        'EmploymentType', 
+        'Fcode'
+      ],
+      where: {
+        isActive: true,
+        ...(campusId && { CollegeCampusID: campusId })
+      },
+      include: [
+        {
+          model: BasicDetails,
+          attributes: [
+            'LastName',
+            'FirstName',
+            'MiddleInitial'
+          ],
+          required: false
+        },
+        {
+          model: Department,
+          as: 'Department',
+          attributes: ['DepartmentName'],
+          required: false
+        },
+        {
+          model: Education,
+          where: { Level: 'Masters' },
+          required: true
+        }
+      ]
+    });
+
+    const detailedUsers = await getUserDetailsWithEducation(mastersUsers);
+    res.status(200).json(detailedUsers);
+
+  } catch (error) {
+    console.error('Error fetching masters users:', error);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Error fetching masters users', 
+      error: error.message,
+      stack: error.stack 
+    });
   }
 };

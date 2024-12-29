@@ -1,0 +1,139 @@
+<div class="container bg-base-200 rounded-lg shadow-lg p-0 mx-auto max-w-7xl mb-10">
+  <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
+    <h1 class="text-2xl font-bold">Employment Information</h1>
+  </div>
+
+  <!-- Display Mode -->
+  <ng-container *ngIf="!isEditing; else editForm">
+    <div *ngIf="employmentInfo" class="p-6">
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Employment Information -->
+          <div class="flex flex-col pb-2 border-b border-gray-200">
+            <span class="text-gray-600 font-medium text-sm">Annual Salary</span>
+            <span class="text-gray-900 font-semibold">{{ employmentInfo.AnnualSalary || 'No Information Entered' }}</span>
+          </div>
+          <div class="flex flex-col pb-2 border-b border-gray-200">
+            <span class="text-gray-600 font-medium text-sm">Salary Grade Step</span>
+            <span class="text-gray-900 font-semibold">{{ employmentInfo.SalaryGradeStep || 'No Information Entered' }}</span>
+          </div>
+          <div class="flex flex-col pb-2 border-b border-gray-200">
+            <span class="text-gray-600 font-medium text-sm">Rate per Hour</span>
+            <span class="text-gray-900 font-semibold">{{ employmentInfo.RatePerHour || 'No Information Entered' }}</span>
+          </div>
+          <div class="flex flex-col pb-2 border-b border-gray-200">
+            <span class="text-gray-600 font-medium text-sm">Date of Last Promotion</span>
+            <span class="text-gray-900 font-semibold">{{ (employmentInfo.DateOfLastPromotion | date) || 'No Information Entered' }}</span>
+          </div>
+          <div class="flex flex-col pb-2 border-b border-gray-200">
+            <span class="text-gray-600 font-medium text-sm">Initial Year of Teaching</span>
+            <span class="text-gray-900 font-semibold">{{ employmentInfo.InitialYearOfTeaching || 'No Information Entered' }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end mt-6">
+        <button class="btn bg-black text-white hover:bg-gray-800" (click)="edit()">Edit</button>
+      </div>
+    </div>
+
+    <div *ngIf="!employmentInfo" class="p-6 space-y-6">
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <p class="text-lg">No employment information available.</p>
+      </div>
+      <div class="flex justify-end">
+        <button class="btn btn-add-info bg-black text-white" (click)="edit()">Add Info</button>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Edit Mode -->
+  <ng-template #editForm>
+    <div class="p-6">
+      <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
+        <p class="font-bold">Note: You are currently editing your Employment Information.</p>
+      </div>
+      <form [formGroup]="employmentForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <!-- Employment Information -->
+          <div class="grid grid-cols-2 gap-6">
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Annual Salary</span>
+              </label>
+              <input 
+                formControlName="AnnualSalary" 
+                class="input input-bordered w-full" 
+                type="number"
+                step="0.01"
+              >
+            </div>
+
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Salary Grade Step</span>
+              </label>
+              <input 
+                formControlName="SalaryGradeStep" 
+                class="input input-bordered w-full" 
+                type="text"
+              >
+            </div>
+
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Rate per Hour</span>
+              </label>
+              <input 
+                formControlName="RatePerHour" 
+                class="input input-bordered w-full" 
+                type="number"
+                step="0.01"
+              >
+            </div>
+
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Date of Last Promotion</span>
+              </label>
+              <input 
+                formControlName="DateOfLastPromotion" 
+                class="input input-bordered w-full" 
+                type="date"
+              >
+            </div>
+
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Initial Year of Teaching</span>
+              </label>
+              <input 
+                formControlName="InitialYearOfTeaching" 
+                class="input input-bordered w-full" 
+                type="number"
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-end mt-6">
+          <button type="submit" class="btn bg-black text-white hover:bg-gray-800 mr-4">Save</button>
+          <button type="button" class="btn bg-maroon text-white hover:bg-red-900" (click)="cancelEdit()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </ng-template>
+</div>
+
+<!-- Toast Notifications -->
+<div *ngIf="showToast" class="toast toast-end">
+  <div *ngIf="toastType === 'success'" class="alert alert-success">
+    <span>{{ toastMessage }}</span>
+  </div>
+  <div *ngIf="toastType === 'error'" class="alert alert-error">
+    <span>{{ toastMessage }}</span>
+  </div>
+  <div *ngIf="toastType === 'warning'" class="alert alert-warning">
+    <span>{{ toastMessage }}</span>
+  </div>
+</div>

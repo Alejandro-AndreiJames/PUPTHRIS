@@ -1,5 +1,5 @@
 import { Component, AfterViewInit, ChangeDetectorRef, ViewChild, OnInit, OnDestroy, ViewChildren, QueryList } from '@angular/core';
-import { ChartOptions, ChartType, ChartData } from 'chart.js';
+import { ChartOptions, ChartType, ChartData, ChartConfiguration } from 'chart.js';
 import { NgChartsModule, BaseChartDirective } from 'ng2-charts';
 import { DashboardService } from '../../services/dashboard.service';
 import { DepartmentCount } from '../../model/departmentCount.model';
@@ -21,6 +21,7 @@ import {
   PerformanceReviewCandidate,
   CandidateFilterCriteria 
 } from '../../model/evaluation-candidates.model';
+import { UserListModalComponent } from '../../user-list-modal/user-list-modal.component';
 
 type NgxGaugeType = 'full' | 'semi' | 'arch';
 
@@ -57,12 +58,15 @@ interface DashboardSection {
   order: number;
 }
 
+// Add type definition
+type UserListType = 'male' | 'female' | 'faculty' | 'staff' | 'doctorate' | 'masters';
+
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
   standalone: true,
-  imports: [NgChartsModule, CommonModule, NgxGaugeModule, FormsModule, DragDropModule]
+  imports: [NgChartsModule, CommonModule, NgxGaugeModule, FormsModule, DragDropModule, UserListModalComponent]
 })
 export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
@@ -300,7 +304,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     { id: 'faculty-evaluation', title: 'Faculty Evaluation', visible: true, order: 0 },
     { id: 'charts', title: 'Charts', visible: true, order: 1 },
     { id: 'academic-ranks', title: 'Academic Ranks', visible: true, order: 2 },
-    { id: 'evaluation-candidates', title: 'Faculty Evaluation Candidates', visible: true, order: 3 }
+    { id: 'evaluation-candidates', title: 'Faculty Evaluation Candidates', visible: true, order: 3 },
+    { id: 'government-ids', title: 'Government ID Distribution', visible: true, order: 4 }
   ];
   public showDashboardSettings = false;
 
@@ -326,6 +331,97 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   // Add these properties
   public doctorate: number = 0;
   public masters: number = 0;
+
+  // Add these properties
+  public governmentIdBarChart: ChartConfiguration<'bar'>['data'] = {
+    labels: ['GSIS', 'Pag-IBIG', 'PhilHealth', 'SSS', 'TIN', 'Agency Employee'],
+    datasets: [{
+      data: [],
+      label: 'Number of Users',
+      backgroundColor: [
+        'rgba(128, 0, 0, 0.8)',  // Maroon to match theme
+        'rgba(128, 0, 0, 0.7)',
+        'rgba(128, 0, 0, 0.6)',
+        'rgba(128, 0, 0, 0.5)',
+        'rgba(128, 0, 0, 0.4)',
+        'rgba(128, 0, 0, 0.3)'
+      ],
+      borderColor: [
+        'rgba(128, 0, 0, 1)',  // Maroon border
+        'rgba(128, 0, 0, 1)',
+        'rgba(128, 0, 0, 1)',
+        'rgba(128, 0, 0, 1)',
+        'rgba(128, 0, 0, 1)',
+        'rgba(128, 0, 0, 1)'
+      ],
+      borderWidth: 1
+    }]
+  };
+
+  public governmentIdBarChartOptions: ChartConfiguration<'bar'>['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+          color: '#333'
+        },
+        grid: {
+          color: 'rgba(0, 0, 0, 0.1)'
+        }
+      },
+      x: {
+        ticks: {
+          color: '#333'
+        },
+        grid: {
+          display: false
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        display: false
+      },
+      title: {
+        display: false
+      }
+    }
+  };
+
+  // Add these properties
+  showFemaleModal: boolean = false;
+  femaleList: any[] = [];
+  femaleModalCurrentPage: number = 1;
+  femaleModalItemsPerPage: number = 10;
+  femaleModalTotalPages: number = 1;
+  paginatedFemaleList: any[] = [];
+
+  // Add these properties to your dashboard component
+  showUserModal = false;
+  currentUserList: any[] = [];
+  modalTitle: string = '';
+
+  showDetailsModal: boolean = false;
+  selectedUser: any = null;
+
+  // Pagination properties for user list
+  userModalCurrentPage: number = 1;
+  userModalItemsPerPage: number = 10;
+  userModalTotalItems: number = 0;
+  paginatedUserList: any[] = [];
+
+  // Add/modify these properties
+  departments: any[] = [];
+
+  // Add to your DashboardComponent class
+  selectedDepartmentFilter: string = '';
+  selectedRankFilter: string = '';
+
+  // Add this property to store the original list
+  originalUserList: any[] = [];
 
   constructor(
     private dashboardService: DashboardService,
@@ -390,6 +486,24 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
     this.loadDashboardPreferences();
     this.loadEvaluationCandidates();
+
+    const campusId = this.campusContextService.getCurrentCampusId();
+    if (campusId) {
+      this.dashboardService.getDashboardData(campusId).subscribe({
+        next: (data) => {
+          console.log('Dashboard Data:', data);
+          console.log('Departments from data:', data.departments);
+          
+          // Store departments
+          this.departments = data.departments;
+          
+          // Your existing code...
+        },
+        error: (error) => {
+          console.error('Error loading dashboard data:', error);
+        }
+      });
+    }
   }
 
   ngOnDestroy(): void {
@@ -543,6 +657,26 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       }
 
       this.loadEvaluationRatingsDistribution(campusId);
+
+      this.dashboardService.getGovernmentIdCounts(campusId).subscribe({
+        next: (data) => {
+          this.governmentIdBarChart.datasets[0].data = [
+            data.governmentIds.gsis,
+            data.governmentIds.pagIbig,
+            data.governmentIds.philHealth,
+            data.governmentIds.sss,
+            data.governmentIds.tin,
+            data.governmentIds.agencyEmployee
+          ];
+          // Trigger chart update
+          if (this.charts) {
+            this.charts.forEach(chart => chart.update());
+          }
+        },
+        error: (error) => {
+          console.error('Error fetching government ID counts:', error);
+        }
+      });
     });
   }
 
@@ -911,7 +1045,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
           { id: 'faculty-evaluation', title: 'Faculty Evaluation', visible: true, order: 0 },
           { id: 'charts', title: 'Charts', visible: true, order: 1 },
           { id: 'academic-ranks', title: 'Academic Ranks', visible: true, order: 2 },
-          { id: 'evaluation-candidates', title: 'Faculty Evaluation Candidates', visible: true, order: 3 }
+          { id: 'evaluation-candidates', title: 'Faculty Evaluation Candidates', visible: true, order: 3 },
+          { id: 'government-ids', title: 'Government ID Distribution', visible: true, order: 4 }
         ];
 
         // Merge saved sections with defaults, keeping saved preferences
@@ -1092,7 +1227,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       { id: 'faculty-evaluation', title: 'Faculty Evaluation', visible: true, order: 0 },
       { id: 'charts', title: 'Charts', visible: true, order: 1 },
       { id: 'academic-ranks', title: 'Academic Ranks', visible: true, order: 2 },
-      { id: 'evaluation-candidates', title: 'Faculty Evaluation Candidates', visible: true, order: 3 }
+      { id: 'evaluation-candidates', title: 'Faculty Evaluation Candidates', visible: true, order: 3 },
+      { id: 'government-ids', title: 'Government ID Distribution', visible: true, order: 4 }
     ];
   }
 
@@ -1147,5 +1283,247 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   // Add this type guard method
   isPerformanceCandidate(candidate: any): candidate is PerformanceReviewCandidate {
     return candidate && 'performanceMetrics' in candidate;
+  }
+
+  // Add these methods
+  showFemaleList() {
+    // Get the current campus ID
+    const campusId = this.campusContextService.getCurrentCampusId();
+    
+    // Call the service to get female faculty members
+    if (campusId) {
+      this.dashboardService.getFemaleUsers(campusId).subscribe({
+        next: (data) => {
+          this.femaleList = data;
+          this.femaleModalTotalPages = Math.ceil(this.femaleList.length / this.femaleModalItemsPerPage);
+          this.updateFemaleModalPagination();
+          this.showFemaleModal = true;
+        },
+        error: (error) => {
+          console.error('Error fetching female faculty members:', error);
+        }
+      });
+    }
+  }
+
+  closeFemaleList() {
+    this.showFemaleModal = false;
+    this.femaleList = [];
+    this.femaleModalCurrentPage = 1;
+  }
+
+  getFemaleModalPageArray(): number[] {
+    return Array(this.femaleModalTotalPages).fill(0).map((_, i) => i + 1);
+  }
+
+  updateFemaleModalPagination() {
+    const startIndex = (this.femaleModalCurrentPage - 1) * this.femaleModalItemsPerPage;
+    const endIndex = startIndex + this.femaleModalItemsPerPage;
+    this.paginatedFemaleList = this.femaleList.slice(startIndex, endIndex);
+  }
+
+  previousFemaleModalPage() {
+    if (this.femaleModalCurrentPage > 1) {
+      this.femaleModalCurrentPage--;
+      this.updateFemaleModalPagination();
+    }
+  }
+
+  nextFemaleModalPage() {
+    if (this.femaleModalCurrentPage < this.femaleModalTotalPages) {
+      this.femaleModalCurrentPage++;
+      this.updateFemaleModalPagination();
+    }
+  }
+
+  setFemaleModalPage(page: number) {
+    this.femaleModalCurrentPage = page;
+    this.updateFemaleModalPagination();
+  }
+
+  formatEmploymentTypes(type: string): string {
+    if (!type) return 'N/A';
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  }
+
+  // Add this method to handle showing different user lists
+  showUserList(type: UserListType): void {
+    const campusId = this.campusContextService.getCurrentCampusId();
+    
+    if (!campusId) {
+      console.error('No campus ID found');
+      return;
+    }
+
+    switch(type) {
+      case 'male':
+        this.dashboardService.getMaleUsers(campusId).subscribe({
+          next: (data) => {
+            this.currentUserList = data;
+            this.userModalCurrentPage = 1; // Reset to first page
+            this.updateUserModalPagination(); // Initialize pagination
+            this.modalTitle = 'Male Faculty Members';
+            this.showUserModal = true;
+          },
+          error: (error) => console.error('Error fetching male users:', error)
+        });
+        break;
+
+      case 'female':
+        this.dashboardService.getFemaleUsers(campusId).subscribe({
+          next: (data) => {
+            this.currentUserList = data;
+            this.userModalCurrentPage = 1; // Reset to first page
+            this.updateUserModalPagination(); // Initialize pagination
+            this.modalTitle = 'Female Faculty Members';
+            this.showUserModal = true;
+          },
+          error: (error) => console.error('Error fetching female users:', error)
+        });
+        break;
+
+      case 'faculty':
+        this.dashboardService.getFacultyUsers(campusId).subscribe({
+          next: (users) => {
+            this.originalUserList = users; // Store original list
+            this.currentUserList = [...users]; // Make a copy for current display
+            this.modalTitle = 'Faculty Members';
+            this.showUserModal = true;
+            this.updateUserModalPagination();
+          },
+          error: (error) => console.error('Error fetching faculty users:', error)
+        });
+        break;
+
+      case 'staff':
+        this.dashboardService.getStaffUsers(campusId).subscribe({
+          next: (data) => {
+            this.currentUserList = data;
+            this.userModalCurrentPage = 1; // Reset to first page
+            this.updateUserModalPagination(); // Initialize pagination
+            this.modalTitle = 'Staff Members';
+            this.showUserModal = true;
+          },
+          error: (error) => console.error('Error fetching staff users:', error)
+        });
+        break;
+
+      case 'doctorate':
+        this.dashboardService.getDoctorateUsers(campusId).subscribe({
+          next: (data) => {
+            this.currentUserList = data;
+            this.userModalCurrentPage = 1; // Reset to first page
+            this.updateUserModalPagination(); // Initialize pagination
+            this.modalTitle = 'Doctorate Degree Holders';
+            this.showUserModal = true;
+          },
+          error: (error) => console.error('Error fetching doctorate users:', error)
+        });
+        break;
+
+      case 'masters':
+        this.dashboardService.getMastersUsers(campusId).subscribe({
+          next: (data) => {
+            this.currentUserList = data;
+            this.userModalCurrentPage = 1; // Reset to first page
+            this.updateUserModalPagination(); // Initialize pagination
+            this.modalTitle = 'Masters Degree Holders';
+            this.showUserModal = true;
+          },
+          error: (error) => console.error('Error fetching masters users:', error)
+        });
+        break;
+    }
+  }
+
+  // Add method to handle modal closing
+  closeUserModal(): void {
+    this.showUserModal = false;
+    this.currentUserList = [];
+    // Reset filters
+    this.selectedDepartmentFilter = '';
+    this.selectedRankFilter = '';
+    this.originalUserList = [];
+  }
+
+  showUserDetails(user: any): void {
+    this.selectedUser = user;
+    this.showDetailsModal = true;
+  }
+
+  closeDetailsModal(): void {
+    this.showDetailsModal = false;
+    this.selectedUser = null;
+  }
+
+  // Pagination methods for user list
+  getUserModalPageArray(): number[] {
+    const pageCount = Math.ceil(this.currentUserList.length / this.userModalItemsPerPage);
+    return Array.from({ length: pageCount }, (_, i) => i + 1);
+  }
+
+  setUserModalPage(pageNumber: number): void {
+    this.userModalCurrentPage = pageNumber;
+    this.updateUserModalPagination();
+  }
+
+  previousUserModalPage(): void {
+    if (this.userModalCurrentPage > 1) {
+      this.userModalCurrentPage--;
+      this.updateUserModalPagination();
+    }
+  }
+
+  nextUserModalPage(): void {
+    if (this.userModalCurrentPage < Math.ceil(this.currentUserList.length / this.userModalItemsPerPage)) {
+      this.userModalCurrentPage++;
+      this.updateUserModalPagination();
+    }
+  }
+
+  updateUserModalPagination(): void {
+    const startIndex = (this.userModalCurrentPage - 1) * this.userModalItemsPerPage;
+    const endIndex = startIndex + this.userModalItemsPerPage;
+    this.paginatedUserList = this.currentUserList.slice(startIndex, endIndex);
+  }
+
+  applyFilters() {
+    console.log('Applying filters:', {
+      department: this.selectedDepartmentFilter,
+      rank: this.selectedRankFilter
+    });
+
+    // Always start with the original list
+    let filteredList = [...this.originalUserList];
+    console.log('Starting with original list:', filteredList);
+
+    // Only filter if a specific value (not empty) is selected
+    if (this.selectedDepartmentFilter && this.selectedDepartmentFilter !== '') {
+      filteredList = filteredList.filter(user => 
+        user.department === this.selectedDepartmentFilter
+      );
+    }
+
+    if (this.selectedRankFilter && this.selectedRankFilter !== '') {
+      filteredList = filteredList.filter(user => 
+        user.rank === this.selectedRankFilter
+      );
+    }
+
+    console.log('Filtered list:', filteredList);
+
+    // Update the current list and paginate
+    this.currentUserList = filteredList;
+    this.userModalCurrentPage = 1;
+    this.updateUserModalPagination();
+  }
+
+  // Add a method to reset filters
+  resetFilters() {
+    this.selectedDepartmentFilter = '';
+    this.selectedRankFilter = '';
+    this.currentUserList = [...this.originalUserList];
+    this.userModalCurrentPage = 1;
+    this.updateUserModalPagination();
   }
 }

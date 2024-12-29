@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
+import { tap } from 'rxjs/operators';
 
 export interface UserDashboardData {
   department: string;
@@ -20,6 +21,17 @@ export interface UpcomingBirthday {
   FirstName: string;
   LastName: string;
   DateOfBirth: Date;
+}
+
+export interface GovernmentIdCounts {
+  governmentIds: {
+    gsis: number;
+    pagIbig: number;
+    philHealth: number;
+    sss: number;
+    tin: number;
+    agencyEmployee: number;
+  };
 }
 
 @Injectable({
@@ -70,6 +82,84 @@ export class DashboardService {
       { headers: this.getHeaders() }
     ).pipe(
       catchError(this.handleError)
+    );
+  }
+
+  getGovernmentIdCounts(campusId: number): Observable<GovernmentIdCounts> {
+    return this.http.get<GovernmentIdCounts>(`${this.apiUrl}/government-id-counts`, {
+      params: { campusId: campusId.toString() },
+      headers: this.getHeaders()
+    }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  getFemaleUsers(campusId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/female-users`, {
+      params: { campusId: campusId.toString() },
+      headers: this.getHeaders()
+    }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  getMaleUsers(campusId: number): Observable<any[]> {
+    console.log('Service calling getMaleUsers with campusId:', campusId);
+    return this.http.get<any[]>(`${this.apiUrl}/male-users`, {
+      params: { campusId: campusId.toString() },
+      headers: this.getHeaders()
+    }).pipe(
+      tap(response => console.log('Service received response:', response)),
+      catchError(error => {
+        console.error('Service error:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getFacultyUsers(campusId: number): Observable<any[]> {
+    console.log('Requesting faculty users for campus:', campusId);
+    return this.http.get<any[]>(`${this.apiUrl}/faculty-users`, {
+      params: { campusId: campusId.toString() }
+    }).pipe(
+      tap(response => console.log('Faculty users response:', response))
+    );
+  }
+
+  getStaffUsers(campusId: number): Observable<any[]> {
+    console.log('Requesting staff users for campus:', campusId);
+    return this.http.get<any[]>(`${this.apiUrl}/staff-users`, {
+      params: { campusId: campusId.toString() }
+    }).pipe(
+      tap(response => console.log('Staff users response:', response))
+    );
+  }
+
+  getDoctorateUsers(campusId: number): Observable<any[]> {
+    console.log('Requesting doctorate users for campus:', campusId);
+    return this.http.get<any[]>(`${this.apiUrl}/doctorate-users`, {
+      params: { campusId: campusId.toString() },
+      headers: this.getHeaders()
+    }).pipe(
+      tap(response => console.log('Doctorate users response:', response)),
+      catchError(error => {
+        console.error('Service error:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  getMastersUsers(campusId: number): Observable<any[]> {
+    console.log('Requesting masters users for campus:', campusId);
+    return this.http.get<any[]>(`${this.apiUrl}/masters-users`, {
+      params: { campusId: campusId.toString() },
+      headers: this.getHeaders()
+    }).pipe(
+      tap(response => console.log('Masters users response:', response)),
+      catchError(error => {
+        console.error('Service error:', error);
+        return throwError(() => error);
+      })
     );
   }
 

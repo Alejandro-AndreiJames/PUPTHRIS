@@ -7,8 +7,8 @@
     <div class="px-4">
       <div class="relative">
         <input type="text" 
-               [(ngModel)]="searchTerm" 
-               (input)="onSearch()"
+               [value]="searchTerm" 
+               (input)="onDepartmentSearch($event)"
                placeholder="Search department or coordinator.." 
                class="w-full py-2 pl-10 pr-4 text-sm rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-maroon"
         >
@@ -16,6 +16,10 @@
           <i class="fas fa-search"></i>
         </span>
       </div>
+    </div>
+
+    <div *ngIf="loading" class="flex justify-center my-4">
+      <div class="loading loading-spinner loading-lg"></div>
     </div>
 
     <div *ngIf="departments.length > 0" class="px-4 pb-4">
@@ -70,8 +74,8 @@
       <div class="mb-4">
         <div class="relative">
           <input type="text" 
-                 [(ngModel)]="facultySearchTerm" 
-                 (input)="onFacultySearch()"
+                 [value]="facultySearchTerm" 
+                 (input)="onFacultySearch($event)"
                  placeholder="Search faculty name..." 
                  class="w-full py-2 pl-10 pr-4 text-sm rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-maroon"
           >
@@ -89,14 +93,49 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let user of filteredFacultyUsers" class="hover:bg-gray-100">
+          <tr *ngFor="let user of paginatedFacultyUsers" class="hover:bg-gray-100">
             <td class="p-3">{{ user.FirstName }} {{ user.Surname }}</td>
             <td class="p-3">
-              <button class="btn btn-assign btn-sm" (click)="assignCoordinator(selectedDepartment!, user.UserID)">Assign</button>
+              <button class="btn btn-assign btn-sm" 
+                      (click)="assignCoordinator(selectedDepartment!, user.UserID)">
+                Assign
+              </button>
             </td>
           </tr>
         </tbody>
       </table>
+
+      <!-- Pagination Controls -->
+      <div class="pagination-controls flex justify-center gap-2 mt-4" *ngIf="totalPages > 0">
+        <button 
+          (click)="previousPage()" 
+          [disabled]="currentPage === 1" 
+          class="btn btn-sm">
+          Previous
+        </button>
+
+        <button 
+          *ngFor="let page of pageNumbers"
+          (click)="goToPage(page)" 
+          class="btn btn-sm"
+          [class.btn-active]="page === currentPage">
+          {{ page }}
+        </button>
+
+        <button 
+          (click)="nextPage()" 
+          [disabled]="currentPage === totalPages" 
+          class="btn btn-sm">
+          Next
+        </button>
+      </div>
+
+      <!-- Add page info -->
+      <div class="text-center text-sm text-gray-600 mt-2" *ngIf="totalItems > 0">
+        Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to 
+        {{ currentPage * itemsPerPage > totalItems ? totalItems : currentPage * itemsPerPage }}
+        of {{ totalItems }} entries
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-cancel" (click)="closeAssignModal()">Close</button>

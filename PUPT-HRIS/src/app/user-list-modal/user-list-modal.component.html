@@ -1,0 +1,61 @@
+<div *ngIf="show" class="modal modal-open">
+  <div class="modal-box w-11/12 max-w-5xl">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-bold text-lg">{{ title }}</h3>
+    </div>
+    
+    <div class="overflow-x-auto">
+      <table class="table table-zebra w-full">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Faculty Code</th>
+            <th>Department</th>
+            <th>Employment Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!paginatedUsers || paginatedUsers.length === 0">
+            <td colspan="4" class="text-center py-4">No data available</td>
+          </tr>
+          
+          <tr *ngFor="let member of paginatedUsers">
+            <td>{{ formatName(member) }}</td>
+            <td>{{ getFcode(member) }}</td>
+            <td>{{ getDepartment(member) }}</td>
+            <td>{{ formatEmploymentType(member.employmentType || member.EmploymentType) }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="paginatedUsers && paginatedUsers.length > 0" class="pagination-controls mt-4 flex justify-center gap-2">
+        <button 
+          (click)="previousPage()" 
+          [disabled]="currentPage === 1" 
+          class="btn btn-sm">
+          Previous
+        </button>
+
+        <span *ngFor="let page of getPageArray()">
+          <button 
+            (click)="setPage(page)" 
+            [class.btn-active]="page === currentPage" 
+            class="btn btn-sm">
+            {{ page }}
+          </button>
+        </span>
+
+        <button 
+          (click)="nextPage()" 
+          [disabled]="currentPage === totalPages" 
+          class="btn btn-sm">
+          Next
+        </button>
+      </div>
+    </div>
+
+    <div class="modal-action">
+      <button class="btn" (click)="closeModal()">Close</button>
+    </div>
+  </div>
+</div>

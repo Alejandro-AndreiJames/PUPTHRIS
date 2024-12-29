@@ -27,19 +27,25 @@ export class EducationComponent implements OnInit {
   toastType: 'success' | 'error' | 'warning' = 'success';
 
   levels: string[] = [
-    'ELEMENTARY',
-    'SECONDARY',
-    'VOCATIONAL / TRADE COURSE',
-    'COLLEGE',
-    'GRADUATE STUDIES',
-    `MASTER'S`,
-    'DOCTORATE'
+    'Bachelors Degree',
+    'Post-Baccalaureate',
+    'Masters',
+    'Doctoral'
   ];
 
   showDeletePrompt: boolean = false;
   pendingDeleteId: number | null = null;
 
   today: string;
+
+  meansOfSupport: string[] = [
+    'Financial Assistance (Faculty Discount)',
+    'Self-Supporting',
+    'Scholarship Grant',
+    'N/A'
+  ];
+
+  selectedSupport: string[] = [];
 
   constructor(private fb: FormBuilder, private educationService: EducationService, private authService: AuthService) {
     const token = this.authService.getToken();
@@ -55,12 +61,13 @@ export class EducationComponent implements OnInit {
     this.educationForm = this.fb.group({
       Level: ['', Validators.required],
       NameOfSchool: ['', Validators.required],
-      BasicEducationDegreeCourse: [''],
-      PeriodOfAttendanceFrom: ['', [Validators.required, this.dateValidator()]],
-      PeriodOfAttendanceTo: ['', [Validators.required, this.dateValidator()]],
-      HighestLevelUnitsEarned: [''],
-      YearGraduated: [''],
-      AcademicHonors: ['']
+      Course: [''],
+      ThesisType: [''],
+      MeansOfEducationSupport: [[], Validators.required],
+      FundingAgency: [''],
+      DurationOfFundingSupport: [''],
+      UnitsEarned: [''],
+      YearGraduated: ['', Validators.required]
     });
 
     this.educationForm.get('PeriodOfAttendanceFrom')?.valueChanges.subscribe(value => {
@@ -68,6 +75,10 @@ export class EducationComponent implements OnInit {
       if (toControl?.value && value && toControl.value < value) {
         toControl.setValue('');
       }
+    });
+
+    this.educationForm.get('Level')?.valueChanges.subscribe(level => {
+      this.updateFormValidation(level);
     });
   }
 
@@ -98,8 +109,6 @@ export class EducationComponent implements OnInit {
       if (education) {
         const formData = {
           ...education,
-          PeriodOfAttendanceFrom: education.PeriodOfAttendanceFrom ? education.PeriodOfAttendanceFrom.toString().split('T')[0] : '',
-          PeriodOfAttendanceTo: education.PeriodOfAttendanceTo ? education.PeriodOfAttendanceTo.toString().split('T')[0] : ''
         };
         
         console.log('Setting form data:', formData);
@@ -124,11 +133,6 @@ export class EducationComponent implements OnInit {
         this.showToastNotification('Please select a date not later than today.', 'warning');
         return;
       }
-      if (this.educationForm.get('PeriodOfAttendanceTo')?.value < 
-          this.educationForm.get('PeriodOfAttendanceFrom')?.value) {
-        this.showToastNotification('End date cannot be earlier than start date.', 'warning');
-        return;
-      }
       this.showToastNotification('Please fill in all required fields correctly.', 'warning');
       return;
     }
@@ -138,33 +142,41 @@ export class EducationComponent implements OnInit {
       return;
     }
 
-    const education = { ...this.educationForm.value, UserID: this.userId };
+    // Get form data and ensure MeansOfEducationSupport is properly formatted
+    const formData = { 
+      ...this.educationForm.value,
+      UserID: this.userId,
+      // Convert array to string if needed
+      MeansOfEducationSupport: Array.isArray(this.educationForm.value.MeansOfEducationSupport) 
+        ? this.educationForm.value.MeansOfEducationSupport.join(',')
+        : this.educationForm.value.MeansOfEducationSupport
+    };
 
     if (this.currentEducationId) {
-      this.educationService.updateEducation(this.currentEducationId, education).subscribe(
-        response => {
+      this.educationService.updateEducation(this.currentEducationId, formData).subscribe({
+        next: (response) => {
           this.loadEducation();
           this.isEditing = false;
           this.currentEducationId = null;
           this.showToastNotification('Information updated successfully.', 'success');
         },
-        error => {
+        error: (error) => {
           this.showToastNotification('There is an error saving/updating the changes.', 'error');
           console.error('Error updating education', error);
         }
-      );
+      });
     } else {
-      this.educationService.addEducation(education).subscribe(
-        response => {
+      this.educationService.addEducation(formData).subscribe({
+        next: (response) => {
           this.loadEducation();
           this.isEditing = false;
           this.showToastNotification('Education added successfully.', 'success');
         },
-        error => {
+        error: (error) => {
           this.showToastNotification('There is an error saving/updating the changes.', 'error');
           console.error('Error adding education', error);
         }
-      );
+      });
     }
   }
 
@@ -209,7 +221,7 @@ export class EducationComponent implements OnInit {
 
     setTimeout(() => {
       this.showToast = false;
-    }, 3000); // Hide toast after 3 seconds
+    }, 3000);
   }
 
   private dateValidator(): ValidatorFn {
@@ -226,5 +238,92 @@ export class EducationComponent implements OnInit {
       }
       return null;
     };
+  }
+
+  private updateFormValidation(level: string) {
+    const courseControl = this.educationForm.get('Course');
+    const thesisTypeControl = this.educationForm.get('ThesisType');
+    const meansControl = this.educationForm.get('MeansOfEducationSupport');
+    const fundingControl = this.educationForm.get('FundingAgency');
+    const durationControl = this.educationForm.get('DurationOfFundingSupport');
+    const unitsControl = this.educationForm.get('UnitsEarned');
+
+    // Reset all validations first
+    [courseControl, thesisTypeControl, meansControl, fundingControl, 
+     durationControl, unitsControl].forEach(control => {
+      control?.clearValidators();
+      control?.updateValueAndValidity();
+    });
+
+    switch(level) {
+      case 'Bachelors Degree':
+        courseControl?.setValidators(Validators.required);
+        break;
+      case 'Post-Baccalaureate':
+        [meansControl, fundingControl, durationControl].forEach(control => 
+          control?.setValidators(Validators.required));
+        break;
+      case 'Masters':
+        [thesisTypeControl, meansControl, fundingControl, durationControl].forEach(control => 
+          control?.setValidators(Validators.required));
+        break;
+      case 'Doctoral':
+        [thesisTypeControl, meansControl, fundingControl, durationControl, unitsControl]
+          .forEach(control => control?.setValidators(Validators.required));
+        break;
+    }
+
+    // Update validity
+    this.educationForm.updateValueAndValidity();
+  }
+
+  onSupportChange(event: any): void {
+    const value = event.target.value;
+    const checked = event.target.checked;
+
+    // Get current values and ensure it's an array
+    let currentSupport: string[] = this.educationForm.get('MeansOfEducationSupport')?.value || [];
+    if (!Array.isArray(currentSupport)) {
+      currentSupport = [];
+    }
+
+    if (checked) {
+      if (value === 'N/A') {
+        currentSupport = ['N/A'];
+      } else {
+        currentSupport = currentSupport.filter(item => item !== 'N/A');
+        if (!currentSupport.includes(value)) {
+          currentSupport.push(value);
+        }
+      }
+    } else {
+      currentSupport = currentSupport.filter(item => item !== value);
+    }
+
+    // Update form control
+    this.educationForm.patchValue({
+      MeansOfEducationSupport: currentSupport
+    });
+  }
+
+  isChecked(support: string): boolean {
+    const currentSupport: string[] = this.educationForm.get('MeansOfEducationSupport')?.value || [];
+    return Array.isArray(currentSupport) && currentSupport.includes(support);
+  }
+
+  loadEducationData(education: Education): void {
+    if (education.MeansOfEducationSupport) {
+      let supportArray: string[] = [];
+      
+      if (typeof education.MeansOfEducationSupport === 'string') {
+        supportArray = education.MeansOfEducationSupport.split(',').map(s => s.trim());
+      } else if (Array.isArray(education.MeansOfEducationSupport)) {
+        supportArray = education.MeansOfEducationSupport;
+      }
+
+      this.educationForm.patchValue({
+        MeansOfEducationSupport: supportArray
+      });
+    }
   }
 }

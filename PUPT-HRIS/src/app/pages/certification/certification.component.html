@@ -1,0 +1,151 @@
+<div class="container bg-base-200 rounded-lg shadow-lg p-0 mx-auto max-w-7xl mb-10">
+  <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
+    <h1 class="text-2xl font-bold">Certifications</h1>
+  </div>
+
+  <!-- List of Certifications -->
+  <div class="p-6">
+    <!-- Add New Button -->
+    <div class="mb-6">
+      <button class="btn bg-black text-white hover:bg-gray-800" (click)="addNew()" *ngIf="!isEditing">
+        <i class="fas fa-plus mr-2"></i> Add New Certification
+      </button>
+    </div>
+
+    <!-- Edit Form -->
+    <div *ngIf="isEditing" class="mb-6">
+      <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
+        <p class="font-bold">Note: You are currently {{ editingId ? 'editing' : 'adding' }} a certification.</p>
+      </div>
+
+      <form [formGroup]="certificationForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <p class="text-sm text-gray-600 mb-4">Note: Fields marked with an asterisk (*) are required.</p>
+
+          <div class="grid grid-cols-2 gap-6">
+            <!-- Name -->
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Name <span class="text-red-500">*</span></span>
+              </label>
+              <input 
+                formControlName="Name" 
+                class="input input-bordered w-full" 
+                type="text"
+                placeholder="Enter certification name"
+              >
+            </div>
+
+            <!-- Issuing Organization -->
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Issuing Organization <span class="text-red-500">*</span></span>
+              </label>
+              <input 
+                formControlName="IssuingOrganization" 
+                class="input input-bordered w-full" 
+                type="text"
+                placeholder="Enter issuing organization"
+              >
+            </div>
+
+            <!-- Issue Date -->
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Issue Date</span>
+              </label>
+              <input 
+                formControlName="IssueDate" 
+                class="input input-bordered w-full" 
+                type="date"
+              >
+            </div>
+
+            <!-- Expiration Date -->
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Expiration Date</span>
+              </label>
+              <input 
+                formControlName="ExpirationDate" 
+                class="input input-bordered w-full" 
+                type="date"
+              >
+            </div>
+
+            <!-- Credential ID -->
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Credential ID</span>
+              </label>
+              <input 
+                formControlName="CredentialID" 
+                class="input input-bordered w-full" 
+                type="text"
+                placeholder="Enter credential ID"
+              >
+            </div>
+
+            <!-- Credential URL -->
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Credential URL</span>
+              </label>
+              <input 
+                formControlName="CredentialURL" 
+                class="input input-bordered w-full" 
+                type="url"
+                placeholder="Enter credential URL"
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-end mt-6">
+          <button type="submit" class="btn bg-black text-white hover:bg-gray-800 mr-4">Save</button>
+          <button type="button" class="btn bg-maroon text-white hover:bg-red-900" (click)="cancelEdit()">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Certifications List -->
+    <div *ngIf="!isEditing">
+      <div *ngIf="certifications.length > 0" class="space-y-4">
+        <div *ngFor="let cert of certifications" class="bg-white rounded-lg shadow-md p-6">
+          <div class="flex justify-between items-start">
+            <div class="flex-grow">
+              <h3 class="text-xl font-semibold text-gray-900">{{ cert.Name }}</h3>
+              <p class="text-gray-600">{{ cert.IssuingOrganization }}</p>
+              
+              <div class="grid grid-cols-2 gap-4 mt-4">
+                <div>
+                  <p class="text-sm text-gray-600">Issue Date</p>
+                  <p class="font-medium">{{ cert.IssueDate | date }}</p>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-600">Expiration Date</p>
+                  <p class="font-medium">{{ cert.ExpirationDate | date }}</p>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-600">Credential ID</p>
+                  <p class="font-medium">{{ cert.CredentialID || 'N/A' }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="flex-shrink-0">
+              <div class="flex space-x-2">
+                <button class="btn btn-sm bg-black text-white hover:bg-gray-800" (click)="edit(cert)">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm bg-maroon text-white hover:bg-red-900" (click)="delete(cert.CertificationID!)">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

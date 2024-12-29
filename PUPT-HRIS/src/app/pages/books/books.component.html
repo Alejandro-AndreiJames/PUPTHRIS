@@ -45,6 +45,15 @@
           <input type="text" formControlName="ISBN" 
                  class="form-input w-full rounded-md border-gray-300 shadow-sm focus:border-maroon focus:ring focus:ring-maroon focus:ring-opacity-50"
                  placeholder="Enter ISBN">
+          <div *ngIf="bookForm.get('ISBN')?.errors && bookForm.get('ISBN')?.touched" 
+               class="text-red-500 text-sm mt-1">
+            <span *ngIf="bookForm.get('ISBN')?.errors?.['pattern']">
+              ISBN must be 10 or 13 digits
+            </span>
+            <span *ngIf="bookForm.get('ISBN')?.errors?.['minlength'] || bookForm.get('ISBN')?.errors?.['maxlength']">
+              ISBN must be either 10 or 13 digits long
+            </span>
+          </div>
         </div>
 
         <div class="form-group">

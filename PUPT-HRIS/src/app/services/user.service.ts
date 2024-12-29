@@ -5,6 +5,26 @@ import { catchError, tap } from 'rxjs/operators';
 import { User } from '../model/user.model';
 import { environment } from '../../environments/environment';
 
+interface UserResponse {
+  data: User[];
+  metadata: {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    itemsPerPage: number;
+  }
+}
+
+interface GetUsersParams {
+  page?: number;
+  limit?: number;
+  campusId?: number;
+  departmentId?: string;
+  employmentType?: string;
+  search?: string;
+  role?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -24,12 +44,20 @@ export class UserService {
       .pipe(catchError(this.handleError));
   }
 
-  getUsers(campusId?: number): Observable<User[]> {
+  getUsers(params: GetUsersParams): Observable<UserResponse> {
     let url = this.apiUrl;
-    if (campusId) {
-      url += `?campusId=${campusId}`;
-    }
-    return this.http.get<User[]>(url, { headers: this.getHeaders() });
+    const queryParams = new URLSearchParams();
+    
+    // Add all params to query string
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && value !== '') {
+        queryParams.append(key, value.toString());
+      }
+    });
+    
+    url += `?${queryParams.toString()}`;
+    console.log('Request URL:', url);
+    return this.http.get<UserResponse>(url, { headers: this.getHeaders() });
   }
 
   getUserById(userId: number): Observable<User> {
