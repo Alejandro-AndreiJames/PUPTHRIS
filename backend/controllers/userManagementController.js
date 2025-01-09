@@ -1,53 +1,91 @@
-const { sequelize } = require('../config/db.config');
-const User = require('../models/userModel');
-const Role = require('../models/roleModel');
-const Coordinator = require('../models/coordinatorModel');
-const { Department, CollegeCampus } = require('../models/associations');
-const { Op } = require('sequelize');
-require('dotenv').config();
+const { sequelize } = require("../config/db.config");
+const { Op } = require("sequelize");
+
+const User = require("../models/userModel");
+const Role = require("../models/roleModel");
+const Coordinator = require("../models/coordinatorModel");
+const { Department, CollegeCampus } = require("../models/associations");
+
+const webhookController = require("./webhookController");
+
+require("dotenv").config();
 
 exports.updateEmploymentType = async (req, res) => {
+  let transaction;
   try {
+    transaction = await sequelize.transaction();
     const { UserID, EmploymentType } = req.body;
 
-    console.log('Received request to update Employment Type for User:', UserID, 'to', EmploymentType); // Log request
+    console.log(
+      "Received request to update Employment Type for User:",
+      UserID,
+      "to",
+      EmploymentType
+    );
 
-    const user = await User.findByPk(UserID);
+    const user = await User.findByPk(UserID, { transaction });
     if (!user) {
-      console.log('User not found:', UserID);
-      return res.status(404).json({ message: 'User not found' });
+      await transaction.rollback();
+      console.log("User not found:", UserID);
+      return res.status(404).json({ message: "User not found" });
     }
 
     user.EmploymentType = EmploymentType;
-    await user.save();
+    await user.save({ transaction });
 
-    console.log('Employment Type updated successfully for User:', UserID, EmploymentType); // Log successful update
+    await transaction.commit();
+    const updatedUser = await User.findByPk(UserID);
+    const webhookSuccess = await webhookController.sendFacultyUpdateWebhook(
+      UserID
+    );
+    if (!webhookSuccess) {
+      console.warn(
+        "Failed to send webhook to FLSS, but employment type was updated"
+      );
+    }
 
-    res.status(200).json({ message: 'Employment type updated successfully', user });
+    console.log(
+      "Employment Type updated successfully for User:",
+      UserID,
+      EmploymentType
+    );
+    res.status(200).json({
+      message: "Employment type updated successfully",
+      user: updatedUser,
+    });
   } catch (error) {
-    console.error('Error updating employment type:', error);
-    res.status(500).json({ message: 'Server error' });
+    if (transaction) await transaction.rollback();
+    console.error("Error updating employment type:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
 exports.updateUserRoles = async (req, res) => {
+  let transaction;
   try {
+    transaction = await sequelize.transaction();
     const { UserID, Roles } = req.body;
 
-    const user = await User.findByPk(UserID);
+    const user = await User.findByPk(UserID, { transaction });
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      await transaction.rollback();
+      return res.status(404).json({ message: "User not found" });
     }
 
     if (Roles && Roles.length > 0) {
-      const roles = await Role.findAll({ where: { RoleID: Roles } });
-      await user.setRoles(roles);
+      const roles = await Role.findAll({
+        where: { RoleID: Roles },
+        transaction,
+      });
+      await user.setRoles(roles, { transaction });
     }
 
-    res.status(200).json({ message: 'User roles updated successfully' });
+    await transaction.commit();
+    res.status(200).json({ message: "User roles updated successfully" });
   } catch (error) {
-    console.error('Error updating user roles:', error);
-    res.status(500).json({ message: 'Server error' });
+    if (transaction) await transaction.rollback();
+    console.error("Error updating user roles:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -59,31 +97,31 @@ exports.getUserDetails = async (req, res) => {
       include: [
         {
           model: Department,
-          as: 'Department',
-          attributes: ['DepartmentName']
+          as: "Department",
+          attributes: ["DepartmentName"],
         },
         {
           model: Role,
-          as: 'Roles',
+          as: "Roles",
           through: { attributes: [] },
-          attributes: ['RoleName'],
+          attributes: ["RoleName"],
         },
         {
           model: CollegeCampus,
-          as: 'CollegeCampus',
-          attributes: ['Name']
+          as: "CollegeCampus",
+          attributes: ["Name"],
         },
       ],
     });
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     res.status(200).json(user);
   } catch (error) {
-    console.error('Error fetching user details:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error fetching user details:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -96,15 +134,15 @@ exports.getAllUsers = async (req, res) => {
 
     // Build where clause
     let whereClause = {};
-    
+
     if (campusId) {
       whereClause.CollegeCampusID = campusId;
     }
-    
+
     if (departmentId) {
       whereClause.DepartmentID = departmentId;
     }
-    
+
     if (employmentType) {
       whereClause.EmploymentType = employmentType;
     }
@@ -114,7 +152,7 @@ exports.getAllUsers = async (req, res) => {
       whereClause[Op.or] = [
         { FirstName: { [Op.like]: `%${search}%` } },
         { Surname: { [Op.like]: `%${search}%` } },
-        { Fcode: { [Op.like]: `%${search}%` } }
+        { Fcode: { [Op.like]: `%${search}%` } },
       ];
     }
 
@@ -123,31 +161,31 @@ exports.getAllUsers = async (req, res) => {
       include: [
         {
           model: Department,
-          as: 'Department',
-          attributes: ['DepartmentName'],
+          as: "Department",
+          attributes: ["DepartmentName"],
         },
         {
           model: Role,
-          as: 'Roles',
+          as: "Roles",
           through: { attributes: [] },
-          attributes: ['RoleID', 'RoleName'],
+          attributes: ["RoleID", "RoleName"],
           ...(role && {
             where: {
-              RoleName: { [Op.like]: `%${role}%` }
-            }
-          })
+              RoleName: { [Op.like]: `%${role}%` },
+            },
+          }),
         },
         {
           model: CollegeCampus,
-          as: 'CollegeCampus',
-          attributes: ['Name']
+          as: "CollegeCampus",
+          attributes: ["Name"],
         },
       ],
-      attributes: { include: ['isActive'] },
+      attributes: { include: ["isActive"] },
       offset: offset,
       limit: limit,
-      order: [['UserID', 'ASC']],
-      distinct: true
+      order: [["UserID", "ASC"]],
+      distinct: true,
     });
 
     // Get total count with filters
@@ -156,15 +194,15 @@ exports.getAllUsers = async (req, res) => {
       include: [
         {
           model: Role,
-          as: 'Roles',
+          as: "Roles",
           ...(role && {
             where: {
-              RoleName: { [Op.like]: `%${role}%` }
-            }
-          })
-        }
+              RoleName: { [Op.like]: `%${role}%` },
+            },
+          }),
+        },
       ],
-      distinct: true
+      distinct: true,
     });
 
     console.log(`Found ${users.length} users for campus ID ${campusId}`);
@@ -175,12 +213,12 @@ exports.getAllUsers = async (req, res) => {
         totalItems: totalCount,
         totalPages: Math.ceil(totalCount / limit),
         currentPage: page,
-        itemsPerPage: limit
-      }
+        itemsPerPage: limit,
+      },
     });
   } catch (error) {
-    console.error('Error fetching users:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error fetching users:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -189,83 +227,98 @@ exports.getAllRoles = async (req, res) => {
     const roles = await Role.findAll();
     res.status(200).json(roles);
   } catch (error) {
-    console.error('Error fetching roles:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error fetching roles:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
 exports.updateUserDepartment = async (req, res) => {
+  let transaction;
   try {
+    transaction = await sequelize.transaction();
     const { userId } = req.params;
     const { departmentId } = req.body;
 
-    const user = await User.findByPk(userId);
+    const user = await User.findByPk(userId, { transaction });
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      await transaction.rollback();
+      return res.status(404).json({ message: "User not found" });
     }
 
-    const department = await Department.findByPk(departmentId);
+    const department = await Department.findByPk(departmentId, { transaction });
     if (!department) {
-      return res.status(404).json({ message: 'Department not found' });
+      await transaction.rollback();
+      return res.status(404).json({ message: "Department not found" });
     }
 
-    await user.setDepartment(department);
+    await user.setDepartment(department, { transaction });
+    await transaction.commit();
 
-    res.status(200).json({ message: 'User department updated successfully', user });
+    res
+      .status(200)
+      .json({ message: "User department updated successfully", user });
   } catch (error) {
-    console.error('Error updating user department:', error);
-    res.status(500).json({ message: 'Server error' });
+    if (transaction) await transaction.rollback();
+    console.error("Error updating user department:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-// Add this new function
 exports.toggleUserActiveStatus = async (req, res) => {
   let transaction;
   try {
-    console.log('Toggling user status for userId:', req.params.userId);
-    
+    console.log("Toggling user status for userId:", req.params.userId);
+
     if (!sequelize) {
-      throw new Error('Database connection not established');
+      throw new Error("Database connection not established");
     }
     transaction = await sequelize.transaction();
 
     const { userId } = req.params;
     const user = await User.findByPk(userId, { transaction });
-    
+
     if (!user) {
       await transaction.rollback();
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
-    console.log('Current user status:', user.isActive);
+    console.log("Current user status:", user.isActive);
     user.isActive = !user.isActive;
     await user.save({ transaction });
-    console.log('Updated user status:', user.isActive);
+    console.log("Updated user status:", user.isActive);
 
     // If the user is being deactivated and is a coordinator, remove them from the coordinator position
     if (!user.isActive) {
-      const coordinator = await Coordinator.findOne({ where: { UserID: userId }, transaction });
+      const coordinator = await Coordinator.findOne({
+        where: { UserID: userId },
+        transaction,
+      });
       if (coordinator) {
-        console.log('User is a coordinator, removing from position');
-        const department = await Department.findByPk(coordinator.DepartmentID, { transaction });
-        if (department) {
-          department.CoordinatorID = null;
-          await department.save({ transaction });
-        }
+        console.log("User is a coordinator, removing from position");
         await coordinator.destroy({ transaction });
       }
     }
 
     await transaction.commit();
-    res.status(200).json({ message: 'User status updated', isActive: user.isActive });
+    const updatedUser = await User.findByPk(userId);
+    const webhookSuccess = await webhookController.sendFacultyUpdateWebhook(
+      userId
+    );
+    if (!webhookSuccess) {
+      console.warn("Failed to send webhook to FLSS, but status was updated");
+    }
+
+    res.status(200).json({
+      message: "User status updated successfully",
+      isActive: updatedUser.isActive,
+    });
   } catch (error) {
-    console.error('Error in toggleUserActiveStatus:', error);
     if (transaction) await transaction.rollback();
-    res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    console.error("Error toggling user status:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-// Add this new function
 exports.updateUserCampus = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -273,20 +326,20 @@ exports.updateUserCampus = async (req, res) => {
 
     const user = await User.findByPk(userId);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     const campus = await CollegeCampus.findByPk(campusId);
     if (!campus) {
-      return res.status(404).json({ message: 'College Campus not found' });
+      return res.status(404).json({ message: "College Campus not found" });
     }
 
     user.CollegeCampusID = campusId;
     await user.save();
 
-    res.status(200).json({ message: 'User campus updated successfully', user });
+    res.status(200).json({ message: "User campus updated successfully", user });
   } catch (error) {
-    console.error('Error updating user campus:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Error updating user campus:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };

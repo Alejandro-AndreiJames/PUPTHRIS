@@ -1,0 +1,61 @@
+:host {
+  --color-maroon-700: #800000;
+  --color-maroon-800: #660000;
+}
+
+* {
+  font-family: "Poppins", sans-serif !important;
+}
+
+h1,
+h2 {
+  font-weight: 600;
+}
+
+.text-white {
+  color: white;
+}
+
+button[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bg-dirty-white {
+  background-color: #fff6f6;
+}
+
+.bg-maroon-700 {
+  background-color: var(--color-maroon-700);
+}
+
+.hover\:bg-maroon-800:hover {
+  background-color: var(--color-maroon-800);
+}
+
+.bg-maroon-50 {
+  background-color: #fef2f2;
+}
+
+.text-maroon-700 {
+  color: var(--color-maroon-700);
+}
+
+.border-maroon-100 {
+  border-color: #fee2e2;
+}
+
+.animate-error-entrance {
+  animation: errorEntrance 0.5s ease-out forwards;
+}
+
+@keyframes errorEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
