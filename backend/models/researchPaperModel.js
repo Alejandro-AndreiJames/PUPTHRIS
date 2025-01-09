@@ -14,9 +14,7 @@ const ResearchPaper = sequelize.define('ResearchPaper', {
     references: {
       model: User,
       key: 'UserID',
-    },
-    onUpdate: 'CASCADE',
-    onDelete: 'CASCADE',
+    }
   },
   Title: {
     type: DataTypes.STRING(255),
@@ -45,7 +43,12 @@ const ResearchPaper = sequelize.define('ResearchPaper', {
 }, {
   tableName: 'ResearchPapers',
   timestamps: true,
-  constraints: false, // Prevent Sequelize from altering constraints
+  indexes: [
+    {
+      name: 'research_user_fk',
+      fields: ['UserID']
+    }
+  ]
 });
 
 module.exports = ResearchPaper;
