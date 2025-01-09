@@ -30,7 +30,7 @@ const config = {
       name: "PUPT Faculty Loading and Scheduling System",
       redirectUris: [
         "http://localhost:4201/auth/callback",
-        "https://pupt-flss.com/auth/callback",
+        //"https://pupt-flss.com/auth/callback",
         "https://beta.pupt-flss.com/auth/callback",
       ],
     },
