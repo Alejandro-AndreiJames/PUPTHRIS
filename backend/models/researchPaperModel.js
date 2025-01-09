@@ -6,43 +6,46 @@ const ResearchPaper = sequelize.define('ResearchPaper', {
   ResearchID: {
     type: DataTypes.INTEGER,
     primaryKey: true,
-    autoIncrement: true
+    autoIncrement: true,
   },
   UserID: {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
       model: User,
-      key: 'UserID'
+      key: 'UserID',
     },
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
-    constraintName: 'FK_User_ResearchPapers'
   },
   Title: {
     type: DataTypes.STRING(255),
-    allowNull: false
+    allowNull: false,
   },
   Description: {
     type: DataTypes.TEXT,
-    allowNull: true
+    allowNull: true,
   },
   Authors: {
     type: DataTypes.STRING(255),
-    allowNull: false
+    allowNull: false,
   },
   PublicationDate: {
     type: DataTypes.DATE,
-    allowNull: false
+    allowNull: false,
   },
   ReferenceLink: {
     type: DataTypes.STRING(500),
-    allowNull: true
+    allowNull: true,
   },
   DocumentPath: {
     type: DataTypes.STRING(500),
-    allowNull: true
-  }
+    allowNull: true,
+  },
+}, {
+  tableName: 'ResearchPapers',
+  timestamps: true,
+  constraints: false, // Prevent Sequelize from altering constraints
 });
 
-module.exports = ResearchPaper; 
+module.exports = ResearchPaper;
