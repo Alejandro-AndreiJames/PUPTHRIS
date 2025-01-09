@@ -14,7 +14,10 @@ const ResearchPaper = sequelize.define('ResearchPaper', {
     references: {
       model: User,
       key: 'UserID'
-    }
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    constraintName: 'FK_User_ResearchPapers'
   },
   Title: {
     type: DataTypes.STRING(255),
