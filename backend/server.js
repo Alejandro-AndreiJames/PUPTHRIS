@@ -107,6 +107,8 @@ app.use("/api/lecture-materials", lectureMaterialRoutes);
 app.use("/api/professional-licenses", professionalLicenseRoutes);
 app.use("/api/employment-information", employmentInformationRoutes);
 app.use("/api/certifications", certificationRoutes);
+app.use('/api/tickets', ticketRoutes);
+
 
 app.use("/api/user-management", userManagementRoutes);
 app.use("/api/coordinators", coordinatorRoutes);

@@ -30,6 +30,7 @@ import { EmploymentInformationComponent } from './pages/employment-information/e
 import { CertificationComponent } from './pages/certification/certification.component';
 import { OAuthComponent } from './oauth/oauth-login/oauth-login.component';
 import { OAuthConsentComponent } from './oauth/oauth-consent/oauth-consent.component';
+import { TicketListComponent } from './pages/ticket-list/ticket-list.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -160,6 +161,7 @@ export const routes: Routes = [
         canActivate: [RoleGuard],
         data: { expectedRoles: ['faculty', 'staff', 'admin', 'superadmin'] },
       },
+      { path: 'tickets', component: TicketListComponent, canActivate: [RoleGuard], data: { expectedRoles: ['faculty', 'staff', 'admin', 'superadmin'] } },
       { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
     ],
   },
