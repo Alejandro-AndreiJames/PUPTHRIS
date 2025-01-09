@@ -1,6 +1,6 @@
 const OAuth2Service = require("../services/oauthService");
 const UserService = require("../services/userService");
-const OAuthConsent = require("../models/OAuthConsent");
+const OAuthConsent = require("../models/oauthConsent");
 const oauthConfig = require("../config/oauth.config");
 
 class OAuthController {
