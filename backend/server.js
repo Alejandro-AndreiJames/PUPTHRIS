@@ -79,6 +79,7 @@ const professionalLicenseRoutes = require("./routes/professionalLicenseRoutes");
 const employmentInformationRoutes = require("./routes/employmentInformationRoutes");
 const certificationRoutes = require("./routes/certificationRoutes");
 const webhookRoutes = require("./routes/webhookRoutes");
+const ticketRoutes = require("./routes/ticketRoutes");
 
 /**
  * Route Definitions

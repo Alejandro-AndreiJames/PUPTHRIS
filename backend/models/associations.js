@@ -58,7 +58,7 @@ User.belongsToMany(Role, {
 
 Role.belongsToMany(User, { 
   through: UserRole,
-  foreignKey: 'RoleID',
+  foreignKey: 'RoleID', 
   otherKey: 'UserID',
   timestamps: false
 });
@@ -160,7 +160,7 @@ Ticket.belongsTo(User, {
 // Add this association
 UserRole.belongsTo(Role, {
   foreignKey: 'RoleID',
-  as: 'Role'
+  as: 'RoleDetails' // Changed alias to avoid conflict
 });
 
 Role.hasMany(UserRole, {
