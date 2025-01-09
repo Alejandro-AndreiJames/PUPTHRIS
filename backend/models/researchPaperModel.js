@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db.config');
-const User = require('./userModel');
 
 const ResearchPaper = sequelize.define('ResearchPaper', {
   ResearchID: {
@@ -11,10 +10,7 @@ const ResearchPaper = sequelize.define('ResearchPaper', {
   UserID: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    references: {
-      model: User,
-      key: 'UserID',
-    }
+    // Removed references to avoid duplicate constraints
   },
   Title: {
     type: DataTypes.STRING(255),
