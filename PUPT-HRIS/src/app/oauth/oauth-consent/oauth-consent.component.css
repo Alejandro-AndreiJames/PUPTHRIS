@@ -1,0 +1,31 @@
+.oauth-consent-container {
+  font-family: "Poppins", sans-serif !important;
+}
+
+.bg-dirty-white {
+  background-color: #fff6f6;
+}
+
+.bg-maroon-50 {
+  background-color: #fff1f1;
+}
+
+.bg-maroon-100 {
+  background-color: #80000028;
+}
+
+.bg-maroon-600 {
+  background-color: #800000;
+}
+
+.bg-maroon-700 {
+  background-color: #690000;
+}
+
+.hover\:bg-maroon-700:hover {
+  background-color: #690000;
+}
+
+.text-maroon-600 {
+  color: #800000;
+}

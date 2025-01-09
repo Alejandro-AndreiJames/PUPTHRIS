@@ -9,23 +9,36 @@ import { Router } from '@angular/router';
 export class AuthInterceptor implements HttpInterceptor {
   constructor(private authService: AuthService, private router: Router) {}
 
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+  intercept(
+    req: HttpRequest<any>,
+    next: HttpHandler
+  ): Observable<HttpEvent<any>> {
+
+    // Skip the interceptor for OAuth requests
+    if (req.headers.has('X-Skip-Interceptor')) {
+      const newReq = req.clone({
+        headers: req.headers.delete('X-Skip-Interceptor'),
+      });
+      return next.handle(newReq);
+    }
+
+    //  Proceed with interceptor for non-OAuth requests
     const token = this.authService.getToken();
     if (token) {
       req = req.clone({
         setHeaders: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
     }
+
     return next.handle(req).pipe(
       catchError((error: HttpErrorResponse) => {
-        if (error.status === 401) {
-          
+        if (error.status === 401 && !req.headers.has('X-Skip-Interceptor')) {
           this.authService.logout();
           this.router.navigate(['/login']);
         }
-        return throwError(error);
+        return throwError(() => error);
       })
     );
   }

@@ -31,7 +31,7 @@ const checkConnection = async () => {
     isConnected = true;
     return true;
   } catch (error) {
-    console.error('Connection check failed:', error);
+    console.error('❌ Connection check failed:', error);
     isConnected = false;
     return false;
   }
@@ -42,9 +42,9 @@ const initializeConnection = async () => {
   try {
     await sequelize.authenticate();
     isConnected = true;
-    console.log('Database connection established successfully.');
+    console.log('🐬 Database connection established successfully.');
   } catch (error) {
-    console.error('Unable to connect to the database:', error);
+    console.error('❌ Unable to connect to the database:', error);
     isConnected = false;
     process.exit(1);
   }
