@@ -15,7 +15,20 @@ import { jwtDecode } from 'jwt-decode';
 })
 export class ResearchPapersComponent implements OnInit {
   researchPapers: ResearchPaper[] = [];
-  @Input() viewMode: 'personal' | 'all' = 'all';
+  @Input() set viewMode(value: 'personal' | 'all') {
+    if (this._viewMode !== value) {
+      this._viewMode = value;
+      // Reload data when viewMode changes
+      if (this.researchService) {
+        this.currentPage = 1; // Reset to first page
+        this.loadResearchPapers();
+      }
+    }
+  }
+  get viewMode(): 'personal' | 'all' {
+    return this._viewMode;
+  }
+  private _viewMode: 'personal' | 'all' = 'all';
   @Input() showModal: boolean = false;
   isEditing: boolean = false;
   currentResearchId: number | null = null;
@@ -38,6 +51,9 @@ export class ResearchPapersComponent implements OnInit {
   
   // Add search property
   searchTerm: string = '';
+
+  // Add loading state
+  isLoading: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -71,6 +87,10 @@ export class ResearchPapersComponent implements OnInit {
   }
 
   loadResearchPapers(): void {
+    this.isLoading = true;
+    // Reset search when switching views
+    this.searchTerm = '';
+    
     this.researchService.getResearchPapers(
       this.currentPage,
       this.itemsPerPage,
@@ -83,10 +103,12 @@ export class ResearchPapersComponent implements OnInit {
         this.totalPages = response.totalPages;
         this.totalItems = response.totalItems;
         this.itemsPerPage = response.itemsPerPage;
+        this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading research papers:', error);
         this.showToastNotification('Error loading research papers', 'error');
+        this.isLoading = false;
       }
     });
   }

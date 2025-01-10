@@ -20,8 +20,12 @@
     >
   </div>
 
+  <div *ngIf="isLoading" class="flex justify-center items-center py-4">
+    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-maroon"></div>
+  </div>
+
   <div class="overflow-x-auto">
-    <table class="table w-full">
+    <table class="table w-full" [class.opacity-50]="isLoading">
       <thead>
         <tr>
           <th>Title</th>

@@ -39,6 +39,14 @@ export class ResourcesComponent {
 
   toggleViewMode(mode: 'personal' | 'all'): void {
     this.viewMode = mode;
+    // Trigger change detection and reload data
+    if (this.activeTab === 'research') {
+      const researchComponent = document.querySelector('app-research-papers');
+      if (researchComponent) {
+        (researchComponent as any).loadResearchPapers();
+      }
+    }
+    // Add similar logic for books and lecture materials if needed
   }
 
   openModal(type: string): void {
