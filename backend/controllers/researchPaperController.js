@@ -4,6 +4,7 @@ const ResearchPaper = require('../models/researchPaperModel');
 const s3Client = require('../config/s3.config');
 const { S3_BUCKET_NAME } = process.env;
 const User = require('../models/userModel');
+const { Op } = require('sequelize');
 
 
 const storage = multer.memoryStorage();
@@ -88,11 +89,18 @@ exports.getResearchPapers = async (req, res) => {
   try {
     const { userId } = req.params;
     const userRoles = req.user.roles;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+    const offset = (page - 1) * limit;
     
     console.log('Request params:', {
       requestedUserId: userId,
       currentUserId: req.user.userId,
-      userRoles: userRoles
+      userRoles: userRoles,
+      page,
+      limit,
+      search
     });
 
     let whereClause = {};
@@ -104,21 +112,41 @@ exports.getResearchPapers = async (req, res) => {
       whereClause.UserID = userId;
     }
 
+    // Add search conditions
+    if (search) {
+      whereClause = {
+        ...whereClause,
+        [Op.or]: [
+          { Title: { [Op.like]: `%${search}%` } },
+          { Authors: { [Op.like]: `%${search}%` } }
+        ]
+      };
+    }
+
     console.log('Where clause:', whereClause);
 
-    const papers = await ResearchPaper.findAll({
+    const { count, rows } = await ResearchPaper.findAndCountAll({
       where: whereClause,
       include: [{
         model: User,
         attributes: ['FirstName', 'Surname', 'MiddleName', 'NameExtension', 'Email'],
         as: 'User'
       }],
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset
     });
 
-    console.log('Found papers:', papers.length);
+    const totalPages = Math.ceil(count / limit);
     
-    res.status(200).json(papers);
+    res.status(200).json({
+      currentPage: page,
+      totalPages,
+      totalItems: count,
+      itemsPerPage: limit,
+      items: rows
+    });
+
   } catch (error) {
     console.error('Error getting research papers:', error);
     res.status(500).json({ 

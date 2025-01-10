@@ -5,6 +5,7 @@ const s3Client = require('../config/s3.config');
 const { S3_BUCKET_NAME, AWS_REGION } = process.env;
 const User = require('../models/userModel');
 const BasicDetails = require('../models/basicDetailsModel');
+const { Op } = require('sequelize');
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -96,11 +97,18 @@ exports.getBooks = async (req, res) => {
   try {
     const { userId } = req.params;
     const userRoles = req.user.roles;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+    const offset = (page - 1) * limit;
     
     console.log('Request params:', {
       requestedUserId: userId,
       currentUserId: req.user.userId,
-      userRoles: userRoles
+      userRoles: userRoles,
+      page,
+      limit,
+      search
     });
 
     let whereClause = {};
@@ -112,21 +120,42 @@ exports.getBooks = async (req, res) => {
       whereClause.UserID = userId;
     }
 
+    // Add search conditions
+    if (search) {
+      whereClause = {
+        ...whereClause,
+        [Op.or]: [
+          { Title: { [Op.like]: `%${search}%` } },
+          { Author: { [Op.like]: `%${search}%` } }
+        ]
+      };
+    }
+
     console.log('Where clause:', whereClause);
 
-    const books = await Book.findAll({ 
+    const { count, rows } = await Book.findAndCountAll({
       where: whereClause,
       include: [{
         model: User,
         attributes: ['UserID', 'Surname', 'FirstName', 'MiddleName', 'NameExtension', 'Email'],
         as: 'User'
       }],
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset
     });
 
-    console.log('Found books:', books.length);
+    const totalPages = Math.ceil(count / limit);
     
-    res.status(200).json(books);
+    console.log('Found books:', count);
+
+    res.status(200).json({
+      currentPage: page,
+      totalPages,
+      totalItems: count,
+      itemsPerPage: limit,
+      items: rows
+    });
   } catch (error) {
     console.error('Error getting books:', error);
     res.status(500).json({ error: 'Internal Server Error' });
