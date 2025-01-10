@@ -3,6 +3,8 @@ const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/cl
 const ResearchPaper = require('../models/researchPaperModel');
 const s3Client = require('../config/s3.config');
 const { S3_BUCKET_NAME } = process.env;
+const User = require('../models/userModel');
+const BasicDetails = require('../models/basicDetailsModel');
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -84,11 +86,39 @@ exports.updateResearchPaper = [
 
 exports.getResearchPapers = async (req, res) => {
   try {
-    const userId = req.params.userId || req.user.userId;
+    const { userId } = req.params;
+    const userRoles = req.user.roles;
+    
+    // Check if user is admin or superadmin
+    const isAdminOrSuperAdmin = userRoles.some(role => 
+      ['admin', 'superadmin'].includes(role.toLowerCase())
+    );
+
+    let whereClause = {};
+    
+    // If not admin/superadmin, only show user's own papers
+    if (!isAdminOrSuperAdmin) {
+      whereClause.UserID = req.user.userId;
+    } 
+    // If admin/superadmin and specific userId provided, show that user's papers
+    else if (userId) {
+      whereClause.UserID = userId;
+    }
+    // If admin/superadmin and no userId, show all papers
+
     const papers = await ResearchPaper.findAll({ 
-      where: { UserID: userId },
+      where: whereClause,
+      include: [{
+        model: User,
+        attributes: ['UserID', 'Email'],
+        include: [{
+          model: BasicDetails,
+          attributes: ['FirstName', 'LastName']
+        }]
+      }],
       order: [['PublicationDate', 'DESC']]
     });
+
     res.status(200).json(papers);
   } catch (error) {
     console.error('Error getting research papers:', error);

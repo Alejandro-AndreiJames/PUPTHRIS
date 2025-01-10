@@ -3,6 +3,8 @@ const { PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const LectureMaterial = require('../models/lectureMaterialModel');
 const s3Client = require('../config/s3.config');
 const { S3_BUCKET_NAME } = process.env;
+const User = require('../models/userModel');
+const BasicDetails = require('../models/basicDetailsModel');
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -82,11 +84,34 @@ exports.updateLectureMaterial = [
 
 exports.getLectureMaterials = async (req, res) => {
   try {
-    const userId = req.params.userId || req.user.userId;
+    const { userId } = req.params;
+    const userRoles = req.user.roles;
+    
+    const isAdminOrSuperAdmin = userRoles.some(role => 
+      ['admin', 'superadmin'].includes(role.toLowerCase())
+    );
+
+    let whereClause = {};
+    
+    if (!isAdminOrSuperAdmin) {
+      whereClause.UserID = req.user.userId;
+    } else if (userId) {
+      whereClause.UserID = userId;
+    }
+
     const materials = await LectureMaterial.findAll({ 
-      where: { UserID: userId },
+      where: whereClause,
+      include: [{
+        model: User,
+        attributes: ['UserID', 'Email'],
+        include: [{
+          model: BasicDetails,
+          attributes: ['FirstName', 'LastName']
+        }]
+      }],
       order: [['createdAt', 'DESC']]
     });
+
     res.status(200).json(materials);
   } catch (error) {
     console.error('Error getting lecture materials:', error);

@@ -3,6 +3,7 @@ const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/cl
 const Book = require('../models/bookModel');
 const s3Client = require('../config/s3.config');
 const { S3_BUCKET_NAME, AWS_REGION } = process.env;
+const User = require('../models/userModel');
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -92,11 +93,34 @@ exports.updateBook = [
 
 exports.getBooks = async (req, res) => {
   try {
-    const userId = req.params.userId || req.user.userId;
+    const { userId } = req.params;
+    const userRoles = req.user.roles;
+    
+    const isAdminOrSuperAdmin = userRoles.some(role => 
+      ['admin', 'superadmin'].includes(role.toLowerCase())
+    );
+
+    let whereClause = {};
+    
+    if (!isAdminOrSuperAdmin) {
+      whereClause.UserID = req.user.userId;
+    } else if (userId) {
+      whereClause.UserID = userId;
+    }
+
     const books = await Book.findAll({ 
-      where: { UserID: userId },
+      where: whereClause,
+      include: [{
+        model: User,
+        attributes: ['UserID', 'Email'],
+        include: [{
+          model: BasicDetails,
+          attributes: ['FirstName', 'LastName']
+        }]
+      }],
       order: [['createdAt', 'DESC']]
     });
+
     res.status(200).json(books);
   } catch (error) {
     console.error('Error getting books:', error);
