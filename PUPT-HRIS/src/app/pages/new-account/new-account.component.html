@@ -13,16 +13,19 @@
       </div>
       <div class="form-control">
         <label class="label-text mb-3">Select Roles <span class="text-red-500">*</span></label>
-        <div class="roles-container">
-          <div *ngFor="let role of roles" class="role-checkbox">
-            <input 
-              type="checkbox" 
-              [value]="role.RoleID" 
-              (change)="onRoleCheckboxChange($event)" 
-              [checked]="newAccountForm.value.Roles.includes(role.RoleID)"
-            />
-            <span class="role-label">{{ role.RoleName }}</span>
-          </div>
+        <div class="grid grid-cols-2 gap-4">
+          <label style="display: flex; align-items: center; gap: 0.5rem;">
+            <input type="checkbox" value="admin" (change)="onRoleCheckboxChange($event)">
+            <span>admin</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 0.5rem;">
+            <input type="checkbox" value="faculty" (change)="onRoleCheckboxChange($event)">
+            <span>faculty</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 0.5rem;">
+            <input type="checkbox" value="superadmin" (change)="onRoleCheckboxChange($event)">
+            <span>superadmin</span>
+          </label>
         </div>
       </div>
     </div>
