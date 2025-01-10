@@ -911,33 +911,36 @@
 
   <!-- User Details Modal -->
   <div *ngIf="showDetailsModal" class="modal modal-open details-modal">
-    <div class="modal-box w-11/12 max-w-3xl">
-      <div class="modal-header border-b border-gray-200 pb-4">
-        <h3 class="font-bold text-2xl text-maroon">User Details</h3>
+    <div class="modal-box">
+      <div class="modal-header border-b border-gray-200 pb-3">
+        <h3 class="font-bold text-xl text-maroon">User Details</h3>
       </div>
       
-      <div class="modal-content py-6">
-        <div *ngIf="selectedUser" class="space-y-4">
-          <!-- Each detail in a styled container -->
+      <div class="modal-content py-4">
+        <div *ngIf="selectedUser" class="details-grid">
+          <!-- Name -->
           <div class="detail-item">
             <label class="text-sm text-gray-600">Name</label>
-            <p class="text-lg font-semibold">{{selectedUser.name}}</p>
+            <p class="font-semibold">{{selectedUser.name}}</p>
           </div>
 
+          <!-- F-Code -->
           <div class="detail-item">
             <label class="text-sm text-gray-600">F-Code</label>
-            <p class="text-lg font-semibold">{{selectedUser.fcode}}</p>
+            <p class="font-semibold">{{selectedUser.fcode}}</p>
           </div>
 
+          <!-- Department -->
           <div class="detail-item">
             <label class="text-sm text-gray-600">Department</label>
-            <p class="text-lg font-semibold">{{selectedUser.department || 'N/A'}}</p>
+            <p class="font-semibold">{{selectedUser.department || 'N/A'}}</p>
           </div>
 
+          <!-- Employment Type -->
           <div class="detail-item">
             <label class="text-sm text-gray-600">Employment Type</label>
-            <p class="text-lg font-semibold">
-              <span class="px-3 py-1 rounded-full text-sm" 
+            <p>
+              <span class="px-2 py-0.5 rounded-full text-xs" 
                     [ngClass]="{
                       'bg-green-100 text-green-800': selectedUser.employmentType === 'fulltime',
                       'bg-blue-100 text-blue-800': selectedUser.employmentType === 'parttime',
@@ -948,15 +951,16 @@
             </p>
           </div>
 
+          <!-- Rank -->
           <div class="detail-item">
             <label class="text-sm text-gray-600">Rank</label>
-            <p class="text-lg font-semibold">{{selectedUser.rank || 'N/A'}}</p>
+            <p class="font-semibold">{{selectedUser.rank || 'N/A'}}</p>
           </div>
         </div>
       </div>
 
-      <div class="modal-action pt-4 border-t border-gray-200">
-        <button class="btn bg-maroon text-white hover:bg-black transition-colors duration-200"
+      <div class="modal-action pt-3 border-t border-gray-200">
+        <button class="btn btn-sm bg-maroon text-white hover:bg-black transition-colors duration-200"
                 (click)="closeDetailsModal()">
           Close
         </button>
