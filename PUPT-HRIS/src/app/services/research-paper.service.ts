@@ -4,6 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { ResearchPaper } from '../model/research-paper.model';
+import { CampusContextService } from './campus-context.service';
 
 interface ResearchPaperResponse {
   items: ResearchPaper[];
@@ -20,7 +21,10 @@ export class ResearchPaperService {
   private apiUrl = `${environment.apiBaseUrl}/research-papers`;
   private s3Config: any;
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private campusContextService: CampusContextService
+  ) {
     this.getS3Config().subscribe(
       config => this.s3Config = config
     );
@@ -50,17 +54,21 @@ export class ResearchPaperService {
     limit: number = 10,
     search: string = '',
     viewMode: 'personal' | 'all' = 'all'
-  ): Observable<ResearchPaperResponse> {
+  ): Observable<any> {
+    const selectedCampusId = this.campusContextService.getCurrentCampusId();
+    
     let params = new HttpParams()
       .set('page', page.toString())
       .set('limit', limit.toString())
+      .set('search', search)
       .set('viewMode', viewMode);
-    
-    if (search) {
-      params = params.set('search', search);
-    }
 
-    return this.http.get<ResearchPaperResponse>(this.apiUrl, { params });
+    // Create headers with both Authorization and selected-campus-id
+    const headers = new HttpHeaders()
+      .set('Authorization', `Bearer ${localStorage.getItem('token')}`)
+      .set('selected-campus-id', selectedCampusId?.toString() || '');
+
+    return this.http.get<any>(this.apiUrl, { params, headers });
   }
 
   deleteResearchPaper(id: number): Observable<any> {

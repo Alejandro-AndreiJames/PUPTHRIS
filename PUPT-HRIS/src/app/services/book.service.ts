@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Book } from '../model/book.model';
 import { environment } from '../../environments/environment';
+import { CampusContextService } from '../services/campus-context.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,10 @@ import { environment } from '../../environments/environment';
 export class BookService {
   private apiUrl = `${environment.apiBaseUrl}/books`;
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private campusContextService: CampusContextService
+  ) {}
 
   getBooks(
     page: number = 1,
@@ -18,13 +22,17 @@ export class BookService {
     search: string = '',
     viewMode: 'personal' | 'all' = 'all'
   ): Observable<any> {
+    const selectedCampusId = this.campusContextService.getCurrentCampusId();
+    
     let params = new HttpParams()
       .set('page', page.toString())
       .set('limit', limit.toString())
       .set('search', search)
       .set('viewMode', viewMode);
 
-    return this.http.get<any>(`${this.apiUrl}`, { params });
+    const headers = new HttpHeaders().set('selected-campus-id', selectedCampusId?.toString() || '');
+
+    return this.http.get<any>(this.apiUrl, { params, headers });
   }
 
   addBook(formData: FormData): Observable<Book> {

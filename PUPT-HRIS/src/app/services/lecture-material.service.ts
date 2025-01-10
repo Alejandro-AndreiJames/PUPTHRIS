@@ -4,6 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { LectureMaterial } from '../model/lecture-material.model';
+import { CampusContextService } from '../services/campus-context.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +12,10 @@ import { LectureMaterial } from '../model/lecture-material.model';
 export class LectureMaterialService {
   private apiUrl = `${environment.apiBaseUrl}/lecture-materials`;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private campusContextService: CampusContextService
+  ) {}
 
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
@@ -34,13 +38,17 @@ export class LectureMaterialService {
     search: string = '',
     viewMode: 'personal' | 'all' = 'all'
   ): Observable<any> {
+    const selectedCampusId = this.campusContextService.getCurrentCampusId();
+    
     let params = new HttpParams()
       .set('page', page.toString())
       .set('limit', limit.toString())
       .set('search', search)
       .set('viewMode', viewMode);
 
-    return this.http.get<any>(this.apiUrl, { params });
+    const headers = new HttpHeaders().set('selected-campus-id', selectedCampusId?.toString() || '');
+
+    return this.http.get<any>(this.apiUrl, { params, headers });
   }
 
   deleteLectureMaterial(id: number): Observable<any> {

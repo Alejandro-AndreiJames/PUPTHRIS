@@ -91,9 +91,13 @@ exports.getLectureMaterials = async (req, res) => {
     const viewMode = req.query.viewMode || 'all';
     const offset = (page - 1) * limit;
     
+    // Get the current selected campus from the request header
+    const selectedCampusId = parseInt(req.headers['selected-campus-id']) || null;
+    
     console.log('Request params:', {
       currentUserId: req.user.userId,
       userRoles: req.user.roles,
+      selectedCampusId,
       page,
       limit,
       search,
@@ -101,15 +105,19 @@ exports.getLectureMaterials = async (req, res) => {
     });
 
     let whereClause = {};
+    let userWhereClause = {};
     
-    // Handle viewMode filtering
     if (viewMode === 'personal') {
+      // In personal view, only show user's own materials
       whereClause.UserID = req.user.userId;
     } else {
-      // Only add CollegeCampusID to where clause if it exists
-      if (req.user.CollegeCampusID) {
-        whereClause.CollegeCampusID = req.user.CollegeCampusID;
+      // In all view, show materials from users of the selected campus
+      if (!selectedCampusId) {
+        return res.status(400).json({ 
+          error: 'Campus ID is required for viewing all materials' 
+        });
       }
+      userWhereClause.CollegeCampusID = selectedCampusId;
     }
 
     // Add search conditions if search term exists
@@ -124,13 +132,15 @@ exports.getLectureMaterials = async (req, res) => {
     }
 
     console.log('Where clause:', whereClause);
+    console.log('User where clause:', userWhereClause);
 
     const { count, rows } = await LectureMaterial.findAndCountAll({
       where: whereClause,
       include: [{
         model: User,
-        attributes: ['UserID', 'Surname', 'FirstName', 'MiddleName', 'NameExtension', 'Email'],
-        as: 'User'
+        attributes: ['UserID', 'Surname', 'FirstName', 'MiddleName', 'NameExtension', 'Email', 'CollegeCampusID'],
+        as: 'User',
+        where: userWhereClause // Apply campus filter on the User model
       }],
       order: [['createdAt', 'DESC']],
       limit,
