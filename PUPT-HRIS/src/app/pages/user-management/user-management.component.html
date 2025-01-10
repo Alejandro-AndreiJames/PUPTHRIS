@@ -78,27 +78,36 @@
               </select>
             </td>
             <td class="p-4">
-              <div class="space-y-2">
-                <div class="font-semibold text-sm mb-1">Admin Roles:</div>
-                <div class="flex flex-wrap gap-2">
-                  <label *ngFor="let role of getAdminRoles()" class="flex items-center gap-1">
-                    <input type="checkbox"
-                           class="checkbox checkbox-sm"
-                           [checked]="isUserRoleSelected(user, role.RoleID)"
-                           (change)="toggleAdminRole(user, role.RoleID)">
-                    <span class="text-sm">{{ role.RoleName }}</span>
-                  </label>
+              <div class="roles-container">
+                <!-- Admin Roles Section -->
+                <div class="role-section">
+                  <div class="font-semibold text-sm mb-2">Admin Roles:</div>
+                  <div class="role-options">
+                    <label *ngFor="let role of getAdminRoles()" 
+                           class="role-checkbox-label">
+                      <input type="checkbox"
+                             class="checkbox checkbox-sm checkbox-primary"
+                             [checked]="isUserRoleSelected(user, role.RoleID)"
+                             (change)="toggleAdminRole(user, role.RoleID)">
+                      <span class="ml-2 text-sm">{{ role.RoleName }}</span>
+                    </label>
+                  </div>
                 </div>
-                
-                <div class="font-semibold text-sm mb-1">Other Roles:</div>
-                <div class="flex flex-wrap gap-2">
-                  <label *ngFor="let role of getNonAdminRoles()" class="flex items-center gap-1">
-                    <input type="checkbox"
-                           class="checkbox checkbox-sm"
-                           [checked]="isUserRoleSelected(user, role.RoleID)"
-                           (change)="toggleStaffRole(user, role.RoleID)">
-                    <span class="text-sm">{{ role.RoleName }}</span>
-                  </label>
+
+                <!-- Faculty Role Section -->
+                <div class="role-section">
+                  <div class="font-semibold text-sm mb-2">Faculty Role:</div>
+                  <div class="role-options">
+                    <ng-container *ngFor="let role of getNonAdminRoles()">
+                      <label class="role-checkbox-label" *ngIf="role.RoleName.toLowerCase() !== 'staff'">
+                        <input type="checkbox"
+                               class="checkbox checkbox-sm checkbox-primary"
+                               [checked]="isUserRoleSelected(user, role.RoleID)"
+                               (change)="toggleStaffRole(user, role.RoleID)">
+                        <span class="ml-2 text-sm">{{ role.RoleName }}</span>
+                      </label>
+                    </ng-container>
+                  </div>
                 </div>
               </div>
             </td>

@@ -1,3 +1,5 @@
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
 <div class="container bg-base-200 rounded-lg shadow-lg p-0 mx-auto max-w-7xl mb-10">
   <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
     <h1 class="text-2xl font-bold">Professional License</h1>
@@ -23,7 +25,7 @@
         </div>
       </div>
       <div class="flex justify-end mt-6">
-        <button class="btn bg-black text-white hover:bg-gray-800" (click)="edit()">Edit</button>
+        <button class="btn btn-edit hover:bg-gray-800 transition duration-300 ease-in-out" (click)="edit()">Edit</button>
       </div>
     </div>
 
@@ -32,7 +34,7 @@
         <p class="text-lg">No professional license information available.</p>
       </div>
       <div class="flex justify-end">
-        <button class="btn btn-add-info bg-black text-white" (click)="edit()">Add Info</button>
+        <button class="btn btn-add-info hover:bg-maroon-dark transition duration-300 ease-in-out" (click)="edit()">Add Info</button>
       </div>
     </div>
   </ng-container>
@@ -73,8 +75,8 @@
 
         <!-- Action Buttons -->
         <div class="flex justify-end mt-6">
-          <button type="submit" class="btn bg-black text-white hover:bg-gray-800 mr-4">Save</button>
-          <button type="button" class="btn bg-maroon text-white hover:bg-red-900" (click)="cancelEdit()">Cancel</button>
+          <button type="submit" class="btn btn-save mr-4">Save</button>
+          <button type="button" class="btn btn-cancel" (click)="cancelEdit()">Cancel</button>
         </div>
       </form>
     </div>

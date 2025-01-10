@@ -264,4 +264,12 @@ li.active > a {
   }
 }
 
+.logo-section p {
+  font-size: 0.75rem;
+  line-height: 1.2;
+  opacity: 0.95;
+  text-align: justify;
+  text-justify: inter-word;
+}
+
 

@@ -37,7 +37,7 @@
 
   <ng-container *ngIf="(userRole === 'admin' || userRole === 'superadmin') && isAdminView; else personalView">
     <!-- Admin Dashboard Content -->
-    <div class="cards-container grid grid-cols-1 md:grid-cols-4 gap-4 mb-2">
+    <div class="cards-container grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
       <div class="card bg-gradient-to-r from-pink-400 to-pink-600 text-white p-6 rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition-all" 
            (click)="showUserList('female')">
         <h3 class="text-2xl font-bold">Female</h3>
@@ -52,11 +52,6 @@
            (click)="showUserList('faculty')">
         <h3 class="text-2xl font-bold">Faculty</h3>
         <p class="text-6xl font-extrabold">{{ faculty }}</p>
-      </div>
-      <div class="card bg-gradient-to-r from-green-400 to-green-600 text-white p-6 rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition-all" 
-           (click)="showUserList('staff')">
-        <h3 class="text-2xl font-bold">Staff</h3>
-        <p class="text-6xl font-extrabold">{{ staff }}</p>
       </div>
     </div>
 
@@ -207,7 +202,7 @@
       <!-- Evaluation Candidates Section -->
       <div *ngIf="section.id === 'evaluation-candidates' && section.visible">
         <div class="flex w-full flex-col mt-8">
-          <div class="divider divider-neutral">Faculty Evaluation Candidates</div>
+          <div class="divider divider-neutral divider-end">Faculty Evaluation Candidates</div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -440,61 +435,68 @@
   <!-- Add the modal -->
   <div *ngIf="showFacultyList" class="modal modal-open">
     <div class="modal-box w-11/12 max-w-5xl">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="font-bold text-lg">
-          Faculty Members with {{ selectedRating }} Rating
-          <div class="text-sm font-normal text-gray-600">
-            {{ selectedAcademicYear }} - {{ selectedSemester }}
-          </div>
-        </h3>
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div class="flex justify-between items-center">
+          <h3 class="font-bold text-lg">
+            Faculty Members with {{ selectedRating }} Rating
+            <div class="text-sm font-normal text-gray-600">
+              {{ selectedAcademicYear }} - {{ selectedSemester }}
+            </div>
+          </h3>
+        </div>
       </div>
       
-      <div class="overflow-x-auto">
-        <table class="table table-zebra w-full">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Department</th>
-              <th>Rating</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let faculty of facultiesList">
-              <td>{{ faculty.Faculty.Surname }}, {{ faculty.Faculty.FirstName }} {{ faculty.Faculty.MiddleName }}</td>
-              <td>{{ faculty.Faculty.Department.DepartmentName }}</td>
-              <td>{{ faculty.QualitativeRating }}</td>
-            </tr>
-            <tr *ngIf="facultiesList.length === 0">
-              <td colspan="3" class="text-center py-4">
-                No faculty members found with this rating for the selected period.
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Modal Content -->
+      <div class="modal-content">
+        <div class="overflow-x-auto">
+          <table class="table table-zebra w-full">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Department</th>
+                <th>Rating</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let faculty of facultiesList">
+                <td>{{ faculty.Faculty.Surname }}, {{ faculty.Faculty.FirstName }} {{ faculty.Faculty.MiddleName }}</td>
+                <td>{{ faculty.Faculty.Department.DepartmentName }}</td>
+                <td>{{ faculty.QualitativeRating }}</td>
+              </tr>
+              <tr *ngIf="facultiesList.length === 0">
+                <td colspan="3" class="text-center py-4">
+                  No faculty members found with this rating for the selected period.
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
-        <!-- Add pagination controls -->
-        <div class="pagination-controls mt-4">
-          <button 
-            (click)="previousModalPage()" 
-            [disabled]="modalCurrentPage === 1" 
-            class="btn">Previous</button>
-
-          <span *ngFor="let page of getModalPageArray(); let i = index">
+          <!-- Add pagination controls -->
+          <div class="pagination-controls mt-4">
             <button 
-              (click)="setModalPage(i + 1)" 
-              [class.active]="i + 1 === modalCurrentPage" 
-              class="btn">
-              {{ i + 1 }}
-            </button>
-          </span>
+              (click)="previousModalPage()" 
+              [disabled]="modalCurrentPage === 1" 
+              class="btn">Previous</button>
 
-          <button 
-            (click)="nextModalPage()" 
-            [disabled]="modalCurrentPage === modalTotalPages" 
-            class="btn">Next</button>
+            <span *ngFor="let page of getModalPageArray(); let i = index">
+              <button 
+                (click)="setModalPage(i + 1)" 
+                [class.active]="i + 1 === modalCurrentPage" 
+                class="btn">
+                {{ i + 1 }}
+              </button>
+            </span>
+
+            <button 
+              (click)="nextModalPage()" 
+              [disabled]="modalCurrentPage === modalTotalPages" 
+              class="btn">Next</button>
+          </div>
         </div>
       </div>
 
+      <!-- Modal Actions -->
       <div class="modal-action">
         <button class="btn" (click)="closeFacultyList()">Close</button>
       </div>
@@ -829,136 +831,139 @@
   </div>
 
   <!-- User List Modal -->
-  <div *ngIf="showUserModal" class="modal modal-open" style="z-index: 100;">
+  <div *ngIf="showUserModal" class="modal modal-open">
     <div class="modal-box w-11/12 max-w-5xl">
-      <h3 class="font-bold text-lg mb-4">{{modalTitle}}</h3>
-      
-      <!-- Add filter controls -->
-      <div class="filter-controls mb-4 flex gap-4 items-center">
-        <select 
-          [(ngModel)]="selectedDepartmentFilter"
-          (change)="applyFilters()"
-          class="select select-bordered w-full max-w-xs">
-          <option value="">All Departments</option>
-          <option *ngFor="let dept of departments" [value]="dept.DepartmentName">
-            {{ dept.DepartmentName }}
-          </option>
-        </select>
+      <!-- Header -->
+      <div class="modal-header">
+        <h3 class="font-bold text-lg">{{modalTitle}}</h3>
+        
+        <!-- Filter controls -->
+        <div class="filter-controls mt-4 flex gap-4 items-center">
+          <select 
+            [(ngModel)]="selectedDepartmentFilter"
+            (change)="applyFilters()"
+            class="select select-bordered w-full max-w-xs">
+            <option value="">All Departments</option>
+            <option *ngFor="let dept of departments" [value]="dept.DepartmentName">
+              {{ dept.DepartmentName }}
+            </option>
+          </select>
 
-        <select 
-          [(ngModel)]="selectedRankFilter"
-          (change)="applyFilters()"
-          class="select select-bordered w-full max-w-xs">
-          <option value="">All Ranks</option>
-          <option *ngFor="let rank of academicRanks" [value]="rank.Rank">
-            {{ rank.Rank }}
-          </option>
-        </select>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="table w-full">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>F-Code</th>
-              <th>Department</th>
-              <th>Employment Type</th>
-              <th>Rank</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let user of paginatedUserList">
-              <td>{{user.name}}</td>
-              <td>{{user.fcode}}</td>
-              <td>{{user.department}}</td>
-              <td>{{user.employmentType}}</td>
-              <td>{{user.rank}}</td>
-              <td>
-                <button class="btn btn-sm bg-maroon text-white hover:bg-black"
-                        (click)="showUserDetails(user)">
-                  View Details
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <!-- Add pagination controls after the table -->
-        <div class="pagination-controls mt-4 flex justify-center gap-2">
-          <button 
-            (click)="previousUserModalPage()" 
-            [disabled]="userModalCurrentPage === 1" 
-            class="btn btn-sm">
-            Previous
-          </button>
-
-          <span *ngFor="let page of getUserModalPageArray(); let i = index">
-            <button 
-              (click)="setUserModalPage(i + 1)" 
-              [class.btn-active]="i + 1 === userModalCurrentPage" 
-              class="btn btn-sm">
-              {{ i + 1 }}
-            </button>
-          </span>
-
-          <button 
-            (click)="nextUserModalPage()" 
-            [disabled]="userModalCurrentPage === getUserModalPageArray().length" 
-            class="btn btn-sm">
-            Next
-          </button>
+          <select 
+            [(ngModel)]="selectedRankFilter"
+            (change)="applyFilters()"
+            class="select select-bordered w-full max-w-xs">
+            <option value="">All Ranks</option>
+            <option *ngFor="let rank of academicRanks" [value]="rank.Rank">
+              {{ rank.Rank }}
+            </option>
+          </select>
         </div>
       </div>
 
+      <!-- Scrollable Content -->
+      <div class="modal-content">
+        <div class="table-container">
+          <!-- Show this message when there are no records -->
+          <div *ngIf="!paginatedUserList?.length" class="text-center py-8">
+            <!-- Search Icon - increased size from text-5xl to text-7xl -->
+            <i class="fas fa-search text-gray-400 text-4xl mb-4"></i>
+            <p class="text-gray-500 italic">No records of {{ modalTitle }} found</p>
+          </div>
+          
+          <!-- Only show table when there are records -->
+          <table *ngIf="paginatedUserList?.length" class="table w-full">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>F-Code</th>
+                <th>Department</th>
+                <th>Employment Type</th>
+                <th>Rank</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of paginatedUserList">
+                <td>{{user.name}}</td>
+                <td>{{user.fcode}}</td>
+                <td>{{user.department}}</td>
+                <td>{{user.employmentType}}</td>
+                <td>{{user.rank}}</td>
+                <td>
+                  <button class="btn btn-sm bg-maroon text-white hover:bg-black"
+                          (click)="showUserDetails(user)">
+                    View Details
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Footer with Close Button -->
       <div class="modal-action">
-        <button class="btn" (click)="closeUserModal()">Close</button>
+        <button class="btn bg-maroon text-white hover:bg-black" (click)="closeUserModal()">Close</button>
       </div>
     </div>
   </div>
 
   <!-- User Details Modal -->
-  <div *ngIf="showDetailsModal" class="modal modal-open" style="z-index: 200;">
-    <div class="modal-box relative w-11/12 max-w-5xl">
-      <h3 class="font-bold text-lg mb-4">User Details</h3>
+  <div *ngIf="showDetailsModal" class="modal modal-open details-modal">
+    <div class="modal-box">
+      <div class="modal-header border-b border-gray-200 pb-3">
+        <h3 class="font-bold text-xl text-maroon">User Details</h3>
+      </div>
       
-      <div *ngIf="selectedUser" class="mt-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="col-span-2">
-            <h4 class="font-semibold mb-2">Basic Information</h4>
-            <div class="grid grid-cols-2 gap-4 bg-base-200 p-4 rounded-lg">
-              <p><strong>Name:</strong> {{selectedUser.name}}</p>
-              <p><strong>F-Code:</strong> {{selectedUser.fcode}}</p>
-              <p><strong>Department:</strong> {{selectedUser.department}}</p>
-              <p><strong>Employment Type:</strong> {{selectedUser.employmentType}}</p>
-              <p><strong>Rank:</strong> {{selectedUser.rank}}</p>
-              <p><strong>Initial Employment Date:</strong> {{selectedUser.initialEmploymentDate | date}}</p>
-              <p><strong>License Number:</strong> {{selectedUser.licenseNumber}}</p>
-            </div>
+      <div class="modal-content py-4">
+        <div *ngIf="selectedUser" class="details-grid">
+          <!-- Name -->
+          <div class="detail-item">
+            <label class="text-sm text-gray-600">Name</label>
+            <p class="font-semibold">{{selectedUser.name}}</p>
           </div>
 
-          <div class="col-span-2">
-            <h4 class="font-semibold mb-2">Educational Background</h4>
-            <div class="space-y-4">
-              <div *ngIf="selectedUser.education?.masters" class="bg-base-200 p-4 rounded-lg">
-                <h5 class="font-semibold">Masters Degree</h5>
-                <p><strong>School:</strong> {{selectedUser.education.masters.school}}</p>
-                <p><strong>Graduation Date:</strong> {{selectedUser.education.masters.graduationDate | date}}</p>
-              </div>
+          <!-- F-Code -->
+          <div class="detail-item">
+            <label class="text-sm text-gray-600">F-Code</label>
+            <p class="font-semibold">{{selectedUser.fcode}}</p>
+          </div>
 
-              <div *ngIf="selectedUser.education?.doctoral" class="bg-base-200 p-4 rounded-lg">
-                <h5 class="font-semibold">Doctoral Degree</h5>
-                <p><strong>School:</strong> {{selectedUser.education.doctoral.school}}</p>
-                <p><strong>Graduation Date:</strong> {{selectedUser.education.doctoral.graduationDate | date}}</p>
-              </div>
-            </div>
+          <!-- Department -->
+          <div class="detail-item">
+            <label class="text-sm text-gray-600">Department</label>
+            <p class="font-semibold">{{selectedUser.department || 'N/A'}}</p>
+          </div>
+
+          <!-- Employment Type -->
+          <div class="detail-item">
+            <label class="text-sm text-gray-600">Employment Type</label>
+            <p>
+              <span class="px-2 py-0.5 rounded-full text-xs" 
+                    [ngClass]="{
+                      'bg-green-100 text-green-800': selectedUser.employmentType === 'fulltime',
+                      'bg-blue-100 text-blue-800': selectedUser.employmentType === 'parttime',
+                      'bg-yellow-100 text-yellow-800': selectedUser.employmentType === 'temporary'
+                    }">
+                {{selectedUser.employmentType}}
+              </span>
+            </p>
+          </div>
+
+          <!-- Rank -->
+          <div class="detail-item">
+            <label class="text-sm text-gray-600">Rank</label>
+            <p class="font-semibold">{{selectedUser.rank || 'N/A'}}</p>
           </div>
         </div>
       </div>
 
-      <div class="modal-action">
-        <button class="btn bg-maroon text-white hover:bg-black" (click)="closeDetailsModal()">Close</button>
+      <div class="modal-action pt-3 border-t border-gray-200">
+        <button class="btn btn-sm bg-maroon text-white hover:bg-black transition-colors duration-200"
+                (click)="closeDetailsModal()">
+          Close
+        </button>
       </div>
     </div>
   </div>

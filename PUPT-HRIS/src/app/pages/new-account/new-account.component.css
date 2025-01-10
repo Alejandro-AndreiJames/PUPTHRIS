@@ -105,15 +105,17 @@ h2 {
 
 /* Roles styling */
 .roles-container {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Two-column layout for checkboxes */
-  gap: 10px;
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  align-items: center;
 }
 
 .role-checkbox {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
 }
 
 .role-checkbox input[type="checkbox"] {
