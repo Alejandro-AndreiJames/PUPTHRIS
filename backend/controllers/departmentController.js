@@ -4,11 +4,21 @@ const CollegeCampus = require('../models/collegeCampusModel');
 exports.addDepartment = async (req, res) => {
   try {
     const { DepartmentName, Description, CollegeCampusID } = req.body;
-    const newDepartment = await Department.create({ DepartmentName, Description, CollegeCampusID });
+    
+    // Let Sequelize handle the timestamps automatically
+    const newDepartment = await Department.create({ 
+      DepartmentName, 
+      Description, 
+      CollegeCampusID 
+    });
+    
     res.status(201).json(newDepartment);
   } catch (error) {
     console.error('Error adding department:', error);
-    res.status(500).send('Internal Server Error');
+    res.status(500).json({ 
+      message: 'Internal Server Error',
+      error: error.message 
+    });
   }
 };
 

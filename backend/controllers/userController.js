@@ -57,7 +57,7 @@ exports.addUser = async (req, res) => {
 
       // Create corresponding BasicDetails record
       await BasicDetails.create({
-        FacultyCode: Fcode, // Only set FacultyCode
+        FacultyCode: Fcode,
         LastName: Surname,
         FirstName: FirstName,
         MiddleInitial: MiddleName ? MiddleName.charAt(0) : null,
