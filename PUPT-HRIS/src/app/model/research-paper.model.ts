@@ -1,12 +1,13 @@
+import { User } from './user.model';
+
 export interface ResearchPaper {
-  ResearchID?: number;
-  UserID: number;
+  ResearchID: number;
   Title: string;
   Description?: string;
   Authors: string;
-  PublicationDate: Date | string;
+  PublicationDate: Date;
   ReferenceLink?: string;
   DocumentPath?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  UserID: number;
+  User?: User;
 }

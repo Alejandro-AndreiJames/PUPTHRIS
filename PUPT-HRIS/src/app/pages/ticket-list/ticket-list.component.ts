@@ -139,6 +139,8 @@ export class TicketListComponent implements OnInit {
         next: () => {
           this.closeDialog();
           this.showSuccessToast = true;
+          this.isSubmitting = false;
+          this.ticketForm.reset();
           setTimeout(() => {
             this.showSuccessToast = false;
           }, 3000);
@@ -146,6 +148,9 @@ export class TicketListComponent implements OnInit {
         error: (error) => {
           console.error('Error submitting ticket:', error);
           this.error = 'Failed to submit. Please try again.';
+          this.isSubmitting = false;
+        },
+        complete: () => {
           this.isSubmitting = false;
         }
       });

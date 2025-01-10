@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { LectureMaterial } from '../model/lecture-material.model';
+import { CampusContextService } from '../services/campus-context.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +12,10 @@ import { LectureMaterial } from '../model/lecture-material.model';
 export class LectureMaterialService {
   private apiUrl = `${environment.apiBaseUrl}/lecture-materials`;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private campusContextService: CampusContextService
+  ) {}
 
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
@@ -28,10 +32,23 @@ export class LectureMaterialService {
       .pipe(catchError(this.handleError));
   }
 
-  getLectureMaterials(userId?: number): Observable<LectureMaterial[]> {
-    const url = userId ? `${this.apiUrl}/${userId}` : this.apiUrl;
-    return this.http.get<LectureMaterial[]>(url, { headers: this.getHeaders() })
-      .pipe(catchError(this.handleError));
+  getLectureMaterials(
+    page: number = 1,
+    limit: number = 10,
+    search: string = '',
+    viewMode: 'personal' | 'all' = 'all'
+  ): Observable<any> {
+    const selectedCampusId = this.campusContextService.getCurrentCampusId();
+    
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString())
+      .set('search', search)
+      .set('viewMode', viewMode);
+
+    const headers = new HttpHeaders().set('selected-campus-id', selectedCampusId?.toString() || '');
+
+    return this.http.get<any>(this.apiUrl, { params, headers });
   }
 
   deleteLectureMaterial(id: number): Observable<any> {

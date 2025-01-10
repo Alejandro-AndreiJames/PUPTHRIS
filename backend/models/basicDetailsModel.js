@@ -9,7 +9,7 @@ const BasicDetails = sequelize.define('BasicDetails', {
   },
   EmployeeNo: {
     type: DataTypes.STRING(50),
-    allowNull: false,
+    allowNull: true,
   },
   FacultyCode: {
     type: DataTypes.STRING(50),

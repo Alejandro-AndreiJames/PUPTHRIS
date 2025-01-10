@@ -15,6 +15,20 @@ import { jwtDecode } from 'jwt-decode';
 })
 export class ResearchPapersComponent implements OnInit {
   researchPapers: ResearchPaper[] = [];
+  @Input() set viewMode(value: 'personal' | 'all') {
+    if (this._viewMode !== value) {
+      this._viewMode = value;
+      // Reload data when viewMode changes
+      if (this.researchService) {
+        this.currentPage = 1; // Reset to first page
+        this.loadResearchPapers();
+      }
+    }
+  }
+  get viewMode(): 'personal' | 'all' {
+    return this._viewMode;
+  }
+  private _viewMode: 'personal' | 'all' = 'all';
   @Input() showModal: boolean = false;
   isEditing: boolean = false;
   currentResearchId: number | null = null;
@@ -28,6 +42,18 @@ export class ResearchPapersComponent implements OnInit {
   showToast: boolean = false;
   toastMessage: string = '';
   toastType: 'success' | 'error' | 'warning' = 'success';
+  
+  // Add pagination properties
+  currentPage: number = 1;
+  totalPages: number = 1;
+  itemsPerPage: number = 10;
+  totalItems: number = 0;
+  
+  // Add search property
+  searchTerm: string = '';
+
+  // Add loading state
+  isLoading: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -61,22 +87,46 @@ export class ResearchPapersComponent implements OnInit {
   }
 
   loadResearchPapers(): void {
-    this.researchService.getResearchPapers(this.userId).subscribe({
-      next: (papers) => {
-        this.researchPapers = papers;
+    this.isLoading = true;
+    // Reset search when switching views
+    this.searchTerm = '';
+    
+    this.researchService.getResearchPapers(
+      this.currentPage,
+      this.itemsPerPage,
+      this.searchTerm,
+      this.viewMode
+    ).subscribe({
+      next: (response) => {
+        this.researchPapers = response.items;
+        this.currentPage = response.currentPage;
+        this.totalPages = response.totalPages;
+        this.totalItems = response.totalItems;
+        this.itemsPerPage = response.itemsPerPage;
+        this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading research papers:', error);
+        this.showToastNotification('Error loading research papers', 'error');
+        this.isLoading = false;
       }
     });
   }
 
-  toggleModal(): void {
-    this.showModal = !this.showModal;
-    if (this.showModal && !this.isEditing) {
+  get showAddButton(): boolean {
+    return this.viewMode === 'personal';
+  }
+
+  openModal(): void {
+    this.showModal = true;
+    if (!this.isEditing) {
       this.researchForm.reset();
       this.initialFormValue = this.researchForm.getRawValue();
     }
+  }
+
+  toggleModal(): void {
+    this.showModal = !this.showModal;
     if (!this.showModal) {
       this.researchForm.reset();
       this.isEditing = false;
@@ -89,10 +139,29 @@ export class ResearchPapersComponent implements OnInit {
       const formData = new FormData();
       const formValue = this.researchForm.value;
       
-      // Append form fields to FormData
-      Object.keys(formValue).forEach(key => {
-        if (key !== 'document') {
-          formData.append(key, formValue[key]);
+      // Define interface for cleaned values
+      interface CleanedValues {
+        Title: string;
+        Description: string;
+        Authors: string;
+        PublicationDate: string | null;
+        ReferenceLink: string;
+        [key: string]: string | null; // Index signature for dynamic access
+      }
+      
+      // Clean up form values with proper typing
+      const cleanedValues: CleanedValues = {
+        Title: formValue.Title || '',
+        Description: formValue.Description || '',
+        Authors: formValue.Authors || '',
+        PublicationDate: formValue.PublicationDate || null,
+        ReferenceLink: formValue.ReferenceLink || '',
+      };
+      
+      // Append cleaned form fields to FormData
+      Object.keys(cleanedValues).forEach(key => {
+        if (key !== 'document' && cleanedValues[key] !== null) {
+          formData.append(key, cleanedValues[key] as string);
         }
       });
 
@@ -135,22 +204,30 @@ export class ResearchPapersComponent implements OnInit {
     this.isEditing = true;
     this.currentResearchId = paper.ResearchID!;
     
+    // Format the date to YYYY-MM-DD for the input type="date"
+    const formattedDate = paper.PublicationDate ? 
+      new Date(paper.PublicationDate).toISOString().split('T')[0] : '';
+    
     this.researchForm.patchValue({
       Title: paper.Title,
       Description: paper.Description,
       Authors: paper.Authors,
-      PublicationDate: paper.PublicationDate,
+      PublicationDate: formattedDate, // Use the formatted date
       ReferenceLink: paper.ReferenceLink,
       DocumentPath: paper.DocumentPath
     });
 
     this.initialFormValue = this.researchForm.getRawValue();
-
     this.showModal = true;
   }
 
-  deletePaper(id: number): void {
-    this.paperToDelete = id;
+  deletePaper(paper: ResearchPaper): void {
+    if (!paper || !paper.ResearchID) {
+      this.showToastNotification('Cannot delete paper: Invalid paper information', 'error');
+      return;
+    }
+    
+    this.paperToDelete = paper.ResearchID;
     this.showDeletePrompt = true;
   }
 
@@ -160,20 +237,23 @@ export class ResearchPapersComponent implements OnInit {
   }
 
   confirmDelete(): void {
-    if (this.paperToDelete) {
-      this.researchService.deleteResearchPaper(this.paperToDelete).subscribe({
-        next: () => {
-          this.loadResearchPapers();
-          this.showDeletePrompt = false;
-          this.paperToDelete = null;
-          this.showToastNotification('Research paper deleted successfully', 'success');
-        },
-        error: (error) => {
-          console.error('Error deleting research paper:', error);
-          this.showToastNotification('Error deleting research paper', 'error');
-        }
-      });
+    if (!this.paperToDelete) {
+      this.showToastNotification('No paper selected for deletion', 'error');
+      return;
     }
+
+    this.researchService.deleteResearchPaper(this.paperToDelete).subscribe({
+      next: () => {
+        this.loadResearchPapers();
+        this.showDeletePrompt = false;
+        this.paperToDelete = null;
+        this.showToastNotification('Research paper deleted successfully', 'success');
+      },
+      error: (error) => {
+        console.error('Error deleting research paper:', error);
+        this.showToastNotification('Error deleting research paper', 'error');
+      }
+    });
   }
 
   downloadFile(documentPath: string): void {
@@ -213,5 +293,63 @@ export class ResearchPapersComponent implements OnInit {
     setTimeout(() => {
       this.showToast = false;
     }, 3000); // Hide toast after 3 seconds
+  }
+
+  onViewPaper(paper: ResearchPaper): void {
+    if (!paper) {
+      this.showToastNotification('Paper information not available', 'error');
+      return;
+    }
+
+    // First try to download document if available
+    if (paper.DocumentPath) {
+      this.downloadFile(paper.DocumentPath);
+      return;
+    }
+
+    // If no document, try to open reference link
+    if (paper.ReferenceLink) {
+      if (this.isValidUrl(paper.ReferenceLink)) {
+        window.open(paper.ReferenceLink, '_blank');
+      } else {
+        this.showToastNotification('Invalid reference link', 'error');
+      }
+      return;
+    }
+
+    this.showToastNotification('No document or reference link available', 'warning');
+  }
+
+  private isValidUrl(url: string): boolean {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // Add pagination methods
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.loadResearchPapers();
+  }
+
+  // Add search method
+  onSearch(event: any): void {
+    this.searchTerm = event.target.value;
+    this.currentPage = 1; // Reset to first page when searching
+    this.loadResearchPapers();
+  }
+
+  // Add debounced search
+  private searchDebounce: any;
+  onSearchInput(event: any): void {
+    if (this.searchDebounce) {
+      clearTimeout(this.searchDebounce);
+    }
+    this.searchDebounce = setTimeout(() => {
+      this.onSearch(event);
+    }, 300);
   }
 }

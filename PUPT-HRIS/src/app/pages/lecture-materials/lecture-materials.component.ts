@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LectureMaterialService } from '../../services/lecture-material.service';
 import { LectureMaterial } from '../../model/lecture-material.model';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-lecture-materials',
@@ -14,6 +15,21 @@ import { CommonModule } from '@angular/common';
 export class LectureMaterialsComponent implements OnInit {
   materials: LectureMaterial[] = [];
   materialForm: FormGroup;
+  @Input() set viewMode(value: 'personal' | 'all') {
+    if (this._viewMode !== value) {
+      this._viewMode = value;
+      if (this.lectureMaterialService) {
+        this.currentPage = 1;
+        this.searchTerm = '';
+        this.loadMaterials();
+      }
+    }
+  }
+  get viewMode(): 'personal' | 'all' {
+    return this._viewMode;
+  }
+  private _viewMode: 'personal' | 'all' = 'all';
+  currentUserId: number = 0;
   isEditing = false;
   currentMaterialId: number | null = null;
   showModal = false;
@@ -26,11 +42,19 @@ export class LectureMaterialsComponent implements OnInit {
   materialToDelete: number | null = null;
   originalMaterialData: any = null;
   hasChanges = false;
+  currentPage: number = 1;
+  totalPages: number = 1;
+  itemsPerPage: number = 10;
+  totalItems: number = 0;
+  searchTerm: string = '';
+  isLoading: boolean = false;
 
   constructor(
     private fb: FormBuilder, 
-    private lectureMaterialService: LectureMaterialService
+    private lectureMaterialService: LectureMaterialService,
+    private authService: AuthService
   ) {
+    this.currentUserId = this.authService.getCurrentUserId();
     this.materialForm = this.fb.group({
       Title: ['', Validators.required],
       Description: [''],
@@ -39,6 +63,9 @@ export class LectureMaterialsComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    if (!this.currentUserId) {
+      this.currentUserId = this.authService.getCurrentUserId();
+    }
     this.loadMaterials();
     this.loadS3Config();
   }
@@ -54,11 +81,25 @@ export class LectureMaterialsComponent implements OnInit {
   }
 
   loadMaterials(): void {
-    this.lectureMaterialService.getLectureMaterials().subscribe({
-      next: (materials) => this.materials = materials,
+    this.isLoading = true;
+    this.lectureMaterialService.getLectureMaterials(
+      this.currentPage,
+      this.itemsPerPage,
+      this.searchTerm,
+      this.viewMode
+    ).subscribe({
+      next: (response) => {
+        this.materials = response.items;
+        this.currentPage = response.currentPage;
+        this.totalPages = response.totalPages;
+        this.totalItems = response.totalItems;
+        this.itemsPerPage = response.itemsPerPage;
+        this.isLoading = false;
+      },
       error: (error) => {
         console.error('Error loading materials:', error);
         this.showToastNotification('Error loading materials', 'error');
+        this.isLoading = false;
       }
     });
   }
@@ -176,10 +217,17 @@ export class LectureMaterialsComponent implements OnInit {
     this.materialToDelete = null;
   }
 
-  downloadFile(filePath: string): void {
-    if (this.s3Config && filePath) {
+  downloadFile(filePath: string | undefined): void {
+    if (!filePath) {
+      this.showToastNotification('No file available for download', 'warning');
+      return;
+    }
+
+    if (this.s3Config) {
       const url = `https://${this.s3Config.bucketName}.s3.${this.s3Config.region}.amazonaws.com/${filePath}`;
       window.open(url, '_blank');
+    } else {
+      this.showToastNotification('Configuration error', 'error');
     }
   }
 
@@ -202,5 +250,26 @@ export class LectureMaterialsComponent implements OnInit {
     if (!this.showModal) {
       this.resetForm();
     }
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.loadMaterials();
+  }
+
+  onSearch(event: any): void {
+    this.searchTerm = event.target.value;
+    this.currentPage = 1;
+    this.loadMaterials();
+  }
+
+  private searchDebounce: any;
+  onSearchInput(event: any): void {
+    if (this.searchDebounce) {
+      clearTimeout(this.searchDebounce);
+    }
+    this.searchDebounce = setTimeout(() => {
+      this.onSearch(event);
+    }, 300);
   }
 }

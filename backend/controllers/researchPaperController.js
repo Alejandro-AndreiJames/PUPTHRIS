@@ -3,6 +3,9 @@ const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/cl
 const ResearchPaper = require('../models/researchPaperModel');
 const s3Client = require('../config/s3.config');
 const { S3_BUCKET_NAME } = process.env;
+const User = require('../models/userModel');
+const { Op } = require('sequelize');
+
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -84,15 +87,85 @@ exports.updateResearchPaper = [
 
 exports.getResearchPapers = async (req, res) => {
   try {
-    const userId = req.params.userId || req.user.userId;
-    const papers = await ResearchPaper.findAll({ 
-      where: { UserID: userId },
-      order: [['PublicationDate', 'DESC']]
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+    const viewMode = req.query.viewMode || 'all';
+    const offset = (page - 1) * limit;
+    
+    // Get the current selected campus from the request header
+    const selectedCampusId = parseInt(req.headers['selected-campus-id']) || null;
+    
+    console.log('Request params:', {
+      currentUserId: req.user.userId,
+      userRoles: req.user.roles,
+      selectedCampusId,
+      page,
+      limit,
+      search,
+      viewMode
     });
-    res.status(200).json(papers);
+
+    let whereClause = {};
+    let userWhereClause = {};
+    
+    if (viewMode === 'personal') {
+      // In personal view, only show user's own research papers
+      whereClause.UserID = req.user.userId;
+    } else {
+      // In all view, show research papers from users of the selected campus
+      if (!selectedCampusId) {
+        return res.status(400).json({ 
+          error: 'Campus ID is required for viewing all research papers' 
+        });
+      }
+      userWhereClause.CollegeCampusID = selectedCampusId;
+    }
+
+    // Add search conditions if search term exists
+    if (search) {
+      whereClause = {
+        ...whereClause,
+        [Op.or]: [
+          { Title: { [Op.like]: `%${search}%` } },
+          { Authors: { [Op.like]: `%${search}%` } },
+          { Abstract: { [Op.like]: `%${search}%` } }
+        ]
+      };
+    }
+
+    console.log('Where clause:', whereClause);
+    console.log('User where clause:', userWhereClause);
+
+    const { count, rows } = await ResearchPaper.findAndCountAll({
+      where: whereClause,
+      include: [{
+        model: User,
+        attributes: ['UserID', 'Surname', 'FirstName', 'MiddleName', 'NameExtension', 'Email', 'CollegeCampusID'],
+        as: 'User',
+        where: userWhereClause // Apply campus filter on the User model
+      }],
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset
+    });
+
+    const totalPages = Math.ceil(count / limit);
+    
+    res.status(200).json({
+      currentPage: page,
+      totalPages,
+      totalItems: count,
+      itemsPerPage: limit,
+      items: rows
+    });
+
   } catch (error) {
     console.error('Error getting research papers:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ 
+      error: 'Internal Server Error',
+      details: error.message 
+    });
   }
 };
 
