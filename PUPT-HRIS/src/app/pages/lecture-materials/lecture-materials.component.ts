@@ -15,7 +15,20 @@ import { AuthService } from '../../services/auth.service';
 export class LectureMaterialsComponent implements OnInit {
   materials: LectureMaterial[] = [];
   materialForm: FormGroup;
-  @Input() viewMode: 'personal' | 'all' = 'all';
+  @Input() set viewMode(value: 'personal' | 'all') {
+    if (this._viewMode !== value) {
+      this._viewMode = value;
+      if (this.lectureMaterialService) {
+        this.currentPage = 1;
+        this.searchTerm = '';
+        this.loadMaterials();
+      }
+    }
+  }
+  get viewMode(): 'personal' | 'all' {
+    return this._viewMode;
+  }
+  private _viewMode: 'personal' | 'all' = 'all';
   currentUserId: number = 0;
   isEditing = false;
   currentMaterialId: number | null = null;
@@ -29,6 +42,12 @@ export class LectureMaterialsComponent implements OnInit {
   materialToDelete: number | null = null;
   originalMaterialData: any = null;
   hasChanges = false;
+  currentPage: number = 1;
+  totalPages: number = 1;
+  itemsPerPage: number = 10;
+  totalItems: number = 0;
+  searchTerm: string = '';
+  isLoading: boolean = false;
 
   constructor(
     private fb: FormBuilder, 
@@ -62,20 +81,25 @@ export class LectureMaterialsComponent implements OnInit {
   }
 
   loadMaterials(): void {
-    this.lectureMaterialService.getLectureMaterials().subscribe({
-      next: (materials) => {
-        if (this.viewMode === 'personal') {
-          // Filter for personal materials on the client side
-          this.materials = materials.filter(material => material.UserID === this.currentUserId);
-        } else {
-          // Show all materials
-          this.materials = materials;
-        }
-        console.log('Loaded materials:', this.materials);
+    this.isLoading = true;
+    this.lectureMaterialService.getLectureMaterials(
+      this.currentPage,
+      this.itemsPerPage,
+      this.searchTerm,
+      this.viewMode
+    ).subscribe({
+      next: (response) => {
+        this.materials = response.items;
+        this.currentPage = response.currentPage;
+        this.totalPages = response.totalPages;
+        this.totalItems = response.totalItems;
+        this.itemsPerPage = response.itemsPerPage;
+        this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading materials:', error);
         this.showToastNotification('Error loading materials', 'error');
+        this.isLoading = false;
       }
     });
   }
@@ -226,5 +250,26 @@ export class LectureMaterialsComponent implements OnInit {
     if (!this.showModal) {
       this.resetForm();
     }
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.loadMaterials();
+  }
+
+  onSearch(event: any): void {
+    this.searchTerm = event.target.value;
+    this.currentPage = 1;
+    this.loadMaterials();
+  }
+
+  private searchDebounce: any;
+  onSearchInput(event: any): void {
+    if (this.searchDebounce) {
+      clearTimeout(this.searchDebounce);
+    }
+    this.searchDebounce = setTimeout(() => {
+      this.onSearch(event);
+    }, 300);
   }
 }

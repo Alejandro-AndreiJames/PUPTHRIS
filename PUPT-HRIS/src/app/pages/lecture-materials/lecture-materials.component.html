@@ -1,7 +1,26 @@
 <div class="container mx-auto">
   <div class="flex justify-between items-center mb-4">
     <h2 class="text-xl font-bold">Lecture Materials</h2>
-    <button class="btn btn-primary" (click)="toggleModal()">+ Add Lecture Material</button>
+    <button *ngIf="viewMode === 'personal'" 
+            class="btn btn-primary" 
+            (click)="toggleModal()">
+      + Add Lecture Material
+    </button>
+  </div>
+
+  <!-- Add search bar -->
+  <div class="mb-4">
+    <input 
+      type="text"
+      placeholder="Search lecture materials..."
+      class="input input-bordered w-full max-w-xs"
+      (input)="onSearchInput($event)"
+    >
+  </div>
+
+  <!-- Loading indicator -->
+  <div *ngIf="isLoading" class="flex justify-center items-center py-4">
+    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-maroon"></div>
   </div>
 
   <!-- Modal -->
@@ -190,5 +209,33 @@
     <div *ngIf="toastType === 'warning'" class="alert alert-warning">
       <span>{{ toastMessage }}</span>
     </div>
+  </div>
+
+  <!-- Add pagination -->
+  <div class="flex justify-center mt-4 space-x-2">
+    <button 
+      class="btn btn-sm"
+      [disabled]="currentPage === 1"
+      (click)="onPageChange(currentPage - 1)"
+    >
+      Previous
+    </button>
+    
+    <span class="px-4 py-2">
+      Page {{currentPage}} of {{totalPages}}
+    </span>
+    
+    <button 
+      class="btn btn-sm"
+      [disabled]="currentPage === totalPages"
+      (click)="onPageChange(currentPage + 1)"
+    >
+      Next
+    </button>
+  </div>
+
+  <!-- Show total items -->
+  <div class="text-center text-sm text-gray-600 mt-2">
+    Total items: {{totalItems}}
   </div>
 </div>

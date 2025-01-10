@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
@@ -28,10 +28,19 @@ export class LectureMaterialService {
       .pipe(catchError(this.handleError));
   }
 
-  getLectureMaterials(userId?: number): Observable<LectureMaterial[]> {
-    const url = userId ? `${this.apiUrl}/${userId}` : this.apiUrl;
-    return this.http.get<LectureMaterial[]>(url, { headers: this.getHeaders() })
-      .pipe(catchError(this.handleError));
+  getLectureMaterials(
+    page: number = 1,
+    limit: number = 10,
+    search: string = '',
+    viewMode: 'personal' | 'all' = 'all'
+  ): Observable<any> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString())
+      .set('search', search)
+      .set('viewMode', viewMode);
+
+    return this.http.get<any>(this.apiUrl, { params });
   }
 
   deleteLectureMaterial(id: number): Observable<any> {
