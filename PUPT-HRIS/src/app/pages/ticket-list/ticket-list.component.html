@@ -1,396 +1,405 @@
-<div class="container mx-auto p-6">
-  <!-- Superadmin View -->
-  <div *ngIf="isSuperAdmin" class="mb-8">
-    <div class="flex justify-between items-center mb-6">
-      <div>
-        <h2 class="text-2xl font-bold text-gray-800">Support Tickets Management</h2>
-        <p class="text-gray-600">Manage and respond to user tickets</p>
-      </div>
-    </div>
+<div class="container">
+  <!-- Header Section -->
+  <div class="bg-maroon">
+    <h1>Support Tickets Management</h1>
+    <p class="header-subtitle">Manage and respond to user tickets</p>
+  </div>
 
-    <!-- Loading State -->
-    <div *ngIf="isLoading" class="flex justify-center items-center py-8">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-    </div>
-
-    <!-- Tickets Table -->
-    <div class="bg-white rounded-lg shadow-lg p-6">
-      <div class="flex flex-wrap gap-4 mb-4">
-        <!-- Status Filter -->
-        <div class="form-control">
-          <select 
-            [(ngModel)]="statusFilter" 
-            (ngModelChange)="applyFilter('status', $event)"
-            class="select select-bordered"
-            [class.select-primary]="isFilterActive('status')"
-          >
-            <option *ngFor="let option of statusOptions" 
-                    [value]="option.value">
-              {{ option.label }}
-            </option>
-          </select>
+  <!-- Content Section -->
+  <div class="p-6 space-y-6">
+    <!-- Superadmin View -->
+    <div *ngIf="isSuperAdmin" class="mb-8">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h2 class="text-2xl font-bold text-gray-800">Support Tickets Management</h2>
+          <p class="text-gray-600">Manage and respond to user tickets</p>
         </div>
-
-        <!-- Priority Filter -->
-        <div class="form-control">
-          <select 
-            [(ngModel)]="priorityFilter" 
-            (ngModelChange)="applyFilter('priority', $event)"
-            class="select select-bordered"
-            [class.select-primary]="isFilterActive('priority')"
-          >
-            <option *ngFor="let option of priorityOptions" 
-                    [value]="option.value">
-              {{ option.label }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Reset Filters Button (only show when filters are active) -->
-        <button 
-          *ngIf="getActiveFiltersCount() > 0"
-          class="btn btn-ghost gap-2" 
-          (click)="resetFilters()"
-        >
-          <i class="fas fa-times"></i>
-          Clear Filters ({{ getActiveFiltersCount() }})
-        </button>
       </div>
 
-      <!-- Loading indicator -->
-      <div *ngIf="isLoading" class="flex justify-center items-center py-4">
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="flex justify-center items-center py-8">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
 
-      <div class="overflow-x-auto">
-        <table class="table w-full">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>User</th>
-              <th>Subject</th>
-              <th>Status</th>
-              <th>Priority</th>
-              <th>Created</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let ticket of getTicketsArray()">
-              <td>#{{ ticket.TicketID }}</td>
-              <td>{{ ticket.Creator?.FirstName }} {{ ticket.Creator?.Surname }}</td>
-              <td>{{ ticket.Subject }}</td>
-              <td>
-                <span class="badge" [ngClass]="{
-                  'bg-red-100 text-red-800': ticket.Status === 'open',
-                  'bg-yellow-100 text-yellow-800': ticket.Status === 'in-progress',
-                  'bg-green-100 text-green-800': ticket.Status === 'resolved',
-                  'bg-gray-100 text-gray-800': ticket.Status === 'closed'
-                }">
-                  {{ ticket.Status }}
-                </span>
-              </td>
-              <td>
-                <span class="badge" [ngClass]="{
-                  'bg-red-100 text-red-800': ticket.Priority === 'high',
-                  'bg-yellow-100 text-yellow-800': ticket.Priority === 'medium',
-                  'bg-blue-100 text-blue-800': ticket.Priority === 'low'
-                }">
-                  {{ ticket.Priority }}
-                </span>
-              </td>
-              <td>{{ ticket.CreatedAt | date:'short' }}</td>
-              <td>
-                <div class="flex gap-2">
-                  <button class="btn btn-sm btn-ghost" (click)="viewTicketDetails(ticket)">
-                    <i class="fas fa-eye"></i>
-                  </button>
-                  <button class="btn btn-sm btn-error btn-ghost" (click)="deleteTicket(ticket.TicketID)">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <!-- Empty State -->
-            <tr *ngIf="getTicketsArray().length === 0">
-              <td colspan="7" class="text-center py-8">
-                <p class="text-gray-500">No tickets found</p>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Tickets Table -->
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="flex flex-wrap gap-4 mb-4">
+          <!-- Status Filter -->
+          <div class="form-control">
+            <select 
+              [(ngModel)]="statusFilter" 
+              (ngModelChange)="applyFilter('status', $event)"
+              class="select select-bordered"
+              [class.select-primary]="isFilterActive('status')"
+            >
+              <option *ngFor="let option of statusOptions" 
+                      [value]="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Priority Filter -->
+          <div class="form-control">
+            <select 
+              [(ngModel)]="priorityFilter" 
+              (ngModelChange)="applyFilter('priority', $event)"
+              class="select select-bordered"
+              [class.select-primary]="isFilterActive('priority')"
+            >
+              <option *ngFor="let option of priorityOptions" 
+                      [value]="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Reset Filters Button (only show when filters are active) -->
+          <button 
+            *ngIf="getActiveFiltersCount() > 0"
+            class="btn btn-ghost gap-2" 
+            (click)="resetFilters()"
+          >
+            <i class="fas fa-times"></i>
+            Clear Filters ({{ getActiveFiltersCount() }})
+          </button>
+        </div>
+
+        <!-- Loading indicator -->
+        <div *ngIf="isLoading" class="flex justify-center items-center py-4">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="table w-full">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>User</th>
+                <th>Subject</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let ticket of getTicketsArray()">
+                <td>#{{ ticket.TicketID }}</td>
+                <td>{{ ticket.Creator?.FirstName }} {{ ticket.Creator?.Surname }}</td>
+                <td>{{ ticket.Subject }}</td>
+                <td>
+                  <span class="badge" [ngClass]="{
+                    'bg-red-100 text-red-800': ticket.Status === 'open',
+                    'bg-yellow-100 text-yellow-800': ticket.Status === 'in-progress',
+                    'bg-green-100 text-green-800': ticket.Status === 'resolved',
+                    'bg-gray-100 text-gray-800': ticket.Status === 'closed'
+                  }">
+                    {{ ticket.Status }}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="{
+                    'bg-red-100 text-red-800': ticket.Priority === 'high',
+                    'bg-yellow-100 text-yellow-800': ticket.Priority === 'medium',
+                    'bg-blue-100 text-blue-800': ticket.Priority === 'low'
+                  }">
+                    {{ ticket.Priority }}
+                  </span>
+                </td>
+                <td>{{ ticket.CreatedAt | date:'short' }}</td>
+                <td>
+                  <div class="flex gap-2">
+                    <button class="btn btn-sm btn-ghost" (click)="viewTicketDetails(ticket)">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-error btn-ghost" (click)="deleteTicket(ticket.TicketID)">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <!-- Empty State -->
+              <tr *ngIf="getTicketsArray().length === 0">
+                <td colspan="7" class="text-center py-8">
+                  <p class="text-gray-500">No tickets found</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
 
-    <!-- Ticket Details Modal -->
-    <dialog id="ticketDetailsDialog" class="modal">
-      <div class="modal-box w-11/12 max-w-3xl">
-        <form method="dialog" class="modal-header">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="font-bold text-lg">Ticket #{{ selectedTicket?.TicketID }}</h3>
-            <button class="btn btn-sm btn-circle btn-ghost" (click)="closeResponseDialog()">✕</button>
-          </div>
-        </form>
-        
-        <div *ngIf="selectedTicket" class="space-y-4">
-          <!-- Ticket Info -->
-          <div class="bg-gray-50 p-4 rounded-lg">
-            <div class="flex justify-between mb-2">
-              <span class="text-sm text-gray-500">Created: {{ selectedTicket.CreatedAt | date:'medium' }}</span>
-              <div class="flex gap-2">
-                <span class="badge" [ngClass]="{
-                  'bg-red-100 text-red-800': selectedTicket.Status === 'open',
-                  'bg-yellow-100 text-yellow-800': selectedTicket.Status === 'in-progress',
-                  'bg-green-100 text-green-800': selectedTicket.Status === 'resolved',
-                  'bg-gray-100 text-gray-800': selectedTicket.Status === 'closed'
-                }">{{ selectedTicket.Status }}</span>
-                <span class="badge" [ngClass]="{
-                  'bg-red-100 text-red-800': selectedTicket.Priority === 'high',
-                  'bg-yellow-100 text-yellow-800': selectedTicket.Priority === 'medium',
-                  'bg-blue-100 text-blue-800': selectedTicket.Priority === 'low'
-                }">{{ selectedTicket.Priority }}</span>
-              </div>
+      <!-- Ticket Details Modal -->
+      <dialog id="ticketDetailsDialog" class="modal">
+        <div class="modal-box w-11/12 max-w-3xl">
+          <form method="dialog" class="modal-header">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="font-bold text-lg">Ticket #{{ selectedTicket?.TicketID }}</h3>
+              <button class="btn btn-sm btn-circle btn-ghost" (click)="closeResponseDialog()">✕</button>
             </div>
-            
-            <h4 class="font-semibold text-lg mb-2">{{ selectedTicket.Subject }}</h4>
-            <p class="text-gray-600 whitespace-pre-line mb-2">{{ selectedTicket.Description }}</p>
-            <p class="text-sm text-gray-500">
-              Submitted by: {{ selectedTicket.Creator?.FirstName }} {{ selectedTicket.Creator?.Surname }}
-            </p>
-          </div>
-
-          <!-- Previous Responses -->
-          <div *ngIf="selectedTicket.Response" class="bg-gray-50 p-4 rounded-lg">
-            <h4 class="font-semibold mb-2">Latest Response</h4>
-            <p class="text-gray-600 whitespace-pre-line">{{ selectedTicket.Response }}</p>
-            <p class="text-sm text-gray-500 mt-2" *ngIf="selectedTicket.RespondedBy">
-              Responded by: {{ selectedTicket.Responder?.FirstName }} {{ selectedTicket.Responder?.Surname }}
-            </p>
-          </div>
-
-          <!-- Response Form -->
-          <form [formGroup]="responseForm" (ngSubmit)="submitResponse()" class="space-y-4">
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="label">Update Status</label>
-                <select formControlName="Status" class="select select-bordered w-full">
-                  <option value="open">Open</option>
-                  <option value="in-progress">In Progress</option>
-                  <option value="resolved">Resolved</option>
-                  <option value="closed">Closed</option>
-                </select>
+          </form>
+          
+          <div *ngIf="selectedTicket" class="space-y-4">
+            <!-- Ticket Info -->
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <div class="flex justify-between mb-2">
+                <span class="text-sm text-gray-500">Created: {{ selectedTicket.CreatedAt | date:'medium' }}</span>
+                <div class="flex gap-2">
+                  <span class="badge" [ngClass]="{
+                    'bg-red-100 text-red-800': selectedTicket.Status === 'open',
+                    'bg-yellow-100 text-yellow-800': selectedTicket.Status === 'in-progress',
+                    'bg-green-100 text-green-800': selectedTicket.Status === 'resolved',
+                    'bg-gray-100 text-gray-800': selectedTicket.Status === 'closed'
+                  }">{{ selectedTicket.Status }}</span>
+                  <span class="badge" [ngClass]="{
+                    'bg-red-100 text-red-800': selectedTicket.Priority === 'high',
+                    'bg-yellow-100 text-yellow-800': selectedTicket.Priority === 'medium',
+                    'bg-blue-100 text-blue-800': selectedTicket.Priority === 'low'
+                  }">{{ selectedTicket.Priority }}</span>
+                </div>
               </div>
               
-              <div>
-                <label class="label">Update Priority</label>
-                <select formControlName="Priority" class="select select-bordered w-full">
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
+              <h4 class="font-semibold text-lg mb-2">{{ selectedTicket.Subject }}</h4>
+              <p class="text-gray-600 whitespace-pre-line mb-2">{{ selectedTicket.Description }}</p>
+              <p class="text-sm text-gray-500">
+                Submitted by: {{ selectedTicket.Creator?.FirstName }} {{ selectedTicket.Creator?.Surname }}
+              </p>
+            </div>
+
+            <!-- Previous Responses -->
+            <div *ngIf="selectedTicket.Response" class="bg-gray-50 p-4 rounded-lg">
+              <h4 class="font-semibold mb-2">Latest Response</h4>
+              <p class="text-gray-600 whitespace-pre-line">{{ selectedTicket.Response }}</p>
+              <p class="text-sm text-gray-500 mt-2" *ngIf="selectedTicket.RespondedBy">
+                Responded by: {{ selectedTicket.Responder?.FirstName }} {{ selectedTicket.Responder?.Surname }}
+              </p>
+            </div>
+
+            <!-- Response Form -->
+            <form [formGroup]="responseForm" (ngSubmit)="submitResponse()" class="space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="label">Update Status</label>
+                  <select formControlName="Status" class="select select-bordered w-full">
+                    <option value="open">Open</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="closed">Closed</option>
+                  </select>
+                </div>
+              
+                <div>
+                  <label class="label">Update Priority</label>
+                  <select formControlName="Priority" class="select select-bordered w-full">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </div>
               </div>
-            </div>
 
+              <div>
+                <label class="label">Add Response</label>
+                <textarea 
+                  formControlName="Response" 
+                  class="textarea textarea-bordered w-full h-32"
+                  placeholder="Enter your response...">
+                </textarea>
+              </div>
+
+              <div class="flex justify-end gap-2">
+                <button 
+                  type="button" 
+                  class="btn btn-ghost" 
+                  (click)="closeResponseDialog()">
+                  Close
+                </button>
+                <button 
+                  type="submit" 
+                  class="btn btn-primary" 
+                  [disabled]="responseForm.invalid || isSubmitting">
+                  {{ isSubmitting ? 'Saving...' : 'Save Response' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        
+        <!-- Modal backdrop -->
+        <form method="dialog" class="modal-backdrop">
+          <button (click)="closeResponseDialog()">close</button>
+        </form>
+      </dialog>
+    </div>
+
+    <!-- Regular User View -->
+    <div *ngIf="!isSuperAdmin" class="max-w-2xl mx-auto">
+      <!-- Help Options -->
+      <div class="space-y-4">
+        <h2 class="text-2xl font-bold text-gray-800">How can we help you?</h2>
+        
+        <!-- Help Button 1 -->
+        <button 
+          (click)="showForm('help')"
+          class="w-full p-4 text-left bg-white rounded-lg shadow hover:shadow-md transition-shadow">
+          <div class="flex items-center">
+            <i class="fas fa-question-circle text-primary text-xl mr-3"></i>
             <div>
-              <label class="label">Add Response</label>
-              <textarea 
-                formControlName="Response" 
-                class="textarea textarea-bordered w-full h-32"
-                placeholder="Enter your response...">
-              </textarea>
+              <h3 class="font-semibold">Help us improve the system</h3>
+              <p class="text-sm text-gray-600">Submit suggestions or report issues</p>
+            </div>
+          </div>
+        </button>
+
+        <!-- Help Button 2 -->
+        <button 
+          (click)="showForm('issue')"
+          class="w-full p-4 text-left bg-white rounded-lg shadow hover:shadow-md transition-shadow">
+          <div class="flex items-center">
+            <i class="fas fa-exclamation-circle text-red-500 text-xl mr-3"></i>
+            <div>
+              <h3 class="font-semibold">Something went wrong</h3>
+              <p class="text-sm text-gray-600">Report a technical problem</p>
+            </div>
+          </div>
+        </button>
+      </div>
+
+      <!-- Ticket Form Dialog -->
+      <dialog #ticketDialog class="modal">
+        <div class="modal-box">
+          <h3 class="font-bold text-lg mb-4">
+            {{ formType === 'help' ? 'Help us improve' : 'Report an issue' }}
+          </h3>
+          
+          <form [formGroup]="ticketForm" (ngSubmit)="onSubmit()">
+            <!-- Subject -->
+            <div class="form-control w-full mb-4">
+              <input 
+                type="text" 
+                formControlName="Subject"
+                class="input input-bordered w-full" 
+                [placeholder]="formType === 'help' ? 'What would you like to suggest?' : 'What problem are you experiencing?'"
+              >
             </div>
 
-            <div class="flex justify-end gap-2">
+            <!-- Description -->
+            <div class="form-control w-full mb-6">
+              <textarea 
+                formControlName="Description"
+                class="textarea textarea-bordered h-32" 
+                [placeholder]="formType === 'help' ? 'Please describe your suggestion in detail' : 'Please describe the issue in detail'"
+              ></textarea>
+            </div>
+
+            <!-- Error Message -->
+            <div *ngIf="error" class="alert alert-error mb-4">
+              <span>{{ error }}</span>
+            </div>
+
+            <!-- Buttons -->
+            <div class="modal-action">
               <button 
                 type="button" 
-                class="btn btn-ghost" 
-                (click)="closeResponseDialog()">
-                Close
+                class="btn btn-ghost"
+                (click)="closeDialog()">
+                Cancel
               </button>
               <button 
                 type="submit" 
-                class="btn btn-primary" 
-                [disabled]="responseForm.invalid || isSubmitting">
-                {{ isSubmitting ? 'Saving...' : 'Save Response' }}
+                class="btn btn-primary"
+                [disabled]="ticketForm.invalid || isSubmitting">
+                {{ isSubmitting ? 'Submitting...' : 'Submit' }}
               </button>
             </div>
           </form>
         </div>
-      </div>
-      
-      <!-- Modal backdrop -->
-      <form method="dialog" class="modal-backdrop">
-        <button (click)="closeResponseDialog()">close</button>
-      </form>
-    </dialog>
-  </div>
-
-  <!-- Regular User View -->
-  <div *ngIf="!isSuperAdmin" class="max-w-2xl mx-auto">
-    <!-- Help Options -->
-    <div class="space-y-4">
-      <h2 class="text-2xl font-bold text-gray-800">How can we help you?</h2>
-      
-      <!-- Help Button 1 -->
-      <button 
-        (click)="showForm('help')"
-        class="w-full p-4 text-left bg-white rounded-lg shadow hover:shadow-md transition-shadow">
-        <div class="flex items-center">
-          <i class="fas fa-question-circle text-primary text-xl mr-3"></i>
-          <div>
-            <h3 class="font-semibold">Help us improve the system</h3>
-            <p class="text-sm text-gray-600">Submit suggestions or report issues</p>
-          </div>
-        </div>
-      </button>
-
-      <!-- Help Button 2 -->
-      <button 
-        (click)="showForm('issue')"
-        class="w-full p-4 text-left bg-white rounded-lg shadow hover:shadow-md transition-shadow">
-        <div class="flex items-center">
-          <i class="fas fa-exclamation-circle text-red-500 text-xl mr-3"></i>
-          <div>
-            <h3 class="font-semibold">Something went wrong</h3>
-            <p class="text-sm text-gray-600">Report a technical problem</p>
-          </div>
-        </div>
-      </button>
-    </div>
-
-    <!-- Ticket Form Dialog -->
-    <dialog #ticketDialog class="modal">
-      <div class="modal-box">
-        <h3 class="font-bold text-lg mb-4">
-          {{ formType === 'help' ? 'Help us improve' : 'Report an issue' }}
-        </h3>
-        
-        <form [formGroup]="ticketForm" (ngSubmit)="onSubmit()">
-          <!-- Subject -->
-          <div class="form-control w-full mb-4">
-            <input 
-              type="text" 
-              formControlName="Subject"
-              class="input input-bordered w-full" 
-              [placeholder]="formType === 'help' ? 'What would you like to suggest?' : 'What problem are you experiencing?'"
-            >
-          </div>
-
-          <!-- Description -->
-          <div class="form-control w-full mb-6">
-            <textarea 
-              formControlName="Description"
-              class="textarea textarea-bordered h-32" 
-              [placeholder]="formType === 'help' ? 'Please describe your suggestion in detail' : 'Please describe the issue in detail'"
-            ></textarea>
-          </div>
-
-          <!-- Error Message -->
-          <div *ngIf="error" class="alert alert-error mb-4">
-            <span>{{ error }}</span>
-          </div>
-
-          <!-- Buttons -->
-          <div class="modal-action">
-            <button 
-              type="button" 
-              class="btn btn-ghost"
-              (click)="closeDialog()">
-              Cancel
-            </button>
-            <button 
-              type="submit" 
-              class="btn btn-primary"
-              [disabled]="ticketForm.invalid || isSubmitting">
-              {{ isSubmitting ? 'Submitting...' : 'Submit' }}
-            </button>
-          </div>
+        <form method="dialog" class="modal-backdrop">
+          <button>close</button>
         </form>
+      </dialog>
+
+      <!-- Success Toast -->
+      <div *ngIf="showSuccessToast" 
+           class="toast toast-end">
+        <div class="alert alert-success">
+          <i class="fas fa-check-circle"></i>
+          <span>Thank you for your feedback!</span>
+        </div>
       </div>
-      <form method="dialog" class="modal-backdrop">
-        <button>close</button>
-      </form>
-    </dialog>
 
-    <!-- Success Toast -->
-    <div *ngIf="showSuccessToast" 
-         class="toast toast-end">
-      <div class="alert alert-success">
-        <i class="fas fa-check-circle"></i>
-        <span>Thank you for your feedback!</span>
-      </div>
-    </div>
+      <!-- Response Dialog -->
+      <dialog id="responseDialog" class="modal">
+        <div class="modal-box">
+          <h3 class="font-bold text-lg mb-4">
+            Respond to Ticket #{{ selectedTicket?.TicketID }}
+          </h3>
+          
+          <form [formGroup]="responseForm" (ngSubmit)="submitResponse()">
+            <!-- Status -->
+            <div class="form-control w-full mb-4">
+              <label class="label">
+                <span class="label-text">Status</span>
+              </label>
+              <select formControlName="Status" class="select select-bordered w-full">
+                <option value="open">Open</option>
+                <option value="in-progress">In Progress</option>
+                <option value="resolved">Resolved</option>
+                <option value="closed">Closed</option>
+              </select>
+            </div>
 
-    <!-- Response Dialog -->
-    <dialog id="responseDialog" class="modal">
-      <div class="modal-box">
-        <h3 class="font-bold text-lg mb-4">
-          Respond to Ticket #{{ selectedTicket?.TicketID }}
-        </h3>
-        
-        <form [formGroup]="responseForm" (ngSubmit)="submitResponse()">
-          <!-- Status -->
-          <div class="form-control w-full mb-4">
-            <label class="label">
-              <span class="label-text">Status</span>
-            </label>
-            <select formControlName="Status" class="select select-bordered w-full">
-              <option value="open">Open</option>
-              <option value="in-progress">In Progress</option>
-              <option value="resolved">Resolved</option>
-              <option value="closed">Closed</option>
-            </select>
-          </div>
+            <!-- Priority -->
+            <div class="form-control w-full mb-4">
+              <label class="label">
+                <span class="label-text">Priority</span>
+              </label>
+              <select formControlName="Priority" class="select select-bordered w-full">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
 
-          <!-- Priority -->
-          <div class="form-control w-full mb-4">
-            <label class="label">
-              <span class="label-text">Priority</span>
-            </label>
-            <select formControlName="Priority" class="select select-bordered w-full">
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
-          </div>
+            <!-- Response -->
+            <div class="form-control w-full mb-6">
+              <label class="label">
+                <span class="label-text">Response</span>
+              </label>
+              <textarea 
+                formControlName="Response"
+                class="textarea textarea-bordered h-32" 
+                placeholder="Enter your response here..."
+              ></textarea>
+            </div>
 
-          <!-- Response -->
-          <div class="form-control w-full mb-6">
-            <label class="label">
-              <span class="label-text">Response</span>
-            </label>
-            <textarea 
-              formControlName="Response"
-              class="textarea textarea-bordered h-32" 
-              placeholder="Enter your response here..."
-            ></textarea>
-          </div>
+            <!-- Error Message -->
+            <div *ngIf="error" class="alert alert-error mb-4">
+              <span>{{ error }}</span>
+            </div>
 
-          <!-- Error Message -->
-          <div *ngIf="error" class="alert alert-error mb-4">
-            <span>{{ error }}</span>
-          </div>
-
-          <!-- Buttons -->
-          <div class="modal-action">
-            <button 
-              type="button" 
-              class="btn btn-ghost"
-              (click)="closeResponseDialog()">
-              Cancel
-            </button>
-            <button 
-              type="submit" 
-              class="btn btn-primary"
-              [disabled]="responseForm.invalid || isSubmitting">
-              {{ isSubmitting ? 'Submitting...' : 'Submit Response' }}
-            </button>
-          </div>
+            <!-- Buttons -->
+            <div class="modal-action">
+              <button 
+                type="button" 
+                class="btn btn-ghost"
+                (click)="closeResponseDialog()">
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                class="btn btn-primary"
+                [disabled]="responseForm.invalid || isSubmitting">
+                {{ isSubmitting ? 'Submitting...' : 'Submit Response' }}
+              </button>
+            </div>
+          </form>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+          <button>close</button>
         </form>
-      </div>
-      <form method="dialog" class="modal-backdrop">
-        <button>close</button>
-      </form>
-    </dialog>
+      </dialog>
+    </div>
   </div>
 </div>
