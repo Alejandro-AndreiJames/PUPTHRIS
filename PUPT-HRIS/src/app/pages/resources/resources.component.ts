@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { ResearchPapersComponent } from '../research-papers/research-papers.component';
 import { BooksComponent } from '../books/books.component';
 import { LectureMaterialsComponent } from '../lecture-materials/lecture-materials.component';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-resources',
@@ -21,12 +22,23 @@ import { LectureMaterialsComponent } from '../lecture-materials/lecture-material
 })
 export class ResourcesComponent {
   activeTab: string = 'research';
+  viewMode: 'personal' | 'all' = 'personal';
   showResearchModal: boolean = false;
   showBooksModal: boolean = false;
   showLectureModal: boolean = false;
+  isAdminOrSuperAdmin: boolean = false;
+
+  constructor(private authService: AuthService) {
+    // Check if user is admin/superadmin
+    this.isAdminOrSuperAdmin = this.authService.hasAnyRole(['admin', 'superadmin']);
+  }
 
   setActiveTab(tab: string): void {
     this.activeTab = tab;
+  }
+
+  toggleViewMode(mode: 'personal' | 'all'): void {
+    this.viewMode = mode;
   }
 
   openModal(type: string): void {

@@ -1,28 +1,40 @@
 <div class="flex justify-between items-center mb-4">
   <h2 class="text-xl font-bold">Research Papers</h2>
-  <button class="btn btn-primary" (click)="toggleModal()">+ Add Research Paper</button>
+  <!-- Only show add button in personal view -->
+  <button *ngIf="showAddButton" 
+          class="btn btn-primary" 
+          (click)="openModal()">
+    + Add Research Paper
+  </button>
 </div>
 
 <!-- Research Papers Table -->
 <div class="overflow-x-auto">
-  <table class="table table-zebra w-full border-separate border-spacing-0">
+  <table class="table w-full">
     <thead>
-      <tr class="bg-maroon text-white">
-        <th class="p-4">Title</th>
-        <th class="p-4">Authors</th>
-        <th class="p-4">Publication Date</th>
-        <th class="p-4 w-36">Actions</th>
+      <tr>
+        <th>Title</th>
+        <th>Authors</th>
+        <th>Publication Date</th>
+        <th *ngIf="viewMode === 'all'">Uploaded By</th>
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let paper of researchPapers" class="hover:bg-gray-100">
-        <td class="p-4">{{paper.Title}}</td>
-        <td class="p-4">{{paper.Authors}}</td>
-        <td class="p-4">{{paper.PublicationDate | date:'mediumDate'}}</td>
-        <td class="p-4 flex justify-center space-x-2">
-          <button class="btn btn-sm" (click)="editPaper(paper)">Edit</button>
-          <button class="btn btn-sm" (click)="deletePaper(paper.ResearchID!)">Delete</button>
-          <button class="btn btn-sm" (click)="downloadFile(paper.DocumentPath!)">Download</button>
+      <tr *ngFor="let paper of researchPapers">
+        <td>{{paper.Title}}</td>
+        <td>{{paper.Authors}}</td>
+        <td>{{paper.PublicationDate | date}}</td>
+        <td *ngIf="viewMode === 'all'">
+          {{paper.User?.Surname}}, {{paper.User?.FirstName}} 
+          {{paper.User?.NameExtension ? ' ' + paper.User?.NameExtension : ''}}
+        </td>
+        <td>
+          <button class="btn btn-sm btn-info mr-2" (click)="onViewPaper(paper)">View</button>
+          <ng-container *ngIf="viewMode === 'personal'">
+            <button class="btn btn-sm btn-warning mr-2" (click)="editPaper(paper)">Edit</button>
+            <button class="btn btn-sm btn-error" (click)="deletePaper(paper)">Delete</button>
+          </ng-container>
         </td>
       </tr>
     </tbody>

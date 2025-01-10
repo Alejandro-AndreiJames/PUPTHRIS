@@ -15,6 +15,7 @@ import { jwtDecode } from 'jwt-decode';
 })
 export class ResearchPapersComponent implements OnInit {
   researchPapers: ResearchPaper[] = [];
+  @Input() viewMode: 'personal' | 'all' = 'personal';
   @Input() showModal: boolean = false;
   isEditing: boolean = false;
   currentResearchId: number | null = null;
@@ -61,22 +62,51 @@ export class ResearchPapersComponent implements OnInit {
   }
 
   loadResearchPapers(): void {
-    this.researchService.getResearchPapers(this.userId).subscribe({
-      next: (papers) => {
-        this.researchPapers = papers;
-      },
-      error: (error) => {
-        console.error('Error loading research papers:', error);
+    // For 'all' view, get all papers
+    if (this.viewMode === 'all') {
+      this.researchService.getResearchPapers().subscribe({
+        next: (papers) => {
+          this.researchPapers = papers;
+        },
+        error: (error) => {
+          console.error('Error loading papers:', error);
+          this.showToastNotification('Error loading research papers', 'error');
+        }
+      });
+    } 
+    // For 'personal' view, get only user's papers
+    else {
+      const userId = this.authService.getCurrentUserId();
+      if (!userId) {
+        this.showToastNotification('User ID not found', 'error');
+        return;
       }
-    });
+      this.researchService.getResearchPapers(userId).subscribe({
+        next: (papers) => {
+          this.researchPapers = papers;
+        },
+        error: (error) => {
+          console.error('Error loading papers:', error);
+          this.showToastNotification('Error loading research papers', 'error');
+        }
+      });
+    }
+  }
+
+  get showAddButton(): boolean {
+    return this.viewMode === 'personal';
+  }
+
+  openModal(): void {
+    this.showModal = true;
+    if (!this.isEditing) {
+      this.researchForm.reset();
+      this.initialFormValue = this.researchForm.getRawValue();
+    }
   }
 
   toggleModal(): void {
     this.showModal = !this.showModal;
-    if (this.showModal && !this.isEditing) {
-      this.researchForm.reset();
-      this.initialFormValue = this.researchForm.getRawValue();
-    }
     if (!this.showModal) {
       this.researchForm.reset();
       this.isEditing = false;
@@ -171,8 +201,13 @@ export class ResearchPapersComponent implements OnInit {
     this.showModal = true;
   }
 
-  deletePaper(id: number): void {
-    this.paperToDelete = id;
+  deletePaper(paper: ResearchPaper): void {
+    if (!paper || !paper.ResearchID) {
+      this.showToastNotification('Cannot delete paper: Invalid paper information', 'error');
+      return;
+    }
+    
+    this.paperToDelete = paper.ResearchID;
     this.showDeletePrompt = true;
   }
 
@@ -182,20 +217,23 @@ export class ResearchPapersComponent implements OnInit {
   }
 
   confirmDelete(): void {
-    if (this.paperToDelete) {
-      this.researchService.deleteResearchPaper(this.paperToDelete).subscribe({
-        next: () => {
-          this.loadResearchPapers();
-          this.showDeletePrompt = false;
-          this.paperToDelete = null;
-          this.showToastNotification('Research paper deleted successfully', 'success');
-        },
-        error: (error) => {
-          console.error('Error deleting research paper:', error);
-          this.showToastNotification('Error deleting research paper', 'error');
-        }
-      });
+    if (!this.paperToDelete) {
+      this.showToastNotification('No paper selected for deletion', 'error');
+      return;
     }
+
+    this.researchService.deleteResearchPaper(this.paperToDelete).subscribe({
+      next: () => {
+        this.loadResearchPapers();
+        this.showDeletePrompt = false;
+        this.paperToDelete = null;
+        this.showToastNotification('Research paper deleted successfully', 'success');
+      },
+      error: (error) => {
+        console.error('Error deleting research paper:', error);
+        this.showToastNotification('Error deleting research paper', 'error');
+      }
+    });
   }
 
   downloadFile(documentPath: string): void {
@@ -235,5 +273,39 @@ export class ResearchPapersComponent implements OnInit {
     setTimeout(() => {
       this.showToast = false;
     }, 3000); // Hide toast after 3 seconds
+  }
+
+  onViewPaper(paper: ResearchPaper): void {
+    if (!paper) {
+      this.showToastNotification('Paper information not available', 'error');
+      return;
+    }
+
+    // First try to download document if available
+    if (paper.DocumentPath) {
+      this.downloadFile(paper.DocumentPath);
+      return;
+    }
+
+    // If no document, try to open reference link
+    if (paper.ReferenceLink) {
+      if (this.isValidUrl(paper.ReferenceLink)) {
+        window.open(paper.ReferenceLink, '_blank');
+      } else {
+        this.showToastNotification('Invalid reference link', 'error');
+      }
+      return;
+    }
+
+    this.showToastNotification('No document or reference link available', 'warning');
+  }
+
+  private isValidUrl(url: string): boolean {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
   }
 }

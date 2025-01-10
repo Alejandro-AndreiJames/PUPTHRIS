@@ -120,4 +120,18 @@ export class AuthService {
     }
     return null;
   }
+
+  hasAnyRole(roles: string[]): boolean {
+    const userRoles = this.getUserRoles();
+    return roles.some(role => userRoles.includes(role));
+  }
+
+  getCurrentUserId(): number {
+    const token = this.getToken();
+    if (token) {
+      const decodedToken: any = jwtDecode(token);
+      return decodedToken.userId;
+    }
+    return 0;
+  }
 }

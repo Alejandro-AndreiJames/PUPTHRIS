@@ -5,7 +5,26 @@
   </div>
   
   <div class="p-6 space-y-4">
-    <h1 class="text-lg font-normal">Access and manage your academic resources.</h1>
+    <div class="flex justify-between items-center">
+      <h1 class="text-lg font-normal">Access and manage your academic resources.</h1>
+      
+      <!-- View Toggle for Admins -->
+      <div *ngIf="isAdminOrSuperAdmin" class="flex gap-4">
+        <button class="px-4 py-2 rounded-md transition-colors"
+                [class.bg-maroon]="viewMode === 'personal'"
+                [class.text-white]="viewMode === 'personal'"
+                (click)="toggleViewMode('personal')">
+          My Resources
+        </button>
+        <button class="px-4 py-2 rounded-md transition-colors"
+                [class.bg-maroon]="viewMode === 'all'"
+                [class.text-white]="viewMode === 'all'"
+                (click)="toggleViewMode('all')">
+          All Faculty Resources
+        </button>
+      </div>
+    </div>
+
     <!-- Resource Type Selection -->
     <div class="flex gap-4">
       <button class="tab-button" 
@@ -29,13 +48,22 @@
     <div class="bg-white p-6 rounded-lg shadow-lg">
       <div [ngSwitch]="activeTab">
         <div *ngSwitchCase="'research'">
-          <app-research-papers [showModal]="showResearchModal"></app-research-papers>
+          <app-research-papers 
+            [showModal]="showResearchModal"
+            [viewMode]="viewMode">
+          </app-research-papers>
         </div>
         <div *ngSwitchCase="'books'">
-          <app-books [showModal]="showBooksModal"></app-books>
+          <app-books 
+            [showModal]="showBooksModal"
+            [viewMode]="viewMode">
+          </app-books>
         </div>
         <div *ngSwitchCase="'lecture'">
-          <app-lecture-materials [showModal]="showLectureModal"></app-lecture-materials>
+          <app-lecture-materials 
+            [showModal]="showLectureModal"
+            [viewMode]="viewMode">
+          </app-lecture-materials>
         </div>
       </div>
     </div>

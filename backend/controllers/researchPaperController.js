@@ -4,7 +4,7 @@ const ResearchPaper = require('../models/researchPaperModel');
 const s3Client = require('../config/s3.config');
 const { S3_BUCKET_NAME } = process.env;
 const User = require('../models/userModel');
-const BasicDetails = require('../models/basicDetailsModel');
+
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -89,40 +89,42 @@ exports.getResearchPapers = async (req, res) => {
     const { userId } = req.params;
     const userRoles = req.user.roles;
     
-    // Check if user is admin or superadmin
-    const isAdminOrSuperAdmin = userRoles.some(role => 
-      ['admin', 'superadmin'].includes(role.toLowerCase())
-    );
+    console.log('Request params:', {
+      requestedUserId: userId,
+      currentUserId: req.user.userId,
+      userRoles: userRoles
+    });
 
     let whereClause = {};
     
-    // If not admin/superadmin, only show user's own papers
-    if (!isAdminOrSuperAdmin) {
+    // If not admin/superadmin, or if specific userId is requested
+    if (!userRoles.includes('admin') && !userRoles.includes('superadmin')) {
       whereClause.UserID = req.user.userId;
-    } 
-    // If admin/superadmin and specific userId provided, show that user's papers
-    else if (userId) {
+    } else if (userId) {
       whereClause.UserID = userId;
     }
-    // If admin/superadmin and no userId, show all papers
 
-    const papers = await ResearchPaper.findAll({ 
+    console.log('Where clause:', whereClause);
+
+    const papers = await ResearchPaper.findAll({
       where: whereClause,
       include: [{
         model: User,
-        attributes: ['UserID', 'Email'],
-        include: [{
-          model: BasicDetails,
-          attributes: ['FirstName', 'LastName']
-        }]
+        attributes: ['FirstName', 'Surname', 'MiddleName', 'NameExtension', 'Email'],
+        as: 'User'
       }],
-      order: [['PublicationDate', 'DESC']]
+      order: [['createdAt', 'DESC']]
     });
 
+    console.log('Found papers:', papers.length);
+    
     res.status(200).json(papers);
   } catch (error) {
     console.error('Error getting research papers:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ 
+      error: 'Internal Server Error',
+      details: error.message 
+    });
   }
 };
 
