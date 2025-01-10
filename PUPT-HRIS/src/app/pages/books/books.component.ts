@@ -16,7 +16,19 @@ import { AuthService } from '../../services/auth.service';
 export class BooksComponent implements OnInit {
   books: Book[] = [];
   @Input() showModal: boolean = false;
-  @Input() viewMode: 'personal' | 'all' = 'all';
+  @Input() set viewMode(value: 'personal' | 'all') {
+    if (this._viewMode !== value) {
+      this._viewMode = value;
+      if (this.bookService) {
+        this.currentPage = 1; // Reset to first page
+        this.loadBooks();
+      }
+    }
+  }
+  get viewMode(): 'personal' | 'all' {
+    return this._viewMode;
+  }
+  private _viewMode: 'personal' | 'all' = 'all';
   currentUserId: number;
   bookForm: FormGroup;
   isEditing = false;
@@ -29,6 +41,12 @@ export class BooksComponent implements OnInit {
   originalBookData: any = null;
   hasChanges: boolean = false;
   selectedFile: File | null = null;
+  currentPage: number = 1;
+  totalPages: number = 1;
+  itemsPerPage: number = 10;
+  totalItems: number = 0;
+  searchTerm: string = '';
+  isLoading: boolean = false;
 
   constructor(
     private fb: FormBuilder, 
@@ -59,20 +77,25 @@ export class BooksComponent implements OnInit {
   }
 
   loadBooks(): void {
-    this.bookService.getBooks().subscribe({
-      next: (books) => {
-        if (this.viewMode === 'personal') {
-          // Filter for personal books on the client side
-          this.books = books.filter(book => book.UserID === this.currentUserId);
-        } else {
-          // Show all books
-          this.books = books;
-        }
-        console.log('Loaded books:', this.books);
+    this.isLoading = true;
+    this.bookService.getBooks(
+      this.currentPage,
+      this.itemsPerPage,
+      this.searchTerm,
+      this.viewMode
+    ).subscribe({
+      next: (response) => {
+        this.books = response.items;
+        this.currentPage = response.currentPage;
+        this.totalPages = response.totalPages;
+        this.totalItems = response.totalItems;
+        this.itemsPerPage = response.itemsPerPage;
+        this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading books:', error);
         this.showToastNotification('Error loading books', 'error');
+        this.isLoading = false;
       }
     });
   }
@@ -282,5 +305,26 @@ export class BooksComponent implements OnInit {
     }
 
     window.open(documentPath, '_blank');
+  }
+
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.loadBooks();
+  }
+
+  onSearch(event: any): void {
+    this.searchTerm = event.target.value;
+    this.currentPage = 1; // Reset to first page when searching
+    this.loadBooks();
+  }
+
+  private searchDebounce: any;
+  onSearchInput(event: any): void {
+    if (this.searchDebounce) {
+      clearTimeout(this.searchDebounce);
+    }
+    this.searchDebounce = setTimeout(() => {
+      this.onSearch(event);
+    }, 300);
   }
 }

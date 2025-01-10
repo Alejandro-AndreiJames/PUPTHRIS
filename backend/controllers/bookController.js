@@ -95,38 +95,41 @@ exports.updateBook = [
 
 exports.getBooks = async (req, res) => {
   try {
-    const { userId } = req.params;
-    const userRoles = req.user.roles;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const search = req.query.search || '';
+    const viewMode = req.query.viewMode || 'all';
     const offset = (page - 1) * limit;
     
     console.log('Request params:', {
-      requestedUserId: userId,
       currentUserId: req.user.userId,
-      userRoles: userRoles,
+      userRoles: req.user.roles,
       page,
       limit,
-      search
+      search,
+      viewMode
     });
 
     let whereClause = {};
     
-    // If not admin/superadmin, or if specific userId is requested
-    if (!userRoles.includes('admin') && !userRoles.includes('superadmin')) {
+    // Handle viewMode filtering
+    if (viewMode === 'personal') {
       whereClause.UserID = req.user.userId;
-    } else if (userId) {
-      whereClause.UserID = userId;
+    } else {
+      // Only add CollegeCampusID to where clause if it exists
+      if (req.user.CollegeCampusID) {
+        whereClause.CollegeCampusID = req.user.CollegeCampusID;
+      }
     }
 
-    // Add search conditions
+    // Add search conditions if search term exists
     if (search) {
       whereClause = {
         ...whereClause,
         [Op.or]: [
           { Title: { [Op.like]: `%${search}%` } },
-          { Author: { [Op.like]: `%${search}%` } }
+          { Author: { [Op.like]: `%${search}%` } },
+          { Description: { [Op.like]: `%${search}%` } }
         ]
       };
     }
@@ -147,8 +150,6 @@ exports.getBooks = async (req, res) => {
 
     const totalPages = Math.ceil(count / limit);
     
-    console.log('Found books:', count);
-
     res.status(200).json({
       currentPage: page,
       totalPages,
@@ -156,9 +157,13 @@ exports.getBooks = async (req, res) => {
       itemsPerPage: limit,
       items: rows
     });
+
   } catch (error) {
     console.error('Error getting books:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ 
+      error: 'Internal Server Error',
+      details: error.message 
+    });
   }
 };
 
