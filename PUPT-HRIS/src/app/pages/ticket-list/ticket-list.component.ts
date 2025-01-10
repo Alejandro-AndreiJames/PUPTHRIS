@@ -32,6 +32,11 @@ export class TicketListComponent implements OnInit {
   tickets: { [key: string]: any } = {};
   statusFilter: string = '';
   priorityFilter: string = '';
+  showDeletePrompt: boolean = false;
+  pendingDeleteId: number | null = null;
+  showToast = false;
+  toastMessage = '';
+  toastType: 'success' | 'error' = 'success';
 
   // Define filter options
   statusOptions: FilterOption[] = [
@@ -266,17 +271,41 @@ export class TicketListComponent implements OnInit {
     return Object.keys(this.activeFilters).length;
   }
 
-  deleteTicket(ticketId: number): void {
-    if (confirm('Are you sure you want to delete this ticket?')) {
-      this.ticketService.deleteTicket(ticketId).subscribe({
+  deleteTicket(id: number): void {
+    this.pendingDeleteId = id;
+    this.showDeletePrompt = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeletePrompt = false;
+    this.pendingDeleteId = null;
+  }
+
+  confirmDelete(): void {
+    if (this.pendingDeleteId) {
+      this.ticketService.deleteTicket(this.pendingDeleteId).subscribe({
         next: () => {
           this.loadAllTickets();
+          this.showToastNotification('Ticket deleted successfully', 'success');
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         },
         error: (error) => {
           console.error('Error deleting ticket:', error);
-          this.error = 'Failed to delete ticket';
+          this.showToastNotification('Error deleting ticket', 'error');
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         }
       });
     }
+  }
+
+  private showToastNotification(message: string, type: 'success' | 'error'): void {
+    this.toastMessage = message;
+    this.toastType = type;
+    this.showToast = true;
+    setTimeout(() => {
+      this.showToast = false;
+    }, 3000);
   }
 }

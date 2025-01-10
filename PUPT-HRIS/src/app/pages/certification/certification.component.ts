@@ -27,6 +27,8 @@ export class CertificationComponent implements OnInit {
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' | 'warning' = 'success';
+  showDeletePrompt: boolean = false;
+  pendingDeleteId: number | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -121,15 +123,29 @@ export class CertificationComponent implements OnInit {
   }
 
   delete(id: number): void {
-    if (confirm('Are you sure you want to delete this certification?')) {
-      this.certificationService.deleteCertification(id).subscribe({
+    this.pendingDeleteId = id;
+    this.showDeletePrompt = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeletePrompt = false;
+    this.pendingDeleteId = null;
+  }
+
+  confirmDelete(): void {
+    if (this.pendingDeleteId) {
+      this.certificationService.deleteCertification(this.pendingDeleteId).subscribe({
         next: () => {
           this.loadCertifications();
           this.showToastNotification('Certification deleted successfully', 'success');
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         },
         error: (error) => {
           console.error('Error deleting certification:', error);
           this.showToastNotification('Error deleting certification', 'error');
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         }
       });
     }
