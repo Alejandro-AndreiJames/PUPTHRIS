@@ -5,6 +5,8 @@ const Role = require('../models/roleModel');
 const bcrypt = require('bcrypt');
 require('dotenv').config();
 const { Op } = require('sequelize');
+const BasicDetails = require('../models/basicDetailsModel');
+const { sequelize } = require('../config/db.config');
 
 // Add this constant at the top of your file
 const ADMIN_ROLE_NAME = 'admin'; // Adjust this if your admin role has a different name
@@ -13,8 +15,12 @@ exports.addUser = async (req, res) => {
   try {
     const { Fcode, Surname, FirstName, MiddleName, NameExtension, Email, EmploymentType, Password, Roles, DepartmentID, CollegeCampusID } = req.body;
     
-    // If DepartmentID is 'na' (Not Applicable), set it to null
-    const finalDepartmentID = DepartmentID === 'na' ? null : DepartmentID;
+    // Start a transaction to ensure both User and BasicDetails are created or neither is
+    const transaction = await sequelize.transaction();
+
+    try {
+      // If DepartmentID is 'na' (Not Applicable), set it to null
+      const finalDepartmentID = DepartmentID === 'na' ? null : DepartmentID;
 
     const salt = await bcrypt.genSalt(10);
     const PasswordHash = await bcrypt.hash(Password, salt);
@@ -33,31 +39,49 @@ exports.addUser = async (req, res) => {
       finalCollegeCampusID = CollegeCampusID;
     }
 
-    // Create a new user
-    const newUser = await User.create({
-      Fcode,
-      Surname,
-      FirstName,
-      MiddleName,
-      NameExtension,
-      Email,
-      EmploymentType,
-      PasswordHash,
-      Salt: salt,
-      DepartmentID: finalDepartmentID,
-      CollegeCampusID: finalCollegeCampusID,
-      isActive: true,
-    });
+      // Create a new user
+      const newUser = await User.create({
+        Fcode,
+        Surname,
+        FirstName,
+        MiddleName,
+        NameExtension,
+        Email,
+        EmploymentType,
+        PasswordHash,
+        Salt: salt,
+        DepartmentID: finalDepartmentID,
+        CollegeCampusID: finalCollegeCampusID,
+        isActive: true,
+      }, { transaction });
 
-    // Assign roles to the user
-    if (Roles && Roles.length > 0) {
-      const roles = await Role.findAll({ where: { RoleID: Roles } });
-      await newUser.setRoles(roles, { through: { timestamps: false } });
+      // Create corresponding BasicDetails record
+      await BasicDetails.create({
+        FacultyCode: Fcode, // Only set FacultyCode
+        LastName: Surname,
+        FirstName: FirstName,
+        MiddleInitial: MiddleName ? MiddleName.charAt(0) : null,
+        NameExtension: NameExtension,
+        UserID: newUser.UserID
+      }, { transaction });
+
+      // Assign roles to the user
+      if (Roles && Roles.length > 0) {
+        const roles = await Role.findAll({ where: { RoleID: Roles } });
+        await newUser.setRoles(roles, { through: { timestamps: false }, transaction });
+      }
+
+      await sendEmail(Email, Password, FirstName);
+
+      // Commit the transaction
+      await transaction.commit();
+
+      res.status(201).json(newUser);
+    } catch (error) {
+      // Rollback the transaction if there's an error
+      await transaction.rollback();
+      throw error;
     }
-
-    await sendEmail(Email, Password, FirstName);
-
-    res.status(201).json(newUser);
   } catch (error) {
     console.error('Error adding user:', error);
     res.status(500).send('Internal Server Error');
