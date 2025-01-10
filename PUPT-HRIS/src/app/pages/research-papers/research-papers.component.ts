@@ -89,10 +89,29 @@ export class ResearchPapersComponent implements OnInit {
       const formData = new FormData();
       const formValue = this.researchForm.value;
       
-      // Append form fields to FormData
-      Object.keys(formValue).forEach(key => {
-        if (key !== 'document') {
-          formData.append(key, formValue[key]);
+      // Define interface for cleaned values
+      interface CleanedValues {
+        Title: string;
+        Description: string;
+        Authors: string;
+        PublicationDate: string | null;
+        ReferenceLink: string;
+        [key: string]: string | null; // Index signature for dynamic access
+      }
+      
+      // Clean up form values with proper typing
+      const cleanedValues: CleanedValues = {
+        Title: formValue.Title || '',
+        Description: formValue.Description || '',
+        Authors: formValue.Authors || '',
+        PublicationDate: formValue.PublicationDate || null,
+        ReferenceLink: formValue.ReferenceLink || '',
+      };
+      
+      // Append cleaned form fields to FormData
+      Object.keys(cleanedValues).forEach(key => {
+        if (key !== 'document' && cleanedValues[key] !== null) {
+          formData.append(key, cleanedValues[key] as string);
         }
       });
 
@@ -135,17 +154,20 @@ export class ResearchPapersComponent implements OnInit {
     this.isEditing = true;
     this.currentResearchId = paper.ResearchID!;
     
+    // Format the date to YYYY-MM-DD for the input type="date"
+    const formattedDate = paper.PublicationDate ? 
+      new Date(paper.PublicationDate).toISOString().split('T')[0] : '';
+    
     this.researchForm.patchValue({
       Title: paper.Title,
       Description: paper.Description,
       Authors: paper.Authors,
-      PublicationDate: paper.PublicationDate,
+      PublicationDate: formattedDate, // Use the formatted date
       ReferenceLink: paper.ReferenceLink,
       DocumentPath: paper.DocumentPath
     });
 
     this.initialFormValue = this.researchForm.getRawValue();
-
     this.showModal = true;
   }
 

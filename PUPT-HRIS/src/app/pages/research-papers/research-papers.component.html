@@ -18,7 +18,7 @@
       <tr *ngFor="let paper of researchPapers" class="hover:bg-gray-100">
         <td class="p-4">{{paper.Title}}</td>
         <td class="p-4">{{paper.Authors}}</td>
-        <td class="p-4">{{paper.PublicationDate | date}}</td>
+        <td class="p-4">{{paper.PublicationDate | date:'mediumDate'}}</td>
         <td class="p-4 flex justify-center space-x-2">
           <button class="btn btn-sm" (click)="editPaper(paper)">Edit</button>
           <button class="btn btn-sm" (click)="deletePaper(paper.ResearchID!)">Delete</button>
@@ -84,6 +84,7 @@
               Publication Date <span class="text-red-500">*</span>
             </label>
             <input type="date" formControlName="PublicationDate" 
+                   [value]="researchForm.get('PublicationDate')?.value | date:'yyyy-MM-dd'"
                    class="form-input w-full rounded-md border-gray-300 shadow-sm focus:border-maroon focus:ring focus:ring-maroon focus:ring-opacity-50">
           </div>
 
