@@ -4,6 +4,7 @@ export interface Book {
   Title: string;
   Author: string;
   Description?: string;
+  DocumentPath?: string;
   createdAt?: Date;
   updatedAt?: Date;
   ISBN?: string;

@@ -18,13 +18,28 @@ export class BookService {
     return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
-  addBook(book: Book): Observable<Book> {
-    return this.http.post<Book>(this.apiUrl, book, { headers: this.getHeaders() })
-      .pipe(catchError(this.handleError));
+  addBook(formData: FormData): Observable<Book> {
+    const headers = this.getHeaders();
+    
+    // Log the request details
+    console.log('Request URL:', this.apiUrl);
+    console.log('Request Headers:', headers);
+    formData.forEach((value, key) => {
+      console.log(`Request FormData ${key}:`, value);
+    });
+
+    return this.http.post<Book>(this.apiUrl, formData, { 
+      headers: headers 
+    }).pipe(
+      catchError(error => {
+        console.error('Book service error:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
-  updateBook(id: number, book: Book): Observable<Book> {
-    return this.http.put<Book>(`${this.apiUrl}/${id}`, book, { headers: this.getHeaders() })
+  updateBook(id: number, bookData: FormData): Observable<Book> {
+    return this.http.put<Book>(`${this.apiUrl}/${id}`, bookData, { headers: this.getHeaders() })
       .pipe(catchError(this.handleError));
   }
 

@@ -25,6 +25,7 @@ export class BooksComponent implements OnInit {
   bookToDelete: number | null = null;
   originalBookData: any = null;
   hasChanges: boolean = false;
+  selectedFile: File | null = null;
 
   constructor(private fb: FormBuilder, private bookService: BookService) {
     this.bookForm = this.fb.group({
@@ -35,7 +36,13 @@ export class BooksComponent implements OnInit {
         Validators.pattern(/^(?:\d{10}|\d{13})$/),
         Validators.minLength(10),
         Validators.maxLength(13)
-      ]]
+      ]],
+      document: [null]
+    });
+
+    // Debug: Log form value changes
+    this.bookForm.valueChanges.subscribe(values => {
+      console.log('Form values changed:', values);
     });
   }
 
@@ -55,32 +62,84 @@ export class BooksComponent implements OnInit {
 
   onSubmit(): void {
     if (this.bookForm.valid) {
-      const bookData = this.bookForm.value;
+      // Get the form values directly
+      const title = this.bookForm.get('Title')?.value;
+      const author = this.bookForm.get('Author')?.value;
+      const description = this.bookForm.get('Description')?.value;
+      const isbn = this.bookForm.get('ISBN')?.value;
+
+      // Log the values
+      console.log('Form Values:', {
+        Title: title,
+        Author: author,
+        Description: description,
+        ISBN: isbn
+      });
+
+      // Create the form data
+      const formData = new FormData();
+      
+      // Fix: Use the correct case for form field names to match the backend model
+      formData.append('Title', this.bookForm.get('Title')?.value || '');
+      formData.append('Author', this.bookForm.get('Author')?.value || '');
+      
+      // Optional fields
+      if (this.bookForm.get('Description')?.value) {
+        formData.append('Description', this.bookForm.get('Description')?.value);
+      }
+      if (this.bookForm.get('ISBN')?.value) {
+        formData.append('ISBN', this.bookForm.get('ISBN')?.value);
+      }
+      
+      // File handling
+      if (this.selectedFile) {
+        formData.append('document', this.selectedFile);
+      }
+
+      // Debug log
+      formData.forEach((value, key) => {
+        console.log(`FormData ${key}:`, value);
+      });
+
       if (this.isEditing && this.currentBookId !== null) {
-        this.bookService.updateBook(this.currentBookId, bookData).subscribe({
-          next: () => {
+        this.bookService.updateBook(this.currentBookId, formData).subscribe({
+          next: (response) => {
+            console.log('Update success:', response);
             this.loadBooks();
             this.closeModal();
             this.showToastNotification('Book updated successfully', 'success');
           },
           error: (error) => {
-            console.error('Error updating book:', error);
-            this.showToastNotification('Error updating book', 'error');
+            console.error('Update error:', error);
+            this.showToastNotification(
+              'Error updating book: ' + (error.error?.message || error.message), 
+              'error'
+            );
           }
         });
       } else {
-        this.bookService.addBook(bookData).subscribe({
-          next: () => {
+        this.bookService.addBook(formData).subscribe({
+          next: (response) => {
+            console.log('Add success:', response);
             this.loadBooks();
             this.closeModal();
             this.showToastNotification('Book added successfully', 'success');
           },
           error: (error) => {
-            console.error('Error adding book:', error);
-            this.showToastNotification('Error adding book', 'error');
+            console.error('Add error:', error);
+            this.showToastNotification(
+              'Error adding book: ' + (error.error?.message || error.message), 
+              'error'
+            );
           }
         });
       }
+    } else {
+      // Log validation errors
+      console.log('Form invalid. Errors:', this.bookForm.errors);
+      console.log('Title errors:', this.bookForm.get('Title')?.errors);
+      console.log('Author errors:', this.bookForm.get('Author')?.errors);
+      this.showToastNotification('Please fill in all required fields', 'error');
     }
   }
 
@@ -128,6 +187,7 @@ export class BooksComponent implements OnInit {
     this.originalBookData = null;
     this.hasChanges = false;
     this.bookForm.reset();
+    this.selectedFile = null;
   }
 
   toggleModal(): void {
@@ -172,6 +232,30 @@ export class BooksComponent implements OnInit {
           this.showToastNotification('Error deleting book', 'error');
         }
       });
+    }
+  }
+
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+    }
+  }
+
+  // Add this method to help with debugging
+  private logFormData(formData: FormData): void {
+    console.log('Form validation state:', this.bookForm.valid);
+    console.log('Form values:', this.bookForm.value);
+    console.log('Form errors:', this.bookForm.errors);
+    
+    formData.forEach((value, key) => {
+      console.log(`FormData ${key}:`, value);
+    });
+  }
+
+  viewDocument(documentPath: string): void {
+    if (documentPath) {
+      window.open(documentPath, '_blank');
     }
   }
 }
