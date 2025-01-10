@@ -4,6 +4,7 @@ import { BookService } from '../../services/book.service';
 import { Book } from '../../model/book.model';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-books',
@@ -15,6 +16,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 export class BooksComponent implements OnInit {
   books: Book[] = [];
   @Input() showModal: boolean = false;
+  @Input() viewMode: 'personal' | 'all' = 'all';
+  currentUserId: number;
   bookForm: FormGroup;
   isEditing = false;
   currentBookId: number | null = null;
@@ -27,7 +30,12 @@ export class BooksComponent implements OnInit {
   hasChanges: boolean = false;
   selectedFile: File | null = null;
 
-  constructor(private fb: FormBuilder, private bookService: BookService) {
+  constructor(
+    private fb: FormBuilder, 
+    private bookService: BookService,
+    private authService: AuthService
+  ) {
+    this.currentUserId = this.authService.getCurrentUserId();
     this.bookForm = this.fb.group({
       Title: ['', Validators.required],
       Author: ['', Validators.required],
@@ -52,7 +60,16 @@ export class BooksComponent implements OnInit {
 
   loadBooks(): void {
     this.bookService.getBooks().subscribe({
-      next: (books) => this.books = books,
+      next: (books) => {
+        if (this.viewMode === 'personal') {
+          // Filter for personal books on the client side
+          this.books = books.filter(book => book.UserID === this.currentUserId);
+        } else {
+          // Show all books
+          this.books = books;
+        }
+        console.log('Loaded books:', this.books);
+      },
       error: (error) => {
         console.error('Error loading books:', error);
         this.showToastNotification('Error loading books', 'error');
@@ -253,9 +270,17 @@ export class BooksComponent implements OnInit {
     });
   }
 
-  viewDocument(documentPath: string): void {
-    if (documentPath) {
-      window.open(documentPath, '_blank');
+  // Add getter for showing add button
+  get showAddButton(): boolean {
+    return this.viewMode === 'personal';
+  }
+
+  viewDocument(documentPath: string | undefined): void {
+    if (!documentPath) {
+      this.showToastNotification('No document available', 'warning');
+      return;
     }
+
+    window.open(documentPath, '_blank');
   }
 }

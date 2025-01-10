@@ -107,6 +107,7 @@
           <th class="p-4">Title</th>
           <th class="p-4">Author</th>
           <th class="p-4">Description</th>
+          <th class="p-4" *ngIf="viewMode === 'all'">Uploaded By</th>
           <th class="p-4">Document</th>
           <th class="p-4 w-36">Actions</th>
         </tr>
@@ -116,6 +117,10 @@
           <td class="p-4">{{ book.Title }}</td>
           <td class="p-4">{{ book.Author }}</td>
           <td class="p-4">{{ book.Description }}</td>
+          <td class="p-4" *ngIf="viewMode === 'all'">
+            {{book.User?.Surname}}, {{book.User?.FirstName}} 
+            {{book.User?.NameExtension ? ' ' + book.User?.NameExtension : ''}}
+          </td>
           <td class="p-4">
             <a *ngIf="book.DocumentPath" 
                [href]="book.DocumentPath" 
@@ -125,8 +130,11 @@
             </a>
           </td>
           <td class="p-4 flex justify-center space-x-2">
-            <button class="btn btn-sm" (click)="editBook(book)">Edit</button>
-            <button class="btn btn-sm" (click)="deleteBook(book.BookID!)">Delete</button>
+            <button class="btn btn-sm btn-info" (click)="viewDocument(book.DocumentPath)">View</button>
+            <ng-container *ngIf="viewMode === 'personal'">
+              <button class="btn btn-sm btn-warning" (click)="editBook(book)">Edit</button>
+              <button class="btn btn-sm btn-error" (click)="deleteBook(book.BookID!)">Delete</button>
+            </ng-container>
           </td>
         </tr>
       </tbody>
