@@ -87,31 +87,35 @@ exports.getLectureMaterials = async (req, res) => {
     const { userId } = req.params;
     const userRoles = req.user.roles;
     
-    const isAdminOrSuperAdmin = userRoles.some(role => 
-      ['admin', 'superadmin'].includes(role.toLowerCase())
-    );
+    console.log('Request params:', {
+      requestedUserId: userId,
+      currentUserId: req.user.userId,
+      userRoles: userRoles
+    });
 
     let whereClause = {};
     
-    if (!isAdminOrSuperAdmin) {
+    // If not admin/superadmin, or if specific userId is requested
+    if (!userRoles.includes('admin') && !userRoles.includes('superadmin')) {
       whereClause.UserID = req.user.userId;
     } else if (userId) {
       whereClause.UserID = userId;
     }
 
+    console.log('Where clause:', whereClause);
+
     const materials = await LectureMaterial.findAll({ 
       where: whereClause,
       include: [{
         model: User,
-        attributes: ['UserID', 'Email'],
-        include: [{
-          model: BasicDetails,
-          attributes: ['FirstName', 'LastName']
-        }]
+        attributes: ['UserID', 'Surname', 'FirstName', 'MiddleName', 'NameExtension', 'Email'],
+        as: 'User'
       }],
       order: [['createdAt', 'DESC']]
     });
 
+    console.log('Found materials:', materials.length);
+    
     res.status(200).json(materials);
   } catch (error) {
     console.error('Error getting lecture materials:', error);

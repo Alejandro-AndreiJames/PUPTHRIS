@@ -105,6 +105,7 @@
           <th class="p-4">Description</th>
           <th class="p-4">Reference Link</th>
           <th class="p-4">File</th>
+          <th class="p-4" *ngIf="viewMode === 'all'">Uploaded By</th>
           <th class="p-4 w-36">Actions</th>
         </tr>
       </thead>
@@ -126,10 +127,22 @@
                class="text-blue-600 hover:text-blue-800 cursor-pointer">
               Download File
             </a>
+            <span *ngIf="!material.FilePath" class="text-gray-500">No file available</span>
+          </td>
+          <td class="p-4" *ngIf="viewMode === 'all'">
+            {{material.User?.Surname}}, {{material.User?.FirstName}} 
+            {{material.User?.NameExtension ? ' ' + material.User?.NameExtension : ''}}
           </td>
           <td class="p-4 flex justify-center space-x-2">
-            <button class="btn btn-sm btn-edit" (click)="editMaterial(material)">Edit</button>
-            <button class="btn btn-sm btn-delete" (click)="deleteMaterial(material.LectureID!)">Delete</button>
+            <button *ngIf="material.FilePath" 
+                    class="btn btn-sm btn-info" 
+                    (click)="downloadFile(material.FilePath)">
+              View
+            </button>
+            <ng-container *ngIf="viewMode === 'personal'">
+              <button class="btn btn-sm btn-warning" (click)="editMaterial(material)">Edit</button>
+              <button class="btn btn-sm btn-error" (click)="deleteMaterial(material.LectureID!)">Delete</button>
+            </ng-container>
           </td>
         </tr>
       </tbody>

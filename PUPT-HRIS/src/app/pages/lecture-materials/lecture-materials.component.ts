@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LectureMaterialService } from '../../services/lecture-material.service';
 import { LectureMaterial } from '../../model/lecture-material.model';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-lecture-materials',
@@ -14,6 +15,8 @@ import { CommonModule } from '@angular/common';
 export class LectureMaterialsComponent implements OnInit {
   materials: LectureMaterial[] = [];
   materialForm: FormGroup;
+  @Input() viewMode: 'personal' | 'all' = 'all';
+  currentUserId: number = 0;
   isEditing = false;
   currentMaterialId: number | null = null;
   showModal = false;
@@ -29,8 +32,10 @@ export class LectureMaterialsComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder, 
-    private lectureMaterialService: LectureMaterialService
+    private lectureMaterialService: LectureMaterialService,
+    private authService: AuthService
   ) {
+    this.currentUserId = this.authService.getCurrentUserId();
     this.materialForm = this.fb.group({
       Title: ['', Validators.required],
       Description: [''],
@@ -39,6 +44,9 @@ export class LectureMaterialsComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    if (!this.currentUserId) {
+      this.currentUserId = this.authService.getCurrentUserId();
+    }
     this.loadMaterials();
     this.loadS3Config();
   }
@@ -55,7 +63,16 @@ export class LectureMaterialsComponent implements OnInit {
 
   loadMaterials(): void {
     this.lectureMaterialService.getLectureMaterials().subscribe({
-      next: (materials) => this.materials = materials,
+      next: (materials) => {
+        if (this.viewMode === 'personal') {
+          // Filter for personal materials on the client side
+          this.materials = materials.filter(material => material.UserID === this.currentUserId);
+        } else {
+          // Show all materials
+          this.materials = materials;
+        }
+        console.log('Loaded materials:', this.materials);
+      },
       error: (error) => {
         console.error('Error loading materials:', error);
         this.showToastNotification('Error loading materials', 'error');
@@ -176,10 +193,17 @@ export class LectureMaterialsComponent implements OnInit {
     this.materialToDelete = null;
   }
 
-  downloadFile(filePath: string): void {
-    if (this.s3Config && filePath) {
+  downloadFile(filePath: string | undefined): void {
+    if (!filePath) {
+      this.showToastNotification('No file available for download', 'warning');
+      return;
+    }
+
+    if (this.s3Config) {
       const url = `https://${this.s3Config.bucketName}.s3.${this.s3Config.region}.amazonaws.com/${filePath}`;
       window.open(url, '_blank');
+    } else {
+      this.showToastNotification('Configuration error', 'error');
     }
   }
 

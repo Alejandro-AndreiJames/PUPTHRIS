@@ -1,3 +1,5 @@
+import { User } from './user.model';
+
 export interface LectureMaterial {
   LectureID?: number;
   UserID: number;
@@ -10,4 +12,5 @@ export interface LectureMaterial {
   createdAt?: Date;
   updatedAt?: Date;
   ReferenceLink?: string;
+  User?: User;
 } 
