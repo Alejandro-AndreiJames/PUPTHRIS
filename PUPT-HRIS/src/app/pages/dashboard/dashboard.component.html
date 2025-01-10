@@ -37,7 +37,7 @@
 
   <ng-container *ngIf="(userRole === 'admin' || userRole === 'superadmin') && isAdminView; else personalView">
     <!-- Admin Dashboard Content -->
-    <div class="cards-container grid grid-cols-1 md:grid-cols-4 gap-4 mb-2">
+    <div class="cards-container grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
       <div class="card bg-gradient-to-r from-pink-400 to-pink-600 text-white p-6 rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition-all" 
            (click)="showUserList('female')">
         <h3 class="text-2xl font-bold">Female</h3>
@@ -52,11 +52,6 @@
            (click)="showUserList('faculty')">
         <h3 class="text-2xl font-bold">Faculty</h3>
         <p class="text-6xl font-extrabold">{{ faculty }}</p>
-      </div>
-      <div class="card bg-gradient-to-r from-green-400 to-green-600 text-white p-6 rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition-all" 
-           (click)="showUserList('staff')">
-        <h3 class="text-2xl font-bold">Staff</h3>
-        <p class="text-6xl font-extrabold">{{ staff }}</p>
       </div>
     </div>
 
@@ -207,7 +202,7 @@
       <!-- Evaluation Candidates Section -->
       <div *ngIf="section.id === 'evaluation-candidates' && section.visible">
         <div class="flex w-full flex-col mt-8">
-          <div class="divider divider-neutral">Faculty Evaluation Candidates</div>
+          <div class="divider divider-neutral divider-end">Faculty Evaluation Candidates</div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
