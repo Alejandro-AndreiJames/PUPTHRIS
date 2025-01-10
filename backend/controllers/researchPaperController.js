@@ -92,6 +92,7 @@ exports.getResearchPapers = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const search = req.query.search || '';
+    const viewMode = req.query.viewMode || 'all';
     const offset = (page - 1) * limit;
     
     console.log('Request params:', {
@@ -100,19 +101,23 @@ exports.getResearchPapers = async (req, res) => {
       userRoles: userRoles,
       page,
       limit,
-      search
+      search,
+      viewMode
     });
 
     let whereClause = {};
     
-    // If not admin/superadmin, or if specific userId is requested
-    if (!userRoles.includes('admin') && !userRoles.includes('superadmin')) {
+    // Handle viewMode filtering
+    if (viewMode === 'personal') {
       whereClause.UserID = req.user.userId;
-    } else if (userId) {
-      whereClause.UserID = userId;
+    } else {
+      // Only add CollegeCampusID to where clause if it exists
+      if (req.user.CollegeCampusID) {
+        whereClause.CollegeCampusID = req.user.CollegeCampusID;
+      }
     }
 
-    // Add search conditions
+    // Add search conditions if search term exists
     if (search) {
       whereClause = {
         ...whereClause,
@@ -129,7 +134,7 @@ exports.getResearchPapers = async (req, res) => {
       where: whereClause,
       include: [{
         model: User,
-        attributes: ['FirstName', 'Surname', 'MiddleName', 'NameExtension', 'Email'],
+        attributes: ['UserID', 'Surname', 'FirstName', 'MiddleName', 'NameExtension', 'Email'],
         as: 'User'
       }],
       order: [['createdAt', 'DESC']],

@@ -1,9 +1,17 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { ResearchPaper } from '../model/research-paper.model';
+
+interface ResearchPaperResponse {
+  items: ResearchPaper[];
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -37,10 +45,22 @@ export class ResearchPaperService {
       .pipe(catchError(this.handleError));
   }
 
-  getResearchPapers(userId?: number): Observable<ResearchPaper[]> {
-    const url = userId ? `${this.apiUrl}/${userId}` : this.apiUrl;
-    return this.http.get<ResearchPaper[]>(url, { headers: this.getHeaders() })
-      .pipe(catchError(this.handleError));
+  getResearchPapers(
+    page: number = 1,
+    limit: number = 10,
+    search: string = '',
+    viewMode: 'personal' | 'all' = 'all'
+  ): Observable<ResearchPaperResponse> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString())
+      .set('viewMode', viewMode);
+    
+    if (search) {
+      params = params.set('search', search);
+    }
+
+    return this.http.get<ResearchPaperResponse>(this.apiUrl, { params });
   }
 
   deleteResearchPaper(id: number): Observable<any> {

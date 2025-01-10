@@ -15,7 +15,7 @@ import { jwtDecode } from 'jwt-decode';
 })
 export class ResearchPapersComponent implements OnInit {
   researchPapers: ResearchPaper[] = [];
-  @Input() viewMode: 'personal' | 'all' = 'personal';
+  @Input() viewMode: 'personal' | 'all' = 'all';
   @Input() showModal: boolean = false;
   isEditing: boolean = false;
   currentResearchId: number | null = null;
@@ -29,6 +29,15 @@ export class ResearchPapersComponent implements OnInit {
   showToast: boolean = false;
   toastMessage: string = '';
   toastType: 'success' | 'error' | 'warning' = 'success';
+  
+  // Add pagination properties
+  currentPage: number = 1;
+  totalPages: number = 1;
+  itemsPerPage: number = 10;
+  totalItems: number = 0;
+  
+  // Add search property
+  searchTerm: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -62,35 +71,24 @@ export class ResearchPapersComponent implements OnInit {
   }
 
   loadResearchPapers(): void {
-    // For 'all' view, get all papers
-    if (this.viewMode === 'all') {
-      this.researchService.getResearchPapers().subscribe({
-        next: (papers) => {
-          this.researchPapers = papers;
-        },
-        error: (error) => {
-          console.error('Error loading papers:', error);
-          this.showToastNotification('Error loading research papers', 'error');
-        }
-      });
-    } 
-    // For 'personal' view, get only user's papers
-    else {
-      const userId = this.authService.getCurrentUserId();
-      if (!userId) {
-        this.showToastNotification('User ID not found', 'error');
-        return;
+    this.researchService.getResearchPapers(
+      this.currentPage,
+      this.itemsPerPage,
+      this.searchTerm,
+      this.viewMode
+    ).subscribe({
+      next: (response) => {
+        this.researchPapers = response.items;
+        this.currentPage = response.currentPage;
+        this.totalPages = response.totalPages;
+        this.totalItems = response.totalItems;
+        this.itemsPerPage = response.itemsPerPage;
+      },
+      error: (error) => {
+        console.error('Error loading research papers:', error);
+        this.showToastNotification('Error loading research papers', 'error');
       }
-      this.researchService.getResearchPapers(userId).subscribe({
-        next: (papers) => {
-          this.researchPapers = papers;
-        },
-        error: (error) => {
-          console.error('Error loading papers:', error);
-          this.showToastNotification('Error loading research papers', 'error');
-        }
-      });
-    }
+    });
   }
 
   get showAddButton(): boolean {
@@ -307,5 +305,29 @@ export class ResearchPapersComponent implements OnInit {
     } catch {
       return false;
     }
+  }
+
+  // Add pagination methods
+  onPageChange(page: number): void {
+    this.currentPage = page;
+    this.loadResearchPapers();
+  }
+
+  // Add search method
+  onSearch(event: any): void {
+    this.searchTerm = event.target.value;
+    this.currentPage = 1; // Reset to first page when searching
+    this.loadResearchPapers();
+  }
+
+  // Add debounced search
+  private searchDebounce: any;
+  onSearchInput(event: any): void {
+    if (this.searchDebounce) {
+      clearTimeout(this.searchDebounce);
+    }
+    this.searchDebounce = setTimeout(() => {
+      this.onSearch(event);
+    }, 300);
   }
 }

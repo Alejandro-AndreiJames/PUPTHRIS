@@ -9,36 +9,76 @@
 </div>
 
 <!-- Research Papers Table -->
-<div class="overflow-x-auto">
-  <table class="table w-full">
-    <thead>
-      <tr>
-        <th>Title</th>
-        <th>Authors</th>
-        <th>Publication Date</th>
-        <th *ngIf="viewMode === 'all'">Uploaded By</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let paper of researchPapers">
-        <td>{{paper.Title}}</td>
-        <td>{{paper.Authors}}</td>
-        <td>{{paper.PublicationDate | date}}</td>
-        <td *ngIf="viewMode === 'all'">
-          {{paper.User?.Surname}}, {{paper.User?.FirstName}} 
-          {{paper.User?.NameExtension ? ' ' + paper.User?.NameExtension : ''}}
-        </td>
-        <td>
-          <button class="btn btn-sm btn-info mr-2" (click)="onViewPaper(paper)">View</button>
-          <ng-container *ngIf="viewMode === 'personal'">
-            <button class="btn btn-sm btn-warning mr-2" (click)="editPaper(paper)">Edit</button>
-            <button class="btn btn-sm btn-error" (click)="deletePaper(paper)">Delete</button>
-          </ng-container>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+<div class="container mx-auto">
+  <!-- Add search bar -->
+  <div class="mb-4">
+    <input 
+      type="text"
+      placeholder="Search research papers..."
+      class="input input-bordered w-full max-w-xs"
+      (input)="onSearchInput($event)"
+    >
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="table w-full">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Authors</th>
+          <th>Publication Date</th>
+          <th *ngIf="viewMode === 'all'">Uploaded By</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let paper of researchPapers">
+          <td>{{paper.Title}}</td>
+          <td>{{paper.Authors}}</td>
+          <td>{{paper.PublicationDate | date}}</td>
+          <td *ngIf="viewMode === 'all'">
+            {{paper.User?.Surname}}, {{paper.User?.FirstName}} 
+            {{paper.User?.NameExtension ? ' ' + paper.User?.NameExtension : ''}}
+          </td>
+          <td>
+            <button class="btn btn-sm btn-info mr-2" (click)="onViewPaper(paper)">View</button>
+            <ng-container *ngIf="viewMode === 'personal'">
+              <button class="btn btn-sm btn-warning mr-2" (click)="editPaper(paper)">Edit</button>
+              <button class="btn btn-sm btn-error" (click)="deletePaper(paper)">Delete</button>
+            </ng-container>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Add pagination -->
+  <div class="flex justify-center mt-4 space-x-2">
+    <button 
+      class="btn btn-sm"
+      [disabled]="currentPage === 1"
+      (click)="onPageChange(currentPage - 1)"
+    >
+      Previous
+    </button>
+    
+    <span class="px-4 py-2">
+      Page {{currentPage}} of {{totalPages}}
+    </span>
+    
+    <button 
+      class="btn btn-sm"
+      [disabled]="currentPage === totalPages"
+      (click)="onPageChange(currentPage + 1)"
+    >
+      Next
+    </button>
+  </div>
+
+  <!-- Show total items -->
+  <div class="text-center text-sm text-gray-600 mt-2">
+    Total items: {{totalItems}}
+  </div>
 </div>
 
 <!-- Modal -->
