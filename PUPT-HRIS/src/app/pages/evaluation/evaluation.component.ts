@@ -60,7 +60,7 @@ export class EvaluationComponent implements OnInit, OnDestroy {
       id: 'InstructionAndDiscussion',
       name: 'Instruction and Discussion Facilitation',
       description: 'Instruction and discussion facilitation refer to sharing control and direction with students.',
-      criteriaId: 1  // Add criteriaId to match backend
+      criteriaId: 1
     },
     {
       id: 'Commitment',
@@ -79,6 +79,24 @@ export class EvaluationComponent implements OnInit, OnDestroy {
       name: 'Use of Instructional Materials',
       description: 'Use of instructional materials and other educational resources to help maximize learning',
       criteriaId: 4
+    },
+    {
+      id: 'ClassroomClimate',
+      name: 'Classroom Climate and Virtual Community',
+      description: 'Classroom climate and virtual community referring to facilitating collaborative and effective interaction.',
+      criteriaId: 5
+    },
+    {
+      id: 'CourseOrganization',
+      name: 'Course Organization',
+      description: 'Course organization referring to objectives, concepts, examples, and program fragments discussed in class.',
+      criteriaId: 6
+    },
+    {
+      id: 'AssessmentMethods',
+      name: 'Assessment Methods',
+      description: 'Assessments referring to the activities required in the course to assess the competence of the students.',
+      criteriaId: 7
     }
   ];
 

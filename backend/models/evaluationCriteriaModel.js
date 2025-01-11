@@ -12,7 +12,10 @@ const EvaluationCriteria = sequelize.define('EvaluationCriteria', {
       'Instruction and Discussion Facilitation',
       'Commitment',
       'Teaching for Independent Learning',
-      'Use of Instructional Materials'
+      'Use of Instructional Materials',
+      'Classroom Climate',
+      'Course Organization',
+      'Assessment Methods'
     ),
     allowNull: false
   },
@@ -45,6 +48,12 @@ const EvaluationCriteria = sequelize.define('EvaluationCriteria', {
           return 'Teaching for independent learning pertains to the course specialist\'s ability to organize teaching-learning process to enable learners to maximize their potentials';
         case 'Use of Instructional Materials':
           return 'Use of instructional materials and other educational resources to help maximize learning';
+        case 'Classroom Climate':
+          return 'Classroom climate and virtual community referring to facilitating collaborative and effective interaction.';
+        case 'Course Organization':
+          return 'Course organization referring to objectives, concepts, examples, and program fragments discussed in class.';
+        case 'Assessment Methods':
+          return 'Assessments referring to the activities required in the course to assess the competence of the students.';
         default:
           return '';
       }
