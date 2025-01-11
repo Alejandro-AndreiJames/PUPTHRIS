@@ -9,5 +9,6 @@ export interface BasicDetails {
   NameExtension?: string;
   DateOfBirth?: Date;
   Sex?: 'Male' | 'Female' | 'Other';
+  Email: string;
   UserID: number;
 }

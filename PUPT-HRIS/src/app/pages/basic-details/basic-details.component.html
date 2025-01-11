@@ -48,6 +48,10 @@
                 <span class="text-gray-600 font-medium text-sm">Sex</span>
                 <span class="text-gray-900 font-semibold">{{ basicDetails.Sex || 'No Information Entered' }}</span>
               </div>
+              <div class="flex flex-col pb-2 border-b border-gray-200">
+                <span class="text-gray-600 font-medium text-sm">Email</span>
+                <span class="text-gray-900 font-semibold">{{ basicDetails.Email || 'No Information Entered' }}</span>
+              </div>
 
               <!-- Employment Information -->
               <div class="col-span-2 mt-4">
@@ -236,6 +240,25 @@
                 type="text" 
                 placeholder="Preferred and appropriate honorific (e.g., Mr., Ms., Dr.)"
               >
+            </div>
+
+            <!-- Email Address (Required) -->
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Email Address <span class="text-red-500">*</span></span>
+              </label>
+              <input 
+                formControlName="Email" 
+                class="input input-bordered w-full" 
+                [ngClass]="{'input-error': basicDetailsForm.get('Email')?.invalid && basicDetailsForm.get('Email')?.touched}" 
+                type="email" 
+                placeholder="Enter your email address"
+              >
+              <label class="label" *ngIf="basicDetailsForm.get('Email')?.invalid && basicDetailsForm.get('Email')?.touched">
+                <span class="label-text-alt text-error">
+                  {{ basicDetailsForm.get('Email')?.hasError('required') ? 'Email is required' : 'Please enter a valid email address' }}
+                </span>
+              </label>
             </div>
           </div>
         </div>
