@@ -529,112 +529,14 @@ exports.getFacultiesByRating = async (req, res) => {
   }
 };
 
-exports.getRegularizationCandidates = async (req, res) => {
+exports.getImmunityEligibleFaculty = async (req, res) => {
   try {
     const { campusId } = req.query;
 
-    // Get all part-time faculty users with their evaluations
     const facultyUsers = await User.findAll({
       where: {
         CollegeCampusID: campusId,
-        isActive: true,
-        EmploymentType: 'parttime'  // Match the ENUM value exactly
-      },
-      include: [
-        {
-          model: Role,
-          through: UserRole,
-          where: { RoleName: 'faculty' },
-          attributes: ['RoleName']
-        },
-        {
-          model: Department,
-          as: 'Department',
-          attributes: ['DepartmentName']
-        },
-        {
-          model: FacultyEvaluation,
-          as: 'FacultyEvaluations',
-          separate: true,  // This will perform a separate query
-          order: [
-            ['AcademicYear', 'DESC'],
-            ['Semester', 'DESC']
-          ],
-          limit: 4,
-          include: [{
-            model: EvaluationScore,
-            include: [{
-              model: EvaluationCriteria,
-              as: 'EvaluationCriteria'
-            }]
-          }]
-        }
-      ]
-    });
-
-    const regularizationCandidates = facultyUsers
-      .filter(user => user.FacultyEvaluations.length === 4)
-      .map(user => {
-        const averageScore = user.FacultyEvaluations.reduce((sum, eval) => sum + eval.TotalScore, 0) / 4;
-        
-        let recommendationStrength;
-        if (averageScore >= 93) {
-          recommendationStrength = 'Strong';
-        } else if (averageScore >= 85) {
-          recommendationStrength = 'Moderate';
-        } else {
-          recommendationStrength = 'Weak';
-        }
-
-        console.log(`Faculty: ${user.FirstName}, Average: ${averageScore}, Recommendation: ${recommendationStrength}`);
-
-        return {
-          faculty: {
-            Faculty: {
-              UserID: user.UserID,
-              FirstName: user.FirstName,
-              MiddleName: user.MiddleName,
-              Surname: user.Surname,
-              Department: {
-                DepartmentName: user.Department?.DepartmentName
-              },
-              EmploymentType: user.EmploymentType
-            }
-          },
-          evaluations: user.FacultyEvaluations.map(eval => ({
-            academicYear: eval.AcademicYear,
-            semester: eval.Semester,
-            score: eval.TotalScore,
-            rating: eval.QualitativeRating
-          })),
-          averageScore,
-          recommendationStrength,
-          eligibilityStatus: {
-            isEligible: true,
-            reason: null
-          }
-        };
-      });
-
-    res.status(200).json(regularizationCandidates);
-  } catch (error) {
-    console.error('Error getting regularization candidates:', error);
-    res.status(500).json({ error: error.message });
-  }
-};
-
-exports.getPerformanceReviewCandidates = async (req, res) => {
-  try {
-    const { campusId } = req.query;
-    
-    console.log('Searching for campus ID:', campusId);
-
-    // First, get all full-time faculty users
-    const facultyUsers = await User.findAll({
-      where: {
-        CollegeCampusID: campusId,
-        isActive: true,
-        EmploymentType: 'fulltime'  // Make sure this matches your database value exactly
+        isActive: true
       },
       include: [
         {
@@ -658,72 +560,185 @@ exports.getPerformanceReviewCandidates = async (req, res) => {
             ['AcademicYear', 'DESC'],
             ['Semester', 'DESC']
           ],
-          limit: 4
+          limit: 6 // Increased to 6 to better analyze trends
         }
-      ],
-      logging: console.log // This will log the actual SQL query
+      ]
     });
 
-    console.log('Found faculty users:', facultyUsers.length);
-    console.log('Employment types:', facultyUsers.map(u => u.EmploymentType));
+    const immunityResults = facultyUsers.map(user => {
+      const evaluations = user.FacultyEvaluations || [];
+      const recentFourEvals = evaluations.slice(0, 4);
+      
+      // Basic immunity check
+      const hasImmunity = recentFourEvals.length === 4 && 
+        recentFourEvals.every(eval => eval.TotalScore >= 95);
 
-    // Process and filter candidates
-    const performanceReviewCandidates = facultyUsers
-      .filter(user => {
-        console.log(`User ${user.FirstName} has ${user.FacultyEvaluations?.length} evaluations`);
-        return user.FacultyEvaluations?.length === 4;
-      })
-      .map(user => ({
+      // Calculate average score
+      const averageScore = evaluations.length > 0 
+        ? evaluations.reduce((sum, eval) => sum + eval.TotalScore, 0) / evaluations.length 
+        : 0;
+
+      // Calculate performance metrics
+      const performanceMetrics = calculatePerformanceMetrics(evaluations);
+
+      // Generate insights and recommendations
+      const insights = generateInsights(performanceMetrics, hasImmunity);
+
+      return {
         faculty: {
-          Faculty: {
-            UserID: user.UserID,
-            FirstName: user.FirstName,
-            MiddleName: user.MiddleName,
-            Surname: user.Surname,
-            Department: {
-              DepartmentName: user.Department?.DepartmentName
-            },
-            EmploymentType: user.EmploymentType
-          }
+          UserID: user.UserID,
+          FirstName: user.FirstName,
+          MiddleName: user.MiddleName,
+          Surname: user.Surname,
+          Department: user.Department?.DepartmentName,
+          EmploymentType: user.EmploymentType
         },
-        evaluations: user.FacultyEvaluations.map(eval => ({
-          academicYear: eval.AcademicYear,
-          semester: eval.Semester,
-          score: eval.TotalScore,
-          rating: eval.QualitativeRating
-        })),
-        performanceMetrics: {
-          trend: calculateTrend(user.FacultyEvaluations),
-          concernLevel: calculateConcernLevel(user.FacultyEvaluations),
-          lowestScore: Math.min(...user.FacultyEvaluations.map(e => e.TotalScore)),
-          averageScore: user.FacultyEvaluations.reduce((sum, e) => sum + e.TotalScore, 0) / 4
+        evaluationMetrics: {
+          recentEvaluations: recentFourEvals.map(eval => ({
+            academicYear: eval.AcademicYear,
+            semester: eval.Semester,
+            score: eval.TotalScore,
+            rating: eval.QualitativeRating
+          })),
+          averageScore: Number(averageScore.toFixed(2)),
+          hasImmunity,
+          evaluationCount: recentFourEvals.length,
+          allScoresAbove95: hasImmunity,
+          performance: performanceMetrics,
+          insights
         }
-      }));
+      };
+    });
 
-    console.log('Filtered performance review candidates:', performanceReviewCandidates.length);
-    res.status(200).json(performanceReviewCandidates);
+    // Filter and sort results
+    const eligibleFaculty = immunityResults
+      .filter(result => result.evaluationMetrics.evaluationCount === 4)
+      .sort((a, b) => b.evaluationMetrics.averageScore - a.evaluationMetrics.averageScore);
+
+    res.status(200).json(eligibleFaculty);
 
   } catch (error) {
-    console.error('Error getting performance review candidates:', error);
-    res.status(500).json({ error: error.message });
+    console.error('Error getting immunity eligible faculty:', error);
+    res.status(500).json({ 
+      error: 'Error getting immunity eligible faculty', 
+      details: error.message 
+    });
   }
 };
 
-// Helper functions
-function calculateTrend(evaluations) {
-  if (!evaluations || evaluations.length < 2) return 'Stable';
+// Helper function to calculate performance metrics
+function calculatePerformanceMetrics(evaluations) {
+  if (!evaluations.length) return null;
+
   const scores = evaluations.map(e => e.TotalScore);
-  const lastScore = scores[0];
-  const previousScore = scores[1];
-  if (lastScore > previousScore) return 'Improving';
-  if (lastScore < previousScore) return 'Declining';
+  
+  // Calculate trend
+  const trend = calculateTrend(scores);
+  
+  // Calculate consistency
+  const consistency = calculateConsistency(scores);
+  
+  // Calculate momentum
+  const momentum = calculateMomentum(scores);
+
+  return {
+    trend,
+    consistency,
+    momentum,
+    highestScore: Math.max(...scores),
+    lowestScore: Math.min(...scores),
+    scoreRange: Math.max(...scores) - Math.min(...scores),
+    sustainedExcellence: scores.every(score => score >= 95),
+    nearImmunity: scores.filter(score => score >= 95).length >= 3
+  };
+}
+
+// Helper function to calculate trend
+function calculateTrend(scores) {
+  if (scores.length < 2) return 'Insufficient Data';
+  
+  const recentScores = scores.slice(0, 2);
+  const scoreDiff = recentScores[0] - recentScores[1];
+  
+  if (scoreDiff > 2) return 'Improving';
+  if (scoreDiff < -2) return 'Declining';
   return 'Stable';
 }
 
-function calculateConcernLevel(evaluations) {
-  if (!evaluations || evaluations.length === 0) return 'Moderate';
-  const lowestScore = Math.min(...evaluations.map(e => e.TotalScore));
-  if (lowestScore < 51) return 'High';
-  if (lowestScore < 71) return 'Moderate';
-  return 'Low';
+// Helper function to calculate consistency
+function calculateConsistency(scores) {
+  const standardDeviation = calculateStandardDeviation(scores);
+  
+  if (standardDeviation < 2) return 'Highly Consistent';
+  if (standardDeviation < 5) return 'Consistent';
+  return 'Variable';
+}
+
+// Helper function to calculate momentum
+function calculateMomentum(scores) {
+  if (scores.length < 3) return 'Insufficient Data';
+  
+  const recentThree = scores.slice(0, 3);
+  const isIncreasing = recentThree.every((score, i) => 
+    i === 0 || score <= recentThree[i - 1]
+  );
+  
+  if (isIncreasing && recentThree[0] >= 95) return 'Strong Positive';
+  if (isIncreasing) return 'Positive';
+  return 'Neutral';
+}
+
+// Helper function to calculate standard deviation
+function calculateStandardDeviation(scores) {
+  const mean = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+  const squareDiffs = scores.map(score => Math.pow(score - mean, 2));
+  const avgSquareDiff = squareDiffs.reduce((sum, diff) => sum + diff, 0) / scores.length;
+  return Math.sqrt(avgSquareDiff);
+}
+
+// Helper function to generate insights
+function generateInsights(metrics, hasImmunity) {
+  const insights = {
+    status: hasImmunity ? 'Immune' : 'Not Immune',
+    performanceLevel: '',
+    recommendations: [],
+    badges: []
+  };
+
+  if (hasImmunity) {
+    insights.badges.push('Classroom Observation Immunity Achieved');
+    insights.recommendations.push('Maintain excellent performance to retain immunity status');
+  } else if (metrics.nearImmunity) {
+    insights.badges.push('Near Immunity Status');
+    insights.recommendations.push('Close to achieving immunity - maintain high performance');
+  }
+
+  // Add performance-based insights
+  if (metrics.trend === 'Improving') {
+    insights.badges.push('Upward Trajectory');
+  }
+
+  if (metrics.consistency === 'Highly Consistent') {
+    insights.badges.push('Consistency Champion');
+  }
+
+  // Add specific recommendations based on metrics
+  if (metrics.trend === 'Declining') {
+    insights.recommendations.push('Consider performance improvement strategies');
+  }
+
+  if (metrics.consistency === 'Variable') {
+    insights.recommendations.push('Focus on maintaining consistent performance across semesters');
+  }
+
+  // Set overall performance level
+  if (metrics.sustainedExcellence) {
+    insights.performanceLevel = 'Outstanding';
+  } else if (metrics.nearImmunity) {
+    insights.performanceLevel = 'Very Good';
+  } else {
+    insights.performanceLevel = 'Good';
+  }
+
+  return insights;
 }
