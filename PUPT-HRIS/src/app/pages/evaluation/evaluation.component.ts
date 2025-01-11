@@ -52,7 +52,7 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   currentSemester: Semester = 'First Semester';
   academicYears: string[] = [];
   ratings: { [key: string]: number } = {};
-  numberOfRespondents: number = 0;
+  comments: string = '';
   courseYearSection: string = '';
 
   evaluationCategories = [
@@ -60,7 +60,7 @@ export class EvaluationComponent implements OnInit, OnDestroy {
       id: 'InstructionAndDiscussion',
       name: 'Instruction and Discussion Facilitation',
       description: 'Instruction and discussion facilitation refer to sharing control and direction with students.',
-      criteriaId: 1  // Add criteriaId to match backend
+      criteriaId: 1
     },
     {
       id: 'Commitment',
@@ -79,6 +79,24 @@ export class EvaluationComponent implements OnInit, OnDestroy {
       name: 'Use of Instructional Materials',
       description: 'Use of instructional materials and other educational resources to help maximize learning',
       criteriaId: 4
+    },
+    {
+      id: 'ClassroomClimate',
+      name: 'Classroom Climate and Virtual Community',
+      description: 'Classroom climate and virtual community referring to facilitating collaborative and effective interaction.',
+      criteriaId: 5
+    },
+    {
+      id: 'CourseOrganization',
+      name: 'Course Organization',
+      description: 'Course organization referring to objectives, concepts, examples, and program fragments discussed in class.',
+      criteriaId: 6
+    },
+    {
+      id: 'AssessmentMethods',
+      name: 'Assessment Methods',
+      description: 'Assessments referring to the activities required in the course to assess the competence of the students.',
+      criteriaId: 7
     }
   ];
 
@@ -266,18 +284,15 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   }
 
   resetEvaluationForm() {
-    // Reset all form values
-    this.numberOfRespondents = 0;
+    this.comments = '';
     this.courseYearSection = '';
     this.ratings = {};
     
-    // Set default values for academic year and semester
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
     this.currentAcademicYear = `${currentYear}-${currentYear + 1}`;
     this.currentSemester = 'First Semester';
     
-    // Reset edit mode
     this.isEditMode = false;
     this.currentEvaluationId = null;
   }
@@ -327,17 +342,24 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   }
 
   private loadExistingEvaluation(evaluation: any) {
-    this.numberOfRespondents = evaluation.NumberOfRespondents;
+    // Load comments
+    this.comments = evaluation.Comments || '';  // Ensure comments are loaded
     this.courseYearSection = evaluation.CourseSection;
     this.currentAcademicYear = evaluation.AcademicYear;
     this.currentSemester = evaluation.Semester;
 
-    // Load existing scores
+    // Load scores
     evaluation.EvaluationScores.forEach((score: any) => {
       const category = this.evaluationCategories.find(c => c.criteriaId === score.CriteriaID);
       if (category) {
         this.ratings[category.id] = score.Score;
       }
+    });
+
+    console.log('Loaded evaluation:', {
+      comments: this.comments,
+      courseSection: this.courseYearSection,
+      scores: this.ratings
     });
   }
 
@@ -478,11 +500,11 @@ export class EvaluationComponent implements OnInit, OnDestroy {
 
     const decodedToken = this.authService.getDecodedToken();
 
-    const evaluationData = {
+    return {
       facultyId: this.selectedUser.UserID,
       evaluatorId: decodedToken.userId,
       courseSection: this.courseYearSection,
-      numberOfRespondents: Number(this.numberOfRespondents),
+      comments: this.comments,
       academicYear: this.currentAcademicYear,
       semester: this.currentSemester,
       totalScore: Number(totalScore.toFixed(2)),
@@ -490,9 +512,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
       scores: scores,
       createdBy: decodedToken.userId
     };
-
-    console.log('Prepared evaluation data:', evaluationData);
-    return evaluationData;
   }
 
   confirmDeleteEvaluation(evaluationId: number) {
@@ -535,7 +554,7 @@ export class EvaluationComponent implements OnInit, OnDestroy {
     this.selectedUser = this.users.find(u => u.UserID === evaluation.FacultyID) || null;
     
     // Load the evaluation data into the form
-    this.numberOfRespondents = evaluation.NumberOfRespondents;
+    this.comments = evaluation.Comments;
     this.courseYearSection = evaluation.CourseSection;
     this.currentAcademicYear = evaluation.AcademicYear;
     this.currentSemester = evaluation.Semester as Semester;
@@ -610,8 +629,8 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   }
 
   isFormValid(): boolean {
-    // Check if all required fields are filled
-    if (!this.courseYearSection || !this.numberOfRespondents) {
+    // Check if required fields are filled
+    if (!this.courseYearSection || !this.comments) {
       return false;
     }
 
@@ -653,9 +672,9 @@ export class EvaluationComponent implements OnInit, OnDestroy {
 
   // Add this method to check for changes
   private hasUnsavedChanges(currentData: any, originalData: any): boolean {
-    // Check if number of respondents or course section changed
-    if (currentData.numberOfRespondents !== originalData.NumberOfRespondents ||
-        currentData.courseSection !== originalData.CourseSection) {
+    // Check if course section or comments changed
+    if (currentData.courseSection !== originalData.CourseSection ||
+        currentData.comments !== originalData.Comments) {
       return true;
     }
 

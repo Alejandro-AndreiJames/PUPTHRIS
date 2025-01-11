@@ -15,9 +15,7 @@ export class BasicDetailsService {
 
   getBasicDetails(userId: number): Observable<BasicDetails> {
     const token = localStorage.getItem('Token');
-  
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-  
     return this.http.get<BasicDetails>(`${this.apiUrl}/${userId}`, { headers }).pipe(
       catchError(this.handleError)
     );
@@ -26,15 +24,20 @@ export class BasicDetailsService {
   addBasicDetails(basicDetails: BasicDetails): Observable<BasicDetails> {
     const token = localStorage.getItem('Token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-
     return this.http.post<BasicDetails>(`${this.apiUrl}/add`, basicDetails, { headers }).pipe(
       catchError(this.handleError)
     );
   }
 
-  updateBasicDetails(id: number, basicDetails: BasicDetails): Observable<BasicDetails> {
+  updateBasicDetails(basicDetails: BasicDetails): Observable<BasicDetails> {
     const token = localStorage.getItem('Token');
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    
+    // Use the BasicDetailsID from the basicDetails object
+    const id = basicDetails.BasicDetailsID;
+    if (!id) {
+      return throwError('BasicDetailsID is required for update');
+    }
 
     return this.http.patch<BasicDetails>(`${this.apiUrl}/update/${id}`, basicDetails, { headers }).pipe(
       catchError(this.handleError)
@@ -42,7 +45,15 @@ export class BasicDetailsService {
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
-    console.error('An error occurred:', error);
-    return throwError(error.message || 'Server error');
+    let errorMessage = 'An error occurred';
+    if (error.error instanceof ErrorEvent) {
+      // Client-side error
+      errorMessage = error.error.message;
+    } else {
+      // Server-side error
+      errorMessage = error.error.message || error.message;
+    }
+    console.error('Error:', error);
+    return throwError(errorMessage);
   }
 }

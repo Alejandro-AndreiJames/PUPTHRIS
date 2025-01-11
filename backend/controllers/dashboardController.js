@@ -457,12 +457,10 @@ exports.getGovernmentIdCounts = async (req, res) => {
 exports.getFemaleUsers = async (req, res) => {
   try {
     const { campusId } = req.query;
-
-    const femaleUsers = await User.findAll({
-      attributes: ['UserID', 'EmploymentType', 'Fcode'],
+    const users = await User.findAll({
       where: {
-        isActive: true,
-        ...(campusId && { CollegeCampusID: campusId })
+        CollegeCampusID: campusId,
+        isActive: true
       },
       include: [
         {
@@ -475,6 +473,10 @@ exports.getFemaleUsers = async (req, res) => {
           model: Department,
           as: 'Department',
           attributes: ['DepartmentName']
+        },
+        {
+          model: AcademicRank,
+          attributes: ['Rank']
         }
       ],
       order: [
@@ -483,7 +485,7 @@ exports.getFemaleUsers = async (req, res) => {
       ]
     });
 
-    const detailedUsers = await getUserDetailsWithEducation(femaleUsers);
+    const detailedUsers = await getUserDetailsWithEducation(users);
     res.status(200).json(detailedUsers);
   } catch (error) {
     console.error('Error fetching female users:', error);
@@ -494,13 +496,10 @@ exports.getFemaleUsers = async (req, res) => {
 exports.getMaleUsers = async (req, res) => {
   try {
     const { campusId } = req.query;
-    console.log('Fetching male users for campus:', campusId);
-
-    const maleUsers = await User.findAll({
-      attributes: ['UserID', 'EmploymentType', 'Fcode'],
+    const users = await User.findAll({
       where: {
-        isActive: true,
-        ...(campusId && { CollegeCampusID: campusId })
+        CollegeCampusID: campusId,
+        isActive: true
       },
       include: [
         {
@@ -513,6 +512,10 @@ exports.getMaleUsers = async (req, res) => {
           model: Department,
           as: 'Department',
           attributes: ['DepartmentName']
+        },
+        {
+          model: AcademicRank,
+          attributes: ['Rank']
         }
       ],
       order: [
@@ -521,7 +524,7 @@ exports.getMaleUsers = async (req, res) => {
       ]
     });
 
-    const detailedUsers = await getUserDetailsWithEducation(maleUsers);
+    const detailedUsers = await getUserDetailsWithEducation(users);
     res.status(200).json(detailedUsers);
   } catch (error) {
     console.error('Error fetching male users:', error);

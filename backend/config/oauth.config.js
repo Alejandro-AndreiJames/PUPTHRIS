@@ -34,6 +34,15 @@ const config = {
         "https://beta.pupt-flss.com/auth/callback",
       ],
     },
+    [process.env.FARMS_CLIENT_ID]: {
+      clientId: process.env.FARMS_CLIENT_ID,
+      clientSecret: process.env.FARMS_CLIENT_SECRET,
+      name: "PUPT FARMS",
+      redirectUris: [
+        "http://localhost:4201/auth/callback",
+        //"https://pupt-flss.com/auth/callback",
+      ],
+    },
   },
 
   allowedOrigins: {

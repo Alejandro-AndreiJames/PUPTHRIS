@@ -19,8 +19,40 @@ exports.submitEvaluation = async (req, res) => {
     const { 
       facultyId,
       academicYear,
-      semester
+      semester,
+      evaluatorId,
+      courseSection, 
+      comments,
+      scores,
+      createdBy,
+      totalScore,
+      qualitativeRating
     } = req.body;
+
+    // Validate that all 7 criteria are present
+    const requiredCriteriaIds = [1, 2, 3, 4, 5, 6, 7]; // Updated to include new criteria
+    const hasAllCriteria = requiredCriteriaIds.every(id => 
+      scores.some(score => score.CriteriaID === id)
+    );
+
+    if (!hasAllCriteria) {
+      await transaction.rollback();
+      return res.status(400).json({ 
+        error: 'All evaluation criteria must be scored' 
+      });
+    }
+
+    // Validate scores are within range
+    const validScores = scores.every(score => 
+      score.Score >= 0 && score.Score <= 100
+    );
+
+    if (!validScores) {
+      await transaction.rollback();
+      return res.status(400).json({ 
+        error: 'All scores must be between 0 and 100' 
+      });
+    }
 
     const existingEvaluation = await FacultyEvaluation.findOne({
       where: {
@@ -44,32 +76,13 @@ exports.submitEvaluation = async (req, res) => {
       });
     }
 
-    const { 
-      evaluatorId,
-      courseSection, 
-      numberOfRespondents,
-      scores,
-      createdBy,
-      totalScore,
-      qualitativeRating
-    } = req.body;
-
-    if (!facultyId || !evaluatorId || !courseSection || 
-        !numberOfRespondents || !scores || !createdBy || 
-        !academicYear || !semester ||
-        !Array.isArray(scores) || scores.length === 0) {
-      return res.status(400).json({ 
-        error: 'Missing or invalid required fields'
-      });
-    }
-
     const evaluation = await FacultyEvaluation.create({
       FacultyID: facultyId,
       EvaluatorID: evaluatorId,
       AcademicYear: academicYear,
       Semester: semester,
       CourseSection: courseSection,
-      NumberOfRespondents: numberOfRespondents,
+      Comments: comments,
       TotalScore: totalScore,
       QualitativeRating: qualitativeRating,
       CreatedBy: createdBy
@@ -174,6 +187,25 @@ exports.getEvaluationCriteria = async (req, res) => {
       ]
     });
 
+    // Ensure all 7 categories are represented
+    const expectedCategories = [
+      'Instruction and Discussion Facilitation',
+      'Commitment',
+      'Teaching for Independent Learning',
+      'Use of Instructional Materials',
+      'Classroom Climate',
+      'Course Organization',
+      'Assessment Methods'
+    ];
+
+    const missingCategories = expectedCategories.filter(category => 
+      !criteria.some(criterion => criterion.Category === category)
+    );
+
+    if (missingCategories.length > 0) {
+      console.warn('Missing evaluation categories:', missingCategories);
+    }
+
     const groupedCriteria = criteria.reduce((acc, criterion) => {
       if (!acc[criterion.Category]) {
         acc[criterion.Category] = {
@@ -187,6 +219,7 @@ exports.getEvaluationCriteria = async (req, res) => {
 
     res.status(200).json(groupedCriteria);
   } catch (error) {
+    console.error('Error fetching evaluation criteria:', error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -326,7 +359,7 @@ exports.updateEvaluation = async (req, res) => {
     const { evaluationId } = req.params;
     const {
       courseSection,
-      numberOfRespondents,
+      comments,
       scores,
       totalScore,
       qualitativeRating
@@ -342,7 +375,7 @@ exports.updateEvaluation = async (req, res) => {
 
     await evaluation.update({
       CourseSection: courseSection,
-      NumberOfRespondents: numberOfRespondents,
+      Comments: comments,
       TotalScore: totalScore,
       QualitativeRating: qualitativeRating
     }, { transaction: t });

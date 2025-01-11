@@ -7,11 +7,12 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MainLayoutComponent } from './main-layout/main-layout.component';
 import { CampusContextService } from './services/campus-context.service';
+import { TokenExpirationWarningComponent } from './token-expiration-warning/token-expiration-warning.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [SidebarComponent, NavbarComponent, RouterModule, LoginComponent, CommonModule,MainLayoutComponent],
+  imports: [SidebarComponent, NavbarComponent, RouterModule, LoginComponent, CommonModule,MainLayoutComponent,TokenExpirationWarningComponent],
   providers: [CampusContextService],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']

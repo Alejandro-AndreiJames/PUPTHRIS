@@ -56,6 +56,7 @@ export class BasicDetailsComponent implements OnInit {
       EmployeeNo: ['', Validators.required],
       DateOfBirth: ['', Validators.required],
       Sex: ['', Validators.required],
+      Email: ['', [Validators.required, Validators.email]],
       UserID: [this.userId]
     });
   }
@@ -102,11 +103,15 @@ export class BasicDetailsComponent implements OnInit {
     }
 
     if (this.basicDetailsForm.valid) {
-      const details: BasicDetails = this.basicDetailsForm.value;
-      details.UserID = this.userId;
-  
-      if (this.basicDetails) {
-        this.basicDetailsService.updateBasicDetails(this.basicDetails.BasicDetailsID!, details).subscribe(
+      const details: BasicDetails = {
+        ...this.basicDetailsForm.value,
+        UserID: this.userId,
+        BasicDetailsID: this.basicDetails?.BasicDetailsID // Include the existing ID if updating
+      };
+
+      if (this.basicDetails?.BasicDetailsID) {
+        // Update existing record
+        this.basicDetailsService.updateBasicDetails(details).subscribe(
           (updatedDetails) => {
             this.basicDetails = updatedDetails;
             this.isEditing = false;
@@ -115,25 +120,24 @@ export class BasicDetailsComponent implements OnInit {
           },
           (error) => {
             console.error('Error updating basic details:', error);
-            this.showToastNotification('An error occurred while saving changes.', 'error');
+            this.showToastNotification(error || 'An error occurred while saving changes.', 'error');
           }
         );
       } else {
+        // Create new record
         this.basicDetailsService.addBasicDetails(details).subscribe(
           (newDetails) => {
             this.basicDetails = newDetails;
             this.isEditing = false;
             this.showToastNotification('Changes have been saved successfully.', 'success');
-            this.submitted = false; 
+            this.submitted = false;
           },
           (error) => {
             console.error('Error adding basic details:', error);
-            this.showToastNotification('An error occurred while saving changes.', 'error');
+            this.showToastNotification(error || 'An error occurred while saving changes.', 'error');
           }
         );
       }
-    } else {
-      console.log('Form is invalid');
     }
   }
 

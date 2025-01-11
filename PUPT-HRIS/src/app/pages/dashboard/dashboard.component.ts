@@ -1358,12 +1358,12 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     switch(type) {
       case 'male':
         this.dashboardService.getMaleUsers(campusId).subscribe({
-          next: (data) => {
-            this.currentUserList = data;
-            this.userModalCurrentPage = 1; // Reset to first page
-            this.updateUserModalPagination(); // Initialize pagination
+          next: (users) => {
+            this.originalUserList = users; // Store original list
+            this.currentUserList = [...users]; // Make a copy for current display
             this.modalTitle = 'Male Faculty Members';
             this.showUserModal = true;
+            this.updateUserModalPagination();
           },
           error: (error) => console.error('Error fetching male users:', error)
         });
@@ -1371,12 +1371,12 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
       case 'female':
         this.dashboardService.getFemaleUsers(campusId).subscribe({
-          next: (data) => {
-            this.currentUserList = data;
-            this.userModalCurrentPage = 1; // Reset to first page
-            this.updateUserModalPagination(); // Initialize pagination
+          next: (users) => {
+            this.originalUserList = users; // Store original list
+            this.currentUserList = [...users]; // Make a copy for current display
             this.modalTitle = 'Female Faculty Members';
             this.showUserModal = true;
+            this.updateUserModalPagination();
           },
           error: (error) => console.error('Error fetching female users:', error)
         });
@@ -1410,12 +1410,12 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
       case 'doctorate':
         this.dashboardService.getDoctorateUsers(campusId).subscribe({
-          next: (data) => {
-            this.currentUserList = data;
-            this.userModalCurrentPage = 1; // Reset to first page
-            this.updateUserModalPagination(); // Initialize pagination
+          next: (users) => {
+            this.originalUserList = users; // Store original list
+            this.currentUserList = [...users]; // Make a copy for current display
             this.modalTitle = 'Doctorate Degree Holders';
             this.showUserModal = true;
+            this.updateUserModalPagination();
           },
           error: (error) => console.error('Error fetching doctorate users:', error)
         });
@@ -1423,12 +1423,12 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
       case 'masters':
         this.dashboardService.getMastersUsers(campusId).subscribe({
-          next: (data) => {
-            this.currentUserList = data;
-            this.userModalCurrentPage = 1; // Reset to first page
-            this.updateUserModalPagination(); // Initialize pagination
+          next: (users) => {
+            this.originalUserList = users; // Store original list
+            this.currentUserList = [...users]; // Make a copy for current display
             this.modalTitle = 'Masters Degree Holders';
             this.showUserModal = true;
+            this.updateUserModalPagination();
           },
           error: (error) => console.error('Error fetching masters users:', error)
         });

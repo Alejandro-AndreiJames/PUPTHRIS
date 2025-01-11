@@ -23,46 +23,79 @@ exports.updateBasicDetails = async (req, res) => {
       MiddleInitial,
       NameExtension,
       FacultyCode,
-      // ... other basic details fields
+      Email,
+      EmployeeNo,
+      DateOfBirth,
+      Sex,
+      Honorific,
+      UserID
     } = req.body;
 
-    // First, update the BasicDetails table
-    const result = await BasicDetails.update(req.body, {
-      where: { BasicDetailsID: basicDetailsId },
-      transaction
+    // First, check if the record exists
+    const existingBasicDetails = await BasicDetails.findOne({
+      where: { 
+        UserID: UserID  // Search by UserID instead of BasicDetailsID
+      }
     });
 
-    if (result[0] === 0) {
+    if (!existingBasicDetails) {
       await transaction.rollback();
       return res.status(404).json({ message: 'Basic details record not found' });
     }
 
-    // Get the BasicDetails record to find the associated UserID
-    const basicDetails = await BasicDetails.findByPk(basicDetailsId);
-    
-    // Update the corresponding User record
+    // Update BasicDetails
+    await BasicDetails.update({
+      LastName,
+      FirstName,
+      MiddleInitial,
+      NameExtension,
+      FacultyCode,
+      EmployeeNo,
+      DateOfBirth,
+      Sex,
+      Honorific
+    }, {
+      where: { UserID: UserID },
+      transaction
+    });
+
+    // Update User table
     await User.update({
       Surname: LastName,
       FirstName: FirstName,
-      MiddleName: MiddleInitial, // Note: This might need adjustment based on your requirements
+      MiddleName: MiddleInitial,
       NameExtension: NameExtension,
       Fcode: FacultyCode,
+      Email: Email
     }, {
-      where: { UserID: basicDetails.UserID },
+      where: { UserID: UserID },
       transaction
     });
 
     await transaction.commit();
 
-    // Fetch the updated BasicDetails record
-    const updatedBasicDetails = await BasicDetails.findByPk(basicDetailsId);
-    res.status(200).json(updatedBasicDetails);
+    // Fetch and return the updated record
+    const updatedBasicDetails = await BasicDetails.findOne({
+      where: { UserID: UserID },
+      include: [{
+        model: User,
+        attributes: ['Email']
+      }]
+    });
+
+    // Combine the data before sending response
+    const response = {
+      ...updatedBasicDetails.toJSON(),
+      Email: updatedBasicDetails.User.Email
+    };
+
+    res.status(200).json(response);
 
   } catch (error) {
     await transaction.rollback();
     console.error('Error updating basic details:', error);
     res.status(500).json({ 
-      message: 'Internal Server Error',
+      message: 'Internal server error',
       error: error.message 
     });
   }
@@ -71,11 +104,29 @@ exports.updateBasicDetails = async (req, res) => {
 exports.getBasicDetails = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const basicDetails = await BasicDetails.findOne({ where: { UserID: userId } });
+    const basicDetails = await BasicDetails.findOne({
+      where: { UserID: userId },
+      include: [{
+        model: User,
+        attributes: ['Email']
+      }]
+    });
+
     if (basicDetails) {
-      res.status(200).json(basicDetails);
+      const response = {
+        ...basicDetails.toJSON(),
+        Email: basicDetails.User.Email
+      };
+      res.status(200).json(response);
     } else {
-      res.status(404).send('Basic details record not found');
+      const user = await User.findByPk(userId, {
+        attributes: ['Email']
+      });
+      if (user) {
+        res.status(200).json({ Email: user.Email });
+      } else {
+        res.status(404).send('User not found');
+      }
     }
   } catch (error) {
     console.error('Error getting basic details:', error);

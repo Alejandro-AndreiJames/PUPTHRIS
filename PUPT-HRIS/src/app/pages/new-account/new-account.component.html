@@ -14,18 +14,16 @@
       <div class="form-control">
         <label class="label-text mb-3">Select Roles <span class="text-red-500">*</span></label>
         <div class="grid grid-cols-2 gap-4">
-          <label style="display: flex; align-items: center; gap: 0.5rem;">
-            <input type="checkbox" value="admin" (change)="onRoleCheckboxChange($event)">
-            <span>admin</span>
-          </label>
-          <label style="display: flex; align-items: center; gap: 0.5rem;">
-            <input type="checkbox" value="faculty" (change)="onRoleCheckboxChange($event)">
-            <span>faculty</span>
-          </label>
-          <label style="display: flex; align-items: center; gap: 0.5rem;">
-            <input type="checkbox" value="superadmin" (change)="onRoleCheckboxChange($event)">
-            <span>superadmin</span>
-          </label>
+          <ng-container *ngFor="let role of roles">
+            <label *ngIf="role.RoleName.toLowerCase() !== 'staff'" 
+                   style="display: flex; align-items: center; gap: 0.5rem;">
+              <input type="checkbox" 
+                     [value]="role.RoleID"
+                     [checked]="isRoleSelected(role.RoleID)"
+                     (change)="onRoleCheckboxChange($event)">
+              <span>{{ role.RoleName }}</span>
+            </label>
+          </ng-container>
         </div>
       </div>
     </div>

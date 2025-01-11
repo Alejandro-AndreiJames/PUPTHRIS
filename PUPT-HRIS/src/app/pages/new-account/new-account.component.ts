@@ -145,21 +145,43 @@ export class NewAccountComponent implements OnInit {
     const departmentControl = this.newAccountForm.get('DepartmentID');
     const collegeCampusControl = this.newAccountForm.get('CollegeCampusID');
 
-    const isStaffSelected = selectedRoles.includes(this.roles.find(r => r.RoleName.toLowerCase() === 'staff')?.RoleID?.toString() || '');
-    const isAdminSelected = selectedRoles.includes(this.adminRoleId);
+    // Get the actual role IDs from the roles array
+    const facultyRole = this.roles.find(r => r.RoleName.toLowerCase() === 'faculty');
+    const adminRole = this.roles.find(r => r.RoleName.toLowerCase() === 'admin');
+    const staffRole = this.roles.find(r => r.RoleName.toLowerCase() === 'staff');
 
-    if (isStaffSelected) {
+    const isFacultySelected = selectedRoles.includes(facultyRole?.RoleID?.toString() || '');
+    const isAdminSelected = selectedRoles.includes(adminRole?.RoleID?.toString() || '');
+    const isStaffSelected = selectedRoles.includes(staffRole?.RoleID?.toString() || '');
+
+    // If faculty is selected, remove staff role and vice versa
+    if (isFacultySelected && isStaffSelected) {
+      const staffIndex = selectedRoles.indexOf(staffRole?.RoleID?.toString() || '');
+      if (staffIndex > -1) {
+        selectedRoles.splice(staffIndex, 1);
+        this.newAccountForm.get('Roles')?.setValue(selectedRoles);
+      }
+    }
+
+    // Handle department control based on role selection
+    if (isFacultySelected) {
+      departmentControl?.enable();
+      departmentControl?.setValidators([Validators.required]);
+    } else if (isStaffSelected) {
       departmentControl?.disable();
+      departmentControl?.clearValidators();
       departmentControl?.setValue('');
     } else {
       departmentControl?.enable();
+      departmentControl?.setValidators([Validators.required]);
     }
 
+    // Handle college campus control for admin role
     if (isAdminSelected) {
       this.showCollegeCampus = true;
       collegeCampusControl?.enable();
-      collegeCampusControl?.setValidators(Validators.required);
-      departmentControl?.enable(); // Enable department selection for admin
+      collegeCampusControl?.setValidators([Validators.required]);
+      departmentControl?.enable();
     } else {
       this.showCollegeCampus = false;
       collegeCampusControl?.disable();
@@ -167,9 +189,11 @@ export class NewAccountComponent implements OnInit {
       collegeCampusControl?.setValue('');
       
       // Reset department selection when admin is deselected
-      departmentControl?.setValue('');
-      this.departments = []; // Clear the departments array
-      this.loadDepartments(); // Reload departments for the current user's campus
+      if (!isFacultySelected) {
+        departmentControl?.setValue('');
+        this.departments = [];
+        this.loadDepartments();
+      }
     }
 
     collegeCampusControl?.updateValueAndValidity();
@@ -179,12 +203,12 @@ export class NewAccountComponent implements OnInit {
   // Update selected roles when checkbox changes
   onRoleCheckboxChange(event: any): void {
     const selectedRoles = this.newAccountForm.get('Roles')?.value || [];
-    const roleValue = event.target.value;
+    const roleId = event.target.value;
 
     if (event.target.checked) {
-      selectedRoles.push(roleValue);
+      selectedRoles.push(roleId);
     } else {
-      const index = selectedRoles.indexOf(roleValue);
+      const index = selectedRoles.indexOf(roleId);
       if (index > -1) {
         selectedRoles.splice(index, 1);
       }
@@ -232,6 +256,9 @@ export class NewAccountComponent implements OnInit {
     if (this.newAccountForm.valid) {
       const formData = this.newAccountForm.value;
 
+      // Convert role IDs to numbers if needed
+      formData.Roles = formData.Roles.map((roleId: string) => parseInt(roleId, 10));
+
       // Handle DepartmentID
       if (formData.Roles.includes(this.roles.find(r => r.RoleName.toLowerCase() === 'staff')?.RoleID)) {
         formData.DepartmentID = null;
@@ -248,7 +275,7 @@ export class NewAccountComponent implements OnInit {
           this.resetForm();
         },
         error: error => {
-          console.log("Backend error details:", error);
+          console.error("Backend error details:", error);
           this.showToast('error', 'Error creating account');
         }
       });
@@ -324,5 +351,10 @@ export class NewAccountComponent implements OnInit {
         console.error('Error fetching departments', error);
       }
     });
+  }
+
+  isRoleSelected(roleId: number): boolean {
+    const selectedRoles = this.newAccountForm.get('Roles')?.value || [];
+    return selectedRoles.includes(roleId.toString());
   }
 }
