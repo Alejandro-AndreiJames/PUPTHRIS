@@ -79,6 +79,24 @@ export class EvaluationComponent implements OnInit, OnDestroy {
       name: 'Use of Instructional Materials',
       description: 'Use of instructional materials and other educational resources to help maximize learning',
       criteriaId: 4
+    },
+    {
+      id: 'ClassroomClimate',
+      name: 'Classroom Climate and Virtual Community',
+      description: 'Classroom climate and virtual community referring to facilitating collaborative and effective interaction.',
+      criteriaId: 5
+    },
+    {
+      id: 'CourseOrganization',
+      name: 'Course Organization',
+      description: 'Course organization referring to objectives, concepts, examples, and program fragments discussed in class.',
+      criteriaId: 6
+    },
+    {
+      id: 'AssessmentMethods',
+      name: 'Assessment Methods',
+      description: 'Assessments referring to the activities required in the course to assess the competence of the students.',
+      criteriaId: 7
     }
   ];
 
@@ -324,16 +342,24 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   }
 
   private loadExistingEvaluation(evaluation: any) {
-    this.comments = evaluation.Comments;
+    // Load comments
+    this.comments = evaluation.Comments || '';  // Ensure comments are loaded
     this.courseYearSection = evaluation.CourseSection;
     this.currentAcademicYear = evaluation.AcademicYear;
     this.currentSemester = evaluation.Semester;
 
+    // Load scores
     evaluation.EvaluationScores.forEach((score: any) => {
       const category = this.evaluationCategories.find(c => c.criteriaId === score.CriteriaID);
       if (category) {
         this.ratings[category.id] = score.Score;
       }
+    });
+
+    console.log('Loaded evaluation:', {
+      comments: this.comments,
+      courseSection: this.courseYearSection,
+      scores: this.ratings
     });
   }
 
@@ -463,8 +489,10 @@ export class EvaluationComponent implements OnInit, OnDestroy {
       ? validScores.reduce((sum, score) => sum + score, 0) / validScores.length 
       : 0;
 
+    // Get qualitative rating based on total score
     const { description: qualitativeRating } = this.calculateRatingDescription(totalScore);
 
+    // Prepare scores array
     const scores = this.evaluationCategories.map(category => ({
       CriteriaID: category.criteriaId,
       Score: Number(this.ratings[category.id]) || 0
@@ -644,9 +672,9 @@ export class EvaluationComponent implements OnInit, OnDestroy {
 
   // Add this method to check for changes
   private hasUnsavedChanges(currentData: any, originalData: any): boolean {
-    // Check if number of respondents or course section changed
-    if (currentData.numberOfRespondents !== originalData.NumberOfRespondents ||
-        currentData.courseSection !== originalData.CourseSection) {
+    // Check if course section or comments changed
+    if (currentData.courseSection !== originalData.CourseSection ||
+        currentData.comments !== originalData.Comments) {
       return true;
     }
 
