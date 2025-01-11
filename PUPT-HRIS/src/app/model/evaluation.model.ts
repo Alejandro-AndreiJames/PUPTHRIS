@@ -55,9 +55,9 @@ export interface EvaluationSubmission {
   facultyId: number;
   evaluatorId: number;
   academicYear: string;
-  semester: 'First Semester' | 'Second Semester';  // Match backend ENUM exactly
+  semester: 'First Semester' | 'Second Semester';
   courseSection: string;
-  numberOfRespondents: number;
+  comments: string;
   totalScore: number;
   qualitativeRating: 'Poor' | 'Fair' | 'Satisfactory' | 'Very Satisfactory' | 'Outstanding';
   scores: Array<{
