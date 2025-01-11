@@ -38,9 +38,9 @@ const FacultyEvaluation = sequelize.define('FacultyEvaluation', {
     type: DataTypes.STRING,
     allowNull: false
   },
-  NumberOfRespondents: {
-    type: DataTypes.INTEGER,
-    allowNull: false
+  Comments: {
+    type: DataTypes.TEXT,
+    allowNull: true
   },
   TotalScore: {
     type: DataTypes.DECIMAL(5, 2),

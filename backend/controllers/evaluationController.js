@@ -22,7 +22,7 @@ exports.submitEvaluation = async (req, res) => {
       semester,
       evaluatorId,
       courseSection, 
-      numberOfRespondents,
+      comments,
       scores,
       createdBy,
       totalScore,
@@ -82,7 +82,7 @@ exports.submitEvaluation = async (req, res) => {
       AcademicYear: academicYear,
       Semester: semester,
       CourseSection: courseSection,
-      NumberOfRespondents: numberOfRespondents,
+      Comments: comments,
       TotalScore: totalScore,
       QualitativeRating: qualitativeRating,
       CreatedBy: createdBy
@@ -359,7 +359,7 @@ exports.updateEvaluation = async (req, res) => {
     const { evaluationId } = req.params;
     const {
       courseSection,
-      numberOfRespondents,
+      comments,
       scores,
       totalScore,
       qualitativeRating
@@ -375,7 +375,7 @@ exports.updateEvaluation = async (req, res) => {
 
     await evaluation.update({
       CourseSection: courseSection,
-      NumberOfRespondents: numberOfRespondents,
+      Comments: comments,
       TotalScore: totalScore,
       QualitativeRating: qualitativeRating
     }, { transaction: t });
