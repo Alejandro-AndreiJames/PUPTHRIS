@@ -1358,12 +1358,12 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     switch(type) {
       case 'male':
         this.dashboardService.getMaleUsers(campusId).subscribe({
-          next: (data) => {
-            this.currentUserList = data;
-            this.userModalCurrentPage = 1; // Reset to first page
-            this.updateUserModalPagination(); // Initialize pagination
+          next: (users) => {
+            this.originalUserList = users; // Store original list
+            this.currentUserList = [...users]; // Make a copy for current display
             this.modalTitle = 'Male Faculty Members';
             this.showUserModal = true;
+            this.updateUserModalPagination();
           },
           error: (error) => console.error('Error fetching male users:', error)
         });
