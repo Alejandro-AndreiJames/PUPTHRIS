@@ -8,16 +8,6 @@
     </button>
   </div>
 
-  <!-- Add search bar -->
-  <div class="mb-4">
-    <input 
-      type="text"
-      placeholder="Search books..."
-      class="input input-bordered w-full max-w-xs"
-      (input)="onSearchInput($event)"
-    >
-  </div>
-
   <!-- Loading indicator -->
   <div *ngIf="isLoading" class="flex justify-center items-center py-4">
     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-maroon"></div>
@@ -120,6 +110,16 @@
   <!-- Books Table -->
   <div class="mt-8 overflow-x-auto">
     <h3 class="text-xl font-bold mb-2">Book List</h3>
+
+      <!-- Add search bar -->
+  <div class="mb-4">
+    <input 
+      type="text"
+      placeholder="Search books..."
+      class="input input-bordered w-full max-w-xs"
+      (input)="onSearchInput($event)"
+    >
+  </div>
     <table class="table table-zebra w-full border-separate border-spacing-0" 
            [class.opacity-50]="isLoading">
       <thead>
@@ -136,25 +136,42 @@
         <tr *ngFor="let book of books" class="hover:bg-gray-100">
           <td class="p-4">{{ book.Title }}</td>
           <td class="p-4">{{ book.Author }}</td>
-          <td class="p-4">{{ book.Description }}</td>
+          <td class="p-4">
+            <span *ngIf="book.Description">{{book.Description}}</span>
+            <span *ngIf="!book.Description" class="text-gray-500">No description added</span>
+          </td>
           <td class="p-4" *ngIf="viewMode === 'all'">
             {{book.User?.Surname}}, {{book.User?.FirstName}} 
             {{book.User?.NameExtension ? ' ' + book.User?.NameExtension : ''}}
           </td>
           <td class="p-4">
-            <a *ngIf="book.DocumentPath" 
-               [href]="book.DocumentPath" 
-               target="_blank" 
-               class="text-blue-600 hover:text-blue-800">
-              View Document
-            </a>
+            <span *ngIf="book.DocumentPath" class="text-blue-500 hover:text-blue-700 cursor-pointer">
+              Download File
+            </span>
+            <span *ngIf="!book.DocumentPath" class="text-gray-500">No document added</span>
           </td>
           <td class="p-4 flex justify-center space-x-2">
-            <button class="btn btn-sm btn-info" (click)="viewDocument(book.DocumentPath)">View</button>
-            <ng-container *ngIf="viewMode === 'personal'">
-              <button class="btn btn-sm btn-warning" (click)="editBook(book)">Edit</button>
-              <button class="btn btn-sm btn-error" (click)="deleteBook(book.BookID!)">Delete</button>
-            </ng-container>
+            <button 
+              class="btn-sm btn-view" 
+              (click)="viewDocument(book.DocumentPath)"
+              [disabled]="!book.DocumentPath"
+            >
+              View
+            </button>
+            <button 
+              *ngIf="viewMode === 'personal'"
+              class="btn-sm btn-edit" 
+              (click)="editBook(book)"
+            >
+              Edit
+            </button>
+            <button 
+              *ngIf="viewMode === 'personal'"
+              class="btn-sm btn-delete" 
+              (click)="deleteBook(book.BookID!)"
+            >
+              Delete
+            </button>
           </td>
         </tr>
       </tbody>

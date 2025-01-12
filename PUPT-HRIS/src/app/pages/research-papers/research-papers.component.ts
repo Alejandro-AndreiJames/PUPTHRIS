@@ -368,4 +368,10 @@ export class ResearchPapersComponent implements OnInit {
       this.onSearch(event);
     }, 300);
   }
+
+  viewDocument(documentPath: string): void {
+    if (documentPath) {
+      window.open(documentPath, '_blank');
+    }
+  }
 }

@@ -142,32 +142,44 @@
 /* Action Buttons */
 .btn-sm {
   padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
-  border: none;
   border-radius: 0.375rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
+  font-weight: 500;
+  transition: all 0.2s ease;
   color: white;
+}
+
+/* View button */
+.btn-view {
+  background-color: #000000;
+}
+
+.btn-view:hover:not(:disabled) {
+  background-color: #333333;
 }
 
 /* Edit button */
-button[class*="btn-sm"]:nth-child(1) {
+.btn-edit {
   background-color: #00A3FF;
-  color: white;
 }
 
-button[class*="btn-sm"]:nth-child(1):hover {
+.btn-edit:hover {
   background-color: #0089D6;
 }
 
 /* Delete button */
-button[class*="btn-sm"]:nth-child(2) {
+.btn-delete {
   background-color: #FF5757;
-  color: white;
 }
 
-button[class*="btn-sm"]:nth-child(2):hover {
+.btn-delete:hover {
   background-color: #FF0000;
+}
+
+/* Disabled state */
+.btn-sm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* Form Styles */
@@ -379,4 +391,18 @@ textarea {
   background-color: #cccccc;
   cursor: not-allowed;
   opacity: 0.7;
+}
+
+/* Add these button styles if not already present */
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-sm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }
