@@ -515,17 +515,15 @@
               <tr>
                 <th>Name</th>
                 <th>Department</th>
-                <th>Rating</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let faculty of facultiesList">
                 <td>{{ faculty.Faculty.Surname }}, {{ faculty.Faculty.FirstName }} {{ faculty.Faculty.MiddleName }}</td>
                 <td>{{ faculty.Faculty.Department.DepartmentName }}</td>
-                <td>{{ faculty.QualitativeRating }}</td>
               </tr>
               <tr *ngIf="facultiesList.length === 0">
-                <td colspan="3" class="text-center py-4">
+                <td colspan="2" class="text-center py-4">
                   No faculty members found with this rating for the selected period.
                 </td>
               </tr>
