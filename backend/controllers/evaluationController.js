@@ -535,59 +535,16 @@ exports.getFacultiesByRating = async (req, res) => {
 
 exports.getImmunityEligibleFaculty = async (req, res) => {
   try {
-    const { 
-      campusId, 
-      departmentId, 
-      immunityStatus,
-      page = 1,
-      limit = 10,
-      search
-    } = req.query;
+    const { campusId, departmentId, immunityStatus } = req.query;
 
-    // Base where clause
     const whereClause = {
       isActive: true,
       CollegeCampusID: campusId
     };
 
-    // Add department filter if provided
     if (departmentId) {
       whereClause.DepartmentID = departmentId;
     }
-
-    // Add search condition if provided
-    if (search) {
-      whereClause[Op.or] = [
-        {
-          FirstName: {
-            [Op.like]: `%${search}%`
-          }
-        },
-        {
-          Surname: {
-            [Op.like]: `%${search}%`
-          }
-        },
-        {
-          Fcode: {
-            [Op.like]: `%${search}%`
-          }
-        }
-      ];
-    }
-
-    // Calculate offset
-    const offset = (page - 1) * limit;
-
-    // Get total count for pagination
-    const totalCount = await User.count({
-      where: whereClause,
-      include: [{
-        model: Role,
-        where: { RoleName: 'faculty' },
-        through: { attributes: [] }
-      }]
-    });
 
     const users = await User.findAll({
       where: whereClause,
@@ -600,7 +557,7 @@ exports.getImmunityEligibleFaculty = async (req, res) => {
         {
           model: FacultyEvaluation,
           as: 'FacultyEvaluations',
-          required: true,
+          required: false,
           separate: true,
           limit: 6,
           order: [
@@ -621,8 +578,6 @@ exports.getImmunityEligibleFaculty = async (req, res) => {
           attributes: []
         }
       ],
-      offset: offset,
-      limit: parseInt(limit),
       attributes: [
         'UserID', 
         'Email', 
@@ -633,69 +588,59 @@ exports.getImmunityEligibleFaculty = async (req, res) => {
       ]
     });
 
-    let eligibleFaculty = users.map(user => {
-      // Convert Sequelize model to plain object
-      const evaluations = user.FacultyEvaluations.map(eval => eval.get({ plain: true }));
+    // Transform data to match dashboard interface
+    const eligibleFaculty = users.map(user => {
+      const plainUser = user.get({ plain: true });
+      const evaluations = plainUser.FacultyEvaluations || [];
       
-      // Calculate average rating
-      const averageRating = evaluations.length > 0 
-        ? evaluations.reduce((acc, eval) => acc + Number(eval.TotalScore), 0) / evaluations.length 
+      // Calculate metrics
+      const outstandingCount = evaluations.filter(
+        eval => eval.QualitativeRating === 'Outstanding'
+      ).length;
+
+      // Calculate average rating from TotalScore
+      const averageRating = evaluations.length > 0
+        ? Number((evaluations.reduce((sum, eval) => sum + Number(eval.TotalScore), 0) / evaluations.length).toFixed(2))
         : 0;
 
       // Calculate consistency score
       let consistencyScore = 0;
-      if (evaluations.length > 1) {
-        const scores = evaluations.map(eval => Number(eval.TotalScore));
-        const mean = scores.reduce((a, b) => a + b) / scores.length;
+      if (evaluations.length > 0) {
+        const scores = evaluations.map(e => Number(e.TotalScore));
+        const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
         const variance = scores.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / scores.length;
         const stdDev = Math.sqrt(variance);
-        consistencyScore = Math.max(0, 100 - (stdDev * 10));
+        // Convert standard deviation to a 0-100 consistency score
+        // Lower deviation = higher consistency
+        consistencyScore = Number((100 - (stdDev / mean) * 100).toFixed(2));
+        // Ensure score stays within 0-100 range
+        consistencyScore = Math.max(0, Math.min(100, consistencyScore));
       }
-
-      // Check first 4 evaluations for immunity (95 and above)
-      const first4Evaluations = evaluations.slice(0, 4);
-      const immunityEligible = first4Evaluations.length >= 4 && 
-        first4Evaluations.every(eval => Number(eval.TotalScore) >= 95);
-
-      // Count of evaluations with 95 or above
-      const highPerformanceCount = first4Evaluations.filter(
-        eval => Number(eval.TotalScore) >= 95
-      ).length;
 
       return {
-        UserID: user.UserID,
-        Name: `${user.Surname}, ${user.FirstName} ${user.MiddleName || ''}`.trim(),
-        Fcode: user.Fcode,
-        Department: user.Department?.DepartmentName,
-        FacultyEvaluations: evaluations,
-        highPerformanceCount: highPerformanceCount,
-        immunityEligible: immunityEligible,
-        averageRating: Number(averageRating.toFixed(2)),
-        consistencyScore: Number(consistencyScore.toFixed(2))
+        Name: `${plainUser.FirstName} ${plainUser.MiddleName ? plainUser.MiddleName + ' ' : ''}${plainUser.Surname}`,
+        Department: plainUser.Department?.DepartmentName || 'N/A',
+        outstandingCount,
+        averageRating,
+        consistencyScore,
+        FacultyEvaluations: evaluations.map(eval => ({
+          ...eval,
+          TotalScore: Number(eval.TotalScore),
+          Status: eval.QualitativeRating === 'Outstanding' ? 'Outstanding' : 
+                 eval.QualitativeRating === 'Very Satisfactory' ? 'Very Satisfactory' : 
+                 'Other'
+        }))
       };
-    });
-
-    // Filter by immunity status if provided
-    if (immunityStatus) {
-      eligibleFaculty = eligibleFaculty.filter(faculty => {
-        if (immunityStatus === 'immune') {
-          return faculty.immunityEligible;
-        } else if (immunityStatus === 'pending') {
-          return !faculty.immunityEligible;
-        }
-        return true;
-      });
-    }
-
-    res.status(200).json({
-      faculty: eligibleFaculty,
-      pagination: {
-        total: totalCount,
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(totalCount / limit),
-        limit: parseInt(limit)
+    }).filter(faculty => {
+      if (immunityStatus === 'immune') {
+        return faculty.outstandingCount >= 4;
+      } else if (immunityStatus === 'pending') {
+        return faculty.outstandingCount < 4;
       }
+      return true;
     });
+
+    res.status(200).json(eligibleFaculty);
   } catch (error) {
     console.error('Error in getImmunityEligibleFaculty:', error);
     res.status(500).json({ error: error.message });

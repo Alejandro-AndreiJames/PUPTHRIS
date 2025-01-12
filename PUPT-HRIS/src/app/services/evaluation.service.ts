@@ -127,7 +127,10 @@ export class EvaluationService {
     return this.http.get<any[]>(`${this.apiUrl}/immunity-eligible`, {
       headers: this.getHeaders(),
       params: httpParams
-    }).pipe(catchError(this.handleError));
+    }).pipe(
+      map(response => Array.isArray(response) ? response : []),
+      catchError(this.handleError)
+    );
   }
 
   private handleError(error: any): Observable<never> {
