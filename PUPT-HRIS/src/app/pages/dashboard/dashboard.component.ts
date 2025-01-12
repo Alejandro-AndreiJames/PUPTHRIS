@@ -1300,10 +1300,16 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.originalUserList = [];
   }
 
-  showUserDetails(user: any): void {
+  viewUserDetails(user: any) {
     this.selectedUser = user;
     this.showDetailsModal = true;
   }
+
+  closeDetailsModal() {
+    this.showDetailsModal = false;
+    this.selectedUser = null;
+  }
+
   // Pagination methods for user list
   getUserModalPageArray(): number[] {
     const pageCount = Math.ceil(this.currentUserList.length / this.userModalItemsPerPage);
@@ -1459,11 +1465,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     if (trend > 0) return 'Improving';
     if (trend < 0) return 'Declining';
     return 'Stable';
-  }
-
-  // Close details modal
-  closeDetailsModal() {
-    this.selectedFaculty = null;
   }
 
   // Get page numbers for pagination
