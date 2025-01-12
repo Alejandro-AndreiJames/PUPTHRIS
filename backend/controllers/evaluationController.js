@@ -7,6 +7,10 @@ const Department = require('../models/departmentModel');
 const EvaluationCriteria = require('../models/evaluationCriteriaModel');
 const Role = require('../models/roleModel');
 const UserRole = require('../models/userRoleModel');
+const { 
+  BasicInformation: BasicDetail  // Note: Using BasicInformation as BasicDetail
+} = require('../models/basicDetailsModel');
+const AcademicRank = require('../models/academicRanksModel');
 
 exports.submitEvaluation = async (req, res) => {
   let transaction;
@@ -531,21 +535,63 @@ exports.getFacultiesByRating = async (req, res) => {
 
 exports.getImmunityEligibleFaculty = async (req, res) => {
   try {
-    const { campusId } = req.query;
+    const { 
+      campusId, 
+      departmentId, 
+      immunityStatus,
+      page = 1,
+      limit = 10,
+      search
+    } = req.query;
 
-    const facultyUsers = await User.findAll({
-      where: {
-        CollegeCampusID: campusId,
-        isActive: true
-      },
-      include: [
+    // Base where clause
+    const whereClause = {
+      isActive: true,
+      CollegeCampusID: campusId
+    };
+
+    // Add department filter if provided
+    if (departmentId) {
+      whereClause.DepartmentID = departmentId;
+    }
+
+    // Add search condition if provided
+    if (search) {
+      whereClause[Op.or] = [
         {
-          model: Role,
-          through: UserRole,
-          where: { RoleName: 'faculty' },
-          attributes: ['RoleName'],
-          required: true
+          FirstName: {
+            [Op.like]: `%${search}%`
+          }
         },
+        {
+          Surname: {
+            [Op.like]: `%${search}%`
+          }
+        },
+        {
+          Fcode: {
+            [Op.like]: `%${search}%`
+          }
+        }
+      ];
+    }
+
+    // Calculate offset
+    const offset = (page - 1) * limit;
+
+    // Get total count for pagination
+    const totalCount = await User.count({
+      where: whereClause,
+      include: [{
+        model: Role,
+        where: { RoleName: 'faculty' },
+        through: { attributes: [] }
+      }]
+    });
+
+    const users = await User.findAll({
+      where: whereClause,
+      include: [
         {
           model: Department,
           as: 'Department',
@@ -554,146 +600,147 @@ exports.getImmunityEligibleFaculty = async (req, res) => {
         {
           model: FacultyEvaluation,
           as: 'FacultyEvaluations',
-          required: false,
+          required: true,
           separate: true,
+          limit: 6,
           order: [
             ['AcademicYear', 'DESC'],
             ['Semester', 'DESC']
           ],
-          limit: 6 // Increased to 6 to better analyze trends
+          attributes: [
+            'AcademicYear',
+            'Semester',
+            'QualitativeRating',
+            'TotalScore'
+          ]
+        },
+        {
+          model: Role,
+          where: { RoleName: 'faculty' },
+          through: { attributes: [] },
+          attributes: []
         }
+      ],
+      offset: offset,
+      limit: parseInt(limit),
+      attributes: [
+        'UserID', 
+        'Email', 
+        'Fcode',
+        'FirstName',
+        'MiddleName', 
+        'Surname'
       ]
     });
 
-    const immunityResults = facultyUsers.map(user => {
-      const evaluations = user.FacultyEvaluations || [];
-      const recentFourEvals = evaluations.slice(0, 4);
+    let eligibleFaculty = users.map(user => {
+      // Convert Sequelize model to plain object
+      const evaluations = user.FacultyEvaluations.map(eval => eval.get({ plain: true }));
       
-      // Basic immunity check
-      const hasImmunity = recentFourEvals.length === 4 && 
-        recentFourEvals.every(eval => eval.TotalScore >= 95);
-
-      // Calculate average score
-      const averageScore = evaluations.length > 0 
-        ? evaluations.reduce((sum, eval) => sum + eval.TotalScore, 0) / evaluations.length 
+      // Calculate average rating
+      const averageRating = evaluations.length > 0 
+        ? evaluations.reduce((acc, eval) => acc + Number(eval.TotalScore), 0) / evaluations.length 
         : 0;
 
-      // Calculate performance metrics
-      const performanceMetrics = calculatePerformanceMetrics(evaluations);
+      // Calculate consistency score
+      let consistencyScore = 0;
+      if (evaluations.length > 1) {
+        const scores = evaluations.map(eval => Number(eval.TotalScore));
+        const mean = scores.reduce((a, b) => a + b) / scores.length;
+        const variance = scores.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / scores.length;
+        const stdDev = Math.sqrt(variance);
+        consistencyScore = Math.max(0, 100 - (stdDev * 10));
+      }
 
-      // Generate insights and recommendations
-      const insights = generateInsights(performanceMetrics, hasImmunity);
+      // Check first 4 evaluations for immunity (95 and above)
+      const first4Evaluations = evaluations.slice(0, 4);
+      const immunityEligible = first4Evaluations.length >= 4 && 
+        first4Evaluations.every(eval => Number(eval.TotalScore) >= 95);
+
+      // Count of evaluations with 95 or above
+      const highPerformanceCount = first4Evaluations.filter(
+        eval => Number(eval.TotalScore) >= 95
+      ).length;
 
       return {
-        faculty: {
-          UserID: user.UserID,
-          FirstName: user.FirstName,
-          MiddleName: user.MiddleName,
-          Surname: user.Surname,
-          Department: user.Department?.DepartmentName,
-          EmploymentType: user.EmploymentType
-        },
-        evaluationMetrics: {
-          recentEvaluations: recentFourEvals.map(eval => ({
-            academicYear: eval.AcademicYear,
-            semester: eval.Semester,
-            score: eval.TotalScore,
-            rating: eval.QualitativeRating
-          })),
-          averageScore: Number(averageScore.toFixed(2)),
-          hasImmunity,
-          evaluationCount: recentFourEvals.length,
-          allScoresAbove95: hasImmunity,
-          performance: performanceMetrics,
-          insights
-        }
+        UserID: user.UserID,
+        Name: `${user.Surname}, ${user.FirstName} ${user.MiddleName || ''}`.trim(),
+        Fcode: user.Fcode,
+        Department: user.Department?.DepartmentName,
+        FacultyEvaluations: evaluations,
+        highPerformanceCount: highPerformanceCount,
+        immunityEligible: immunityEligible,
+        averageRating: Number(averageRating.toFixed(2)),
+        consistencyScore: Number(consistencyScore.toFixed(2))
       };
     });
 
-    // Filter and sort results
-    const eligibleFaculty = immunityResults
-      .filter(result => result.evaluationMetrics.evaluationCount === 4)
-      .sort((a, b) => b.evaluationMetrics.averageScore - a.evaluationMetrics.averageScore);
+    // Filter by immunity status if provided
+    if (immunityStatus) {
+      eligibleFaculty = eligibleFaculty.filter(faculty => {
+        if (immunityStatus === 'immune') {
+          return faculty.immunityEligible;
+        } else if (immunityStatus === 'pending') {
+          return !faculty.immunityEligible;
+        }
+        return true;
+      });
+    }
 
-    res.status(200).json(eligibleFaculty);
-
-  } catch (error) {
-    console.error('Error getting immunity eligible faculty:', error);
-    res.status(500).json({ 
-      error: 'Error getting immunity eligible faculty', 
-      details: error.message 
+    res.status(200).json({
+      faculty: eligibleFaculty,
+      pagination: {
+        total: totalCount,
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(totalCount / limit),
+        limit: parseInt(limit)
+      }
     });
+  } catch (error) {
+    console.error('Error in getImmunityEligibleFaculty:', error);
+    res.status(500).json({ error: error.message });
   }
 };
 
-// Helper function to calculate performance metrics
-function calculatePerformanceMetrics(evaluations) {
-  if (!evaluations.length) return null;
+// Helper function to calculate metrics
+function calculateMetrics(evaluations) {
+  if (!evaluations || evaluations.length === 0) {
+    return {
+      trend: 'Neutral',
+      consistency: 'Variable',
+      nearImmunity: false,
+      sustainedExcellence: false
+    };
+  }
 
-  const scores = evaluations.map(e => e.TotalScore);
-  
   // Calculate trend
-  const trend = calculateTrend(scores);
-  
+  const recentScores = evaluations.slice(0, 3).map(e => e.TotalScore);
+  const trend = calculateTrend(recentScores);
+
   // Calculate consistency
-  const consistency = calculateConsistency(scores);
-  
-  // Calculate momentum
-  const momentum = calculateMomentum(scores);
+  const stdDev = calculateStandardDeviation(recentScores);
+  const consistency = stdDev < 5 ? 'Highly Consistent' : 
+                     stdDev < 10 ? 'Consistent' : 'Variable';
+
+  // Check near immunity status
+  const nearImmunity = evaluations.length >= 5 && 
+    evaluations.slice(0, 5).every(eval => 
+      eval.QualitativeRating === 'Outstanding' || 
+      eval.QualitativeRating === 'Very Satisfactory'
+    );
+
+  // Check sustained excellence
+  const sustainedExcellence = evaluations.length >= 3 && 
+    evaluations.slice(0, 3).every(eval => 
+      eval.QualitativeRating === 'Outstanding'
+    );
 
   return {
     trend,
     consistency,
-    momentum,
-    highestScore: Math.max(...scores),
-    lowestScore: Math.min(...scores),
-    scoreRange: Math.max(...scores) - Math.min(...scores),
-    sustainedExcellence: scores.every(score => score >= 95),
-    nearImmunity: scores.filter(score => score >= 95).length >= 3
+    nearImmunity,
+    sustainedExcellence
   };
-}
-
-// Helper function to calculate trend
-function calculateTrend(scores) {
-  if (scores.length < 2) return 'Insufficient Data';
-  
-  const recentScores = scores.slice(0, 2);
-  const scoreDiff = recentScores[0] - recentScores[1];
-  
-  if (scoreDiff > 2) return 'Improving';
-  if (scoreDiff < -2) return 'Declining';
-  return 'Stable';
-}
-
-// Helper function to calculate consistency
-function calculateConsistency(scores) {
-  const standardDeviation = calculateStandardDeviation(scores);
-  
-  if (standardDeviation < 2) return 'Highly Consistent';
-  if (standardDeviation < 5) return 'Consistent';
-  return 'Variable';
-}
-
-// Helper function to calculate momentum
-function calculateMomentum(scores) {
-  if (scores.length < 3) return 'Insufficient Data';
-  
-  const recentThree = scores.slice(0, 3);
-  const isIncreasing = recentThree.every((score, i) => 
-    i === 0 || score <= recentThree[i - 1]
-  );
-  
-  if (isIncreasing && recentThree[0] >= 95) return 'Strong Positive';
-  if (isIncreasing) return 'Positive';
-  return 'Neutral';
-}
-
-// Helper function to calculate standard deviation
-function calculateStandardDeviation(scores) {
-  const mean = scores.reduce((sum, score) => sum + score, 0) / scores.length;
-  const squareDiffs = scores.map(score => Math.pow(score - mean, 2));
-  const avgSquareDiff = squareDiffs.reduce((sum, diff) => sum + diff, 0) / scores.length;
-  return Math.sqrt(avgSquareDiff);
 }
 
 // Helper function to generate insights
@@ -708,12 +755,11 @@ function generateInsights(metrics, hasImmunity) {
   if (hasImmunity) {
     insights.badges.push('Classroom Observation Immunity Achieved');
     insights.recommendations.push('Maintain excellent performance to retain immunity status');
-  } else if (metrics.nearImmunity) {
+  } else if (metrics.highPerformanceCount >= 3) {
     insights.badges.push('Near Immunity Status');
     insights.recommendations.push('Close to achieving immunity - maintain high performance');
   }
 
-  // Add performance-based insights
   if (metrics.trend === 'Improving') {
     insights.badges.push('Upward Trajectory');
   }
@@ -722,16 +768,6 @@ function generateInsights(metrics, hasImmunity) {
     insights.badges.push('Consistency Champion');
   }
 
-  // Add specific recommendations based on metrics
-  if (metrics.trend === 'Declining') {
-    insights.recommendations.push('Consider performance improvement strategies');
-  }
-
-  if (metrics.consistency === 'Variable') {
-    insights.recommendations.push('Focus on maintaining consistent performance across semesters');
-  }
-
-  // Set overall performance level
   if (metrics.sustainedExcellence) {
     insights.performanceLevel = 'Outstanding';
   } else if (metrics.nearImmunity) {
@@ -741,4 +777,22 @@ function generateInsights(metrics, hasImmunity) {
   }
 
   return insights;
+}
+
+// Helper function to calculate trend
+function calculateTrend(scores) {
+  if (scores.length < 2) return 'Neutral';
+  
+  const trend = scores[0] - scores[scores.length - 1];
+  return trend > 0 ? 'Improving' : 
+         trend < 0 ? 'Declining' : 'Stable';
+}
+
+// Helper function to calculate standard deviation
+function calculateStandardDeviation(scores) {
+  if (scores.length === 0) return 0;
+  
+  const mean = scores.reduce((a, b) => a + b) / scores.length;
+  const variance = scores.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / scores.length;
+  return Math.sqrt(variance);
 }

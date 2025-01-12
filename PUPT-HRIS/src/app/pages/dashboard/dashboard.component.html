@@ -199,104 +199,6 @@
         </div>
       </div>
 
-      <!-- Evaluation Candidates Section -->
-      <div *ngIf="section.id === 'evaluation-candidates' && section.visible">
-        <div class="flex w-full flex-col mt-8">
-          <div class="divider divider-neutral divider-end">Faculty Evaluation Candidates</div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Regularization Candidates Card -->
-          <div class="bg-base-200 rounded-lg shadow-lg">
-            <div class="bg-maroon text-white p-4 rounded-t-lg">
-              <h2 class="text-xl font-bold">Regularization Candidates</h2>
-              <p class="text-sm">Part-time faculty eligible for regularization</p>
-            </div>
-            
-            <div class="p-4">
-              <div class="space-y-4">
-                <!-- Show only first 3 candidates -->
-                <div *ngFor="let candidate of regularizationCandidates.slice(0, 3)" 
-                     class="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
-                     (click)="viewCandidateDetails(candidate)">
-                  <div class="flex justify-between items-start">
-                    <div>
-                      <h3 class="font-semibold">{{ candidate.faculty.Faculty.FirstName }} {{ candidate.faculty.Faculty.Surname }}</h3>
-                      <p class="text-sm text-gray-600">{{ candidate.faculty.Faculty.Department?.DepartmentName || 'N/A' }}</p>
-                    </div>
-                    <div class="text-right">
-                      <p class="text-xl font-bold">{{ candidate.averageScore?.toFixed(2) }}</p>
-                      <span class="px-2 py-1 rounded-full text-xs"
-                            [ngClass]="{
-                              'bg-green-100 text-green-800': candidate.recommendationStrength === 'Strong',
-                              'bg-yellow-100 text-yellow-800': candidate.recommendationStrength === 'Moderate',
-                              'bg-red-100 text-red-800': candidate.recommendationStrength === 'Weak'
-                            }">
-                        {{ candidate.recommendationStrength }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- View All button -->
-                <button *ngIf="regularizationCandidates.length > 3"
-                        (click)="openCandidatesModal('regularization')"
-                        class="w-full py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition-colors">
-                  View All Candidates ({{ regularizationCandidates.length }})
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Performance Review Candidates Card -->
-          <div class="bg-base-200 rounded-lg shadow-lg">
-            <div class="bg-maroon text-white p-4 rounded-t-lg">
-              <h2 class="text-xl font-bold">Performance Review Candidates</h2>
-              <p class="text-sm">Faculty requiring performance review</p>
-            </div>
-            
-            <div class="p-4">
-              <div class="space-y-4">
-                <div *ngFor="let candidate of performanceReviewCandidates.slice(0, 3)" 
-                     class="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
-                     (click)="viewCandidateDetails(candidate)">
-                  <div class="flex justify-between items-start">
-                    <div>
-                      <h3 class="font-semibold">{{ candidate.faculty.Faculty.FirstName }} {{ candidate.faculty.Faculty.Surname }}</h3>
-                      <p class="text-sm text-gray-600">{{ candidate.faculty.Faculty.Department?.DepartmentName || 'N/A' }}</p>
-                    </div>
-                    <div class="flex gap-2">
-                      <span class="px-2 py-1 rounded-full text-xs"
-                            [ngClass]="{
-                              'bg-red-100 text-red-800': candidate.performanceMetrics?.concernLevel === 'High',
-                              'bg-yellow-100 text-yellow-800': candidate.performanceMetrics?.concernLevel === 'Moderate',
-                              'bg-green-100 text-green-800': candidate.performanceMetrics?.concernLevel === 'Low'
-                            }">
-                        {{ candidate.performanceMetrics?.concernLevel }} Concern
-                      </span>
-                      <span class="px-2 py-1 rounded-full text-xs"
-                            [ngClass]="{
-                              'bg-green-100 text-green-800': candidate.performanceMetrics?.trend === 'Improving',
-                              'bg-red-100 text-red-800': candidate.performanceMetrics?.trend === 'Declining',
-                              'bg-gray-100 text-gray-800': candidate.performanceMetrics?.trend === 'Stable'
-                            }">
-                        {{ candidate.performanceMetrics?.trend }} Trend
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <button *ngIf="performanceReviewCandidates.length > 3"
-                        (click)="openCandidatesModal('performance')"
-                        class="w-full py-2 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 transition-colors">
-                  View All Candidates ({{ performanceReviewCandidates.length }})
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Government IDs Section -->
       <div *ngIf="section.id === 'government-ids' && section.visible">
         <div class="flex w-full flex-col mt-8">
@@ -316,6 +218,164 @@
                 [type]="'bar'">
               </canvas>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Immunity Eligible Faculty Section -->
+      <div *ngIf="section.id === 'immunity-eligible' && section.visible" class="bg-base-200 rounded-lg shadow-lg">
+        <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
+          <div class="flex justify-between items-center">
+            <div>
+              <h2 class="text-xl font-bold">Immunity Eligible Faculty</h2>
+              <p class="text-sm">Faculty members eligible for classroom observation immunity</p>
+            </div>
+            <button *ngIf="immunityEligibleFaculty.length > 3" 
+                    class="btn btn-sm bg-white text-black hover:bg-black"
+                    (click)="viewAllImmunityFaculty()">
+              View All Faculty
+            </button>
+          </div>
+        </div>
+        
+        <!-- Faculty Cards Grid -->
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div *ngFor="let faculty of immunityEligibleFaculty.slice(0, 3)" 
+                 class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
+              <div class="p-4">
+                <!-- Faculty Info -->
+                <h3 class="text-lg font-semibold mb-2">{{ faculty.Name }}</h3>
+                <p class="text-gray-600 text-sm mb-3">{{ faculty.Department }}</p>
+                
+                <!-- Status Badge -->
+                <div class="flex items-center justify-between">
+                  <span class="px-3 py-1 rounded-full text-sm"
+                        [ngClass]="faculty.highPerformanceCount >= 4 ? 
+                                  'bg-green-100 text-green-800' : 
+                                  'bg-yellow-100 text-yellow-800'">
+                    {{ faculty.highPerformanceCount >= 4 ? 'Immune' : 'Pending' }}
+                  </span>
+                  
+                  <!-- View Analysis Button -->
+                  <button class="btn btn-sm bg-maroon text-white hover:bg-black"
+                          (click)="viewImmunityDetails(faculty)">
+                    View Analysis
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Immunity Details Modal -->
+      <div *ngIf="showImmunityDetailsModal && selectedFaculty" class="modal modal-open" style="z-index: 110;">
+        <div class="modal-box w-11/12 max-w-5xl">
+          <h3 class="text-xl font-bold">
+            {{ selectedFaculty.Name }}
+            <span class="text-sm font-normal text-gray-600 block">{{ selectedFaculty.Department }}</span>
+          </h3>
+
+          <!-- Status and Performance Summary -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h4 class="font-semibold mb-2">Immunity Status</h4>
+              <div class="flex items-center gap-2">
+                <span class="px-3 py-1 rounded-full text-sm"
+                      [ngClass]="selectedFaculty.highPerformanceCount >= 4 ? 
+                                'bg-green-100 text-green-800' : 
+                                'bg-yellow-100 text-yellow-800'">
+                  {{ selectedFaculty.highPerformanceCount >= 4 ? 'Immune' : 'Pending' }}
+                </span>
+                <span class="text-sm text-gray-600">
+                  {{ selectedFaculty.highPerformanceCount }}/4 Outstanding Evaluations
+                </span>
+              </div>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h4 class="font-semibold mb-2">Performance Summary</h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <span class="text-sm text-gray-600">Average Rating</span>
+                  <p class="text-2xl font-bold">
+                    {{ selectedFaculty?.averageRating || '0.00' }}
+                  </p>
+                </div>
+                <div>
+                  <span class="text-sm text-gray-600">Consistency Score</span>
+                  <p class="text-2xl font-bold">
+                    {{ selectedFaculty?.consistencyScore || '0.00' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Immunity Analysis -->
+          <div class="bg-white rounded-lg shadow-md p-4 mt-4">
+            <h4 class="font-semibold mb-4">Immunity Analysis</h4>
+            <ul class="space-y-2">
+              <li class="flex items-center gap-2">
+                <i class="fas fa-check-circle text-green-600"></i>
+                {{ getImmunityStatus(selectedFaculty) }}
+              </li>
+              <li class="flex items-center gap-2">
+                <i class="fas fa-chart-line text-blue-600"></i>
+                Average performance rating: {{ selectedFaculty?.averageRating || '0.00' }}
+              </li>
+              <li class="flex items-center gap-2">
+                <i class="fas fa-balance-scale text-purple-600"></i>
+                Performance consistency: {{ getConsistencyMessage(calculateConsistencyScore(selectedFaculty.FacultyEvaluations)) }}
+              </li>
+            </ul>
+          </div>
+
+          <!-- Evaluation History -->
+          <div class="bg-white rounded-lg shadow-md p-4">
+            <h4 class="font-semibold mb-4">Evaluation History</h4>
+            <div class="overflow-x-auto">
+              <table class="table w-full">
+                <thead class="bg-maroon text-white">
+                  <tr>
+                    <th>Academic Year</th>
+                    <th>Semester</th>
+                    <th>Rating</th>
+                    <th>Score</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let eval of selectedFaculty.FacultyEvaluations; let i = index"
+                      [class.bg-gray-50]="i % 2 === 0">
+                    <td>{{ eval.AcademicYear }}</td>
+                    <td>{{ eval.Semester }}</td>
+                    <td>{{ eval.QualitativeRating }}</td>
+                    <td>{{ eval.TotalScore | number:'1.2-2' }}</td>
+                    <td>
+                      <span class="px-2 py-1 rounded-full text-xs"
+                            [ngClass]="{
+                              'bg-green-100 text-green-800': eval.QualitativeRating === 'Outstanding',
+                              'bg-blue-100 text-blue-800': eval.QualitativeRating === 'Very Satisfactory',
+                              'bg-yellow-100 text-yellow-800': eval.QualitativeRating === 'Satisfactory',
+                              'bg-red-100 text-red-800': eval.QualitativeRating === 'Fair' || eval.QualitativeRating === 'Poor'
+                            }">
+                        {{ eval.QualitativeRating }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Close Button -->
+          <div class="modal-action">
+            <button class="btn bg-maroon text-white hover:bg-black" 
+                    (click)="closeImmunityDetailsModal()">
+              Close
+            </button>
           </div>
         </div>
       </div>
@@ -537,239 +597,6 @@
     </div>
   </div>
 
-  <!-- Candidate Details Modal -->
-  <div *ngIf="showCandidateModal && selectedCandidate" class="modal modal-open" style="z-index: 200;">
-    <div class="modal-box w-11/12 max-w-5xl">
-      <h3 class="text-xl font-bold mb-4">
-        {{ selectedCandidate.faculty.Faculty.FirstName }} 
-        {{ selectedCandidate.faculty.Faculty.Surname }}
-      </h3>
-
-      <p>Department: {{ selectedCandidate.faculty.Faculty.Department?.DepartmentName || 'N/A' }}</p>
-      <p>Employment Type: {{ selectedCandidate.faculty.Faculty.EmploymentType === 'parttime' ? 'Part Time' : 'Full Time' }}</p>
-
-      <!-- Regularization Assessment Section -->
-      <div *ngIf="isRegularizationCandidate(selectedCandidate)" class="mt-4">
-        <h4 class="font-semibold mb-2">Regularization Assessment</h4>
-        <div class="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <p class="text-sm text-gray-600">Average Score</p>
-            <p class="text-2xl font-bold">{{ selectedCandidate.averageScore?.toFixed(2) }}</p>
-          </div>
-          <div>
-            <p class="text-sm text-gray-600">Recommendation</p>
-            <span class="px-3 py-1 rounded-full text-sm inline-block mt-1"
-                  [ngClass]="{
-                    'bg-green-100 text-green-800': selectedCandidate.recommendationStrength === 'Strong',
-                    'bg-yellow-100 text-yellow-800': selectedCandidate.recommendationStrength === 'Moderate',
-                    'bg-red-100 text-red-800': selectedCandidate.recommendationStrength === 'Weak'
-                  }">
-              {{ selectedCandidate.recommendationStrength }} Recommendation
-            </span>
-          </div>
-        </div>
-
-        <!-- Regularization Analysis -->
-        <div class="bg-gray-50 p-4 rounded-lg mb-4">
-          <h5 class="font-semibold mb-2">Regularization Analysis</h5>
-          <ul class="list-disc list-inside space-y-2">
-            <li>Recommendation Strength: <span class="text-green-600">{{ selectedCandidate.recommendationStrength }}</span> based on average score of {{ selectedCandidate.averageScore?.toFixed(2) }}.</li>
-            <li>Evaluation Period: Completed {{ selectedCandidate.evaluations?.length || 0 }} evaluation cycles.</li>
-            <li *ngIf="selectedCandidate.recommendationStrength === 'Strong'">Strong Performance: Consistently maintained scores above 93, showing excellent teaching capability.</li>
-            <li *ngIf="selectedCandidate.recommendationStrength === 'Moderate'">Moderate Performance: Maintained scores above 85, showing good teaching potential.</li>
-            <li *ngIf="selectedCandidate.recommendationStrength === 'Weak'">Areas for Improvement: Average score below 85, suggesting need for performance enhancement.</li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Performance Assessment Section -->
-      <div *ngIf="!isRegularizationCandidate(selectedCandidate)" class="mt-4">
-        <h4 class="font-semibold mb-2">Performance Assessment</h4>
-        <div class="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <p class="text-sm text-gray-600">Average Score</p>
-            <p class="text-2xl font-bold">{{ selectedCandidate.performanceMetrics?.averageScore?.toFixed(2) }}</p>
-          </div>
-          <div>
-            <p class="text-sm text-gray-600">Lowest Score</p>
-            <p class="text-2xl font-bold">{{ selectedCandidate.performanceMetrics?.lowestScore?.toFixed(2) }}</p>
-          </div>
-        </div>
-
-        <div class="flex gap-2 mb-4">
-          <span class="px-3 py-1 rounded-full text-sm"
-                [ngClass]="{
-                  'bg-red-100 text-red-800': selectedCandidate.performanceMetrics?.concernLevel === 'High',
-                  'bg-yellow-100 text-yellow-800': selectedCandidate.performanceMetrics?.concernLevel === 'Moderate',
-                  'bg-green-100 text-green-800': selectedCandidate.performanceMetrics?.concernLevel === 'Low'
-                }">
-            {{ selectedCandidate.performanceMetrics?.concernLevel }} Concern
-          </span>
-          <span class="px-3 py-1 rounded-full text-sm"
-                [ngClass]="{
-                  'bg-green-100 text-green-800': selectedCandidate.performanceMetrics?.trend === 'Improving',
-                  'bg-red-100 text-red-800': selectedCandidate.performanceMetrics?.trend === 'Declining',
-                  'bg-gray-100 text-gray-800': selectedCandidate.performanceMetrics?.trend === 'Stable'
-                }">
-            {{ selectedCandidate.performanceMetrics?.trend }} Trend
-          </span>
-        </div>
-
-        <!-- Performance Analysis -->
-        <div class="bg-gray-50 p-4 rounded-lg mb-4">
-          <h5 class="font-semibold mb-2">Performance Analysis</h5>
-          <ul class="list-disc list-inside space-y-2">
-            <li *ngIf="selectedCandidate.performanceMetrics?.concernLevel === 'High'">
-              High Concern: Lowest score is {{ selectedCandidate.performanceMetrics?.lowestScore?.toFixed(2) }}, which is below the acceptable threshold of 75.
-            </li>
-            <li *ngIf="selectedCandidate.performanceMetrics?.trend === 'Declining'">
-              Declining Trend: Recent scores show a downward trend in performance.
-            </li>
-            <li>
-              Average Performance: {{ selectedCandidate.performanceMetrics?.averageScore?.toFixed(2) }} over the last {{ selectedCandidate.evaluations?.length || 0 }} evaluations.
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Evaluation History Table -->
-      <h4 class="font-semibold mt-4 mb-2">Evaluation History</h4>
-      <div class="overflow-x-auto">
-        <table class="min-w-full table-auto">
-          <thead class="bg-maroon text-white">
-            <tr>
-              <th class="px-4 py-2">Academic Year</th>
-              <th class="px-4 py-2">Semester</th>
-              <th class="px-4 py-2">Score</th>
-              <th class="px-4 py-2">Rating</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let eval of selectedCandidate.evaluations">
-              <td class="border px-4 py-2 text-center">{{ eval.academicYear }}</td>
-              <td class="border px-4 py-2 text-center">{{ eval.semester }}</td>
-              <td class="border px-4 py-2 text-center" 
-                  [ngClass]="{
-                    'text-red-600': isRegularizationCandidate(selectedCandidate) ? eval.score < 85 : eval.score < 75,
-                    'text-yellow-600': isRegularizationCandidate(selectedCandidate) ? (eval.score >= 85 && eval.score < 93) : (eval.score >= 75 && eval.score < 85),
-                    'text-green-600': isRegularizationCandidate(selectedCandidate) ? eval.score >= 93 : eval.score >= 85
-                  }">
-                {{ eval.score?.toFixed(2) }}
-              </td>
-              <td class="border px-4 py-2 text-center">{{ eval.rating }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="modal-action mt-4">
-        <button class="btn bg-maroon text-white" (click)="closeCandidateModal()">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- All Candidates Modal -->
-  <div *ngIf="showAllCandidatesModal" class="modal modal-open" style="z-index: 100;">
-    <div class="modal-box w-11/12 max-w-5xl">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="font-bold text-lg">{{ getModalTitle() }}</h3>
-      </div>
-      
-      <div class="overflow-x-auto">
-        <!-- Table for Regularization Candidates -->
-        <table *ngIf="modalType === 'regularization'" class="table w-full">
-          <thead class="bg-maroon text-white">
-            <tr>
-              <th>Name</th>
-              <th>Department</th>
-              <th class="text-center">Average Score</th>
-              <th class="text-center">Recommendation</th>
-              <th class="text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let candidate of modalCandidates">
-              <!-- Type guard to ensure proper property access -->
-              <ng-container *ngIf="isRegularizationCandidate(candidate)">
-                <td>{{ candidate.faculty?.Faculty?.Surname }}, {{ candidate.faculty?.Faculty?.FirstName }}</td>
-                <td>{{ candidate.faculty?.Faculty?.Department?.DepartmentName || 'N/A' }}</td>
-                <td class="text-center font-bold">{{ candidate.averageScore?.toFixed(2) }}</td>
-                <td class="text-center">
-                  <span class="px-2 py-1 rounded-full text-xs"
-                        [ngClass]="{
-                          'bg-green-100 text-green-800': candidate.recommendationStrength === 'Strong',
-                          'bg-yellow-100 text-yellow-800': candidate.recommendationStrength === 'Moderate',
-                          'bg-red-100 text-red-800': candidate.recommendationStrength === 'Weak'
-                        }">
-                    {{ candidate.recommendationStrength }}
-                  </span>
-                </td>
-                <td class="text-center">
-                  <button class="btn btn-sm bg-maroon text-white hover:bg-black"
-                          (click)="viewCandidateDetails(candidate)">
-                    View Details
-                  </button>
-                </td>
-              </ng-container>
-            </tr>
-          </tbody>
-        </table>
-
-        <!-- Table for Performance Review Candidates -->
-        <table *ngIf="modalType === 'performance'" class="table w-full">
-          <thead class="bg-maroon text-white">
-            <tr>
-              <th>Name</th>
-              <th>Department</th>
-              <th class="text-center">Concern Level</th>
-              <th class="text-center">Performance Trend</th>
-              <th class="text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let candidate of modalCandidates">
-              <!-- Type guard to ensure proper property access -->
-              <ng-container *ngIf="isPerformanceCandidate(candidate)">
-                <td>{{ candidate.faculty?.Faculty?.Surname }}, {{ candidate.faculty?.Faculty?.FirstName }}</td>
-                <td>{{ candidate.faculty?.Faculty?.Department?.DepartmentName || 'N/A' }}</td>
-                <td class="text-center">
-                  <span class="px-2 py-1 rounded-full text-xs"
-                        [ngClass]="{
-                          'bg-red-100 text-red-800': candidate.performanceMetrics?.concernLevel === 'High',
-                          'bg-yellow-100 text-yellow-800': candidate.performanceMetrics?.concernLevel === 'Moderate',
-                          'bg-green-100 text-green-800': candidate.performanceMetrics?.concernLevel === 'Low'
-                        }">
-                    {{ candidate.performanceMetrics?.concernLevel }} Concern
-                  </span>
-                </td>
-                <td class="text-center">
-                  <span class="px-2 py-1 rounded-full text-xs"
-                        [ngClass]="{
-                          'bg-green-100 text-green-800': candidate.performanceMetrics?.trend === 'Improving',
-                          'bg-red-100 text-red-800': candidate.performanceMetrics?.trend === 'Declining',
-                          'bg-gray-100 text-gray-800': candidate.performanceMetrics?.trend === 'Stable'
-                        }">
-                    {{ candidate.performanceMetrics?.trend }}
-                  </span>
-                </td>
-                <td class="text-center">
-                  <button class="btn btn-sm bg-maroon text-white hover:bg-black"
-                          (click)="viewCandidateDetails(candidate)">
-                    View Details
-                  </button>
-                </td>
-              </ng-container>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="modal-action mt-4">
-        <button class="btn bg-maroon text-white hover:bg-black" (click)="closeCandidatesModal()">Close</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Add this at the bottom of the file, before the closing </div> -->
   <div *ngIf="showFemaleModal" class="modal modal-open">
     <div class="modal-box w-11/12 max-w-5xl">
@@ -909,59 +736,172 @@
     </div>
   </div>
 
-  <!-- User Details Modal -->
-  <div *ngIf="showDetailsModal" class="modal modal-open details-modal">
-    <div class="modal-box">
-      <div class="modal-header border-b border-gray-200 pb-3">
-        <h3 class="font-bold text-xl text-maroon">User Details</h3>
-      </div>
+  <!-- Performance Analysis Modal -->
+  <div *ngIf="showDetailsModal" class="modal modal-open">
+    <div class="modal-box w-11/12 max-w-5xl bg-white p-8">
+      <!-- Header -->
+      <h3 class="text-maroon text-2xl font-bold mb-4">{{ selectedUser?.name }}</h3>
       
-      <div class="modal-content py-4">
-        <div *ngIf="selectedUser" class="details-grid">
-          <!-- Name -->
-          <div class="detail-item">
-            <label class="text-sm text-gray-600">Name</label>
-            <p class="font-semibold">{{selectedUser.name}}</p>
-          </div>
+      <!-- Basic Info -->
+      <p class="text-gray-600 mb-2">Department: {{ selectedUser?.department || 'N/A' }}</p>
+      <p class="text-gray-600 mb-6">Employment Type: {{ selectedUser?.employmentType || 'Full Time' }}</p>
 
-          <!-- F-Code -->
-          <div class="detail-item">
-            <label class="text-sm text-gray-600">F-Code</label>
-            <p class="font-semibold">{{selectedUser.fcode}}</p>
+      <!-- Performance Assessment Section -->
+      <div class="mb-8">
+        <h4 class="text-lg font-semibold mb-4">Performance Assessment</h4>
+        <div class="grid grid-cols-2 gap-8 mb-4">
+          <div>
+            <p class="text-gray-600">Average Score</p>
+            <p class="text-3xl font-bold">{{ selectedUser?.averageScore || '88.37' }}</p>
           </div>
-
-          <!-- Department -->
-          <div class="detail-item">
-            <label class="text-sm text-gray-600">Department</label>
-            <p class="font-semibold">{{selectedUser.department || 'N/A'}}</p>
+          <div>
+            <p class="text-gray-600">Lowest Score</p>
+            <p class="text-3xl font-bold">{{ selectedUser?.lowestScore || '85.72' }}</p>
           </div>
-
-          <!-- Employment Type -->
-          <div class="detail-item">
-            <label class="text-sm text-gray-600">Employment Type</label>
-            <p>
-              <span class="px-2 py-0.5 rounded-full text-xs" 
-                    [ngClass]="{
-                      'bg-green-100 text-green-800': selectedUser.employmentType === 'fulltime',
-                      'bg-blue-100 text-blue-800': selectedUser.employmentType === 'parttime',
-                      'bg-yellow-100 text-yellow-800': selectedUser.employmentType === 'temporary'
-                    }">
-                {{selectedUser.employmentType}}
-              </span>
-            </p>
-          </div>
-
-          <!-- Rank -->
-          <div class="detail-item">
-            <label class="text-sm text-gray-600">Rank</label>
-            <p class="font-semibold">{{selectedUser.rank || 'N/A'}}</p>
-          </div>
+        </div>
+        
+        <!-- Status Tags -->
+        <div class="flex gap-2">
+          <span class="px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
+            Low Concern
+          </span>
+          <span class="px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
+            Improving Trend
+          </span>
         </div>
       </div>
 
-      <div class="modal-action pt-3 border-t border-gray-200">
-        <button class="btn btn-sm bg-maroon text-white hover:bg-black transition-colors duration-200"
+      <!-- Performance Analysis -->
+      <div class="mb-8">
+        <h4 class="text-lg font-semibold mb-4">Performance Analysis</h4>
+        <ul class="list-disc list-inside space-y-2 text-gray-600">
+          <li>Average Performance: {{ selectedUser?.averageScore || '88.37' }} over the last 4 evaluations.</li>
+        </ul>
+      </div>
+
+      <!-- Evaluation History -->
+      <div>
+        <h4 class="text-lg font-semibold mb-4">Evaluation History</h4>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-maroon text-white">
+              <tr>
+                <th class="px-4 py-2 text-left">Academic Year</th>
+                <th class="px-4 py-2 text-left">Semester</th>
+                <th class="px-4 py-2 text-left">Score</th>
+                <th class="px-4 py-2 text-left">Rating</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let eval of selectedUser?.evaluations" class="border-b">
+                <td class="px-4 py-2">{{ eval.academicYear }}</td>
+                <td class="px-4 py-2">{{ eval.semester }}</td>
+                <td class="px-4 py-2">{{ eval.score }}</td>
+                <td class="px-4 py-2">{{ eval.rating }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Close Button -->
+      <div class="mt-8 flex justify-end">
+        <button class="btn bg-maroon text-white hover:bg-black" 
                 (click)="closeDetailsModal()">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Immunity View All Modal -->
+  <div *ngIf="showImmunityModal" class="modal modal-open" style="z-index: 100;">
+    <div class="modal-box w-11/12 max-w-5xl">
+      <h3 class="font-bold text-lg mb-4">Immunity Eligible Faculty Members</h3>
+      
+      <!-- Add filters here, inside the modal -->
+      <div class="flex gap-4 mb-6">
+        <!-- Department Filter -->
+        <select 
+          [(ngModel)]="selectedDepartment"
+          (change)="onDepartmentChange()"
+          class="select select-bordered w-full max-w-xs">
+          <option [ngValue]="null">All Departments</option>
+          <option *ngFor="let dept of departments" [value]="dept.DepartmentID">
+            {{ dept.DepartmentName }}
+          </option>
+        </select>
+
+        <!-- Immunity Status Filter -->
+        <select 
+          [(ngModel)]="selectedImmunityStatus"
+          (change)="onImmunityStatusChange()"
+          class="select select-bordered w-full max-w-xs">
+          <option [ngValue]="null">All Status</option>
+          <option value="immune">Immune</option>
+          <option value="pending">Pending</option>
+        </select>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="table w-full">
+          <thead class="bg-maroon text-white">
+            <tr>
+              <th>Name</th>
+              <th>Department</th>
+              <th class="text-center">Status</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let faculty of paginatedImmunityFaculty; let i = index"
+                [class.bg-gray-50]="i % 2 === 0">
+              <td>{{ faculty.Name }}</td>
+              <td>{{ faculty.Department }}</td>
+              <td class="text-center">
+                <span class="px-3 py-1 rounded-full text-xs"
+                      [ngClass]="faculty.highPerformanceCount >= 4 ? 
+                                'bg-green-100 text-green-800' : 
+                                'bg-yellow-100 text-yellow-800'">
+                  {{ faculty.highPerformanceCount >= 4 ? 'Immune' : 'Pending' }}
+                </span>
+              </td>
+              <td class="text-center">
+                <button class="btn btn-sm bg-maroon text-white hover:bg-black"
+                        (click)="viewImmunityDetails(faculty)">
+                  View Details
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="flex justify-center gap-2 mt-4">
+        <button class="btn btn-sm" 
+                [disabled]="immunityCurrentPage === 1"
+                (click)="changeImmunityPage(immunityCurrentPage - 1)">
+          Previous
+        </button>
+        
+        <button *ngFor="let page of immunityPageNumbers" 
+                class="btn btn-sm"
+                [class.btn-active]="page === immunityCurrentPage"
+                (click)="changeImmunityPage(page)">
+          {{ page }}
+        </button>
+        
+        <button class="btn btn-sm" 
+                [disabled]="immunityCurrentPage === immunityTotalPages"
+                (click)="changeImmunityPage(immunityCurrentPage + 1)">
+          Next
+        </button>
+      </div>
+
+      <div class="modal-action">
+        <button class="btn bg-maroon text-white hover:bg-black" 
+                (click)="closeImmunityModal()">
           Close
         </button>
       </div>

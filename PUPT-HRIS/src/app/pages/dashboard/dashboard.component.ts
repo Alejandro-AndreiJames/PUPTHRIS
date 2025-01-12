@@ -16,12 +16,8 @@ import { AcademicRank, AcademicRankCount } from '../../model/academicRank.model'
 import { EvaluationService, EvaluationRatingCount } from '../../services/evaluation.service';
 import { FormsModule } from '@angular/forms';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { 
-  RegularizationCandidate, 
-  PerformanceReviewCandidate,
-  CandidateFilterCriteria 
-} from '../../model/evaluation-candidates.model';
 import { UserListModalComponent } from '../../user-list-modal/user-list-modal.component';
+import { DepartmentService } from '../../services/department.service';
 
 type NgxGaugeType = 'full' | 'semi' | 'arch';
 
@@ -60,6 +56,32 @@ interface DashboardSection {
 
 // Add type definition
 type UserListType = 'male' | 'female' | 'faculty' | 'staff' | 'doctorate' | 'masters';
+
+// Add these properties if not already present
+interface FacultyEvaluation {
+  AcademicYear: string;
+  Semester: string;
+  QualitativeRating: string;
+  TotalScore: number;
+}
+
+interface ImmunityEligibleFaculty {
+  Name: string;
+  Department: string;
+  highPerformanceCount: number;
+  averageRating: number;
+  consistencyScore: number;
+  FacultyEvaluations: FacultyEvaluation[];
+}
+
+// Interface for evaluation ratings
+interface RatingValues {
+  'Outstanding': number;
+  'Very Satisfactory': number;
+  'Satisfactory': number;
+  'Fair': number;
+  'Poor': number;
+}
 
 @Component({
   selector: 'app-dashboard',
@@ -304,29 +326,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     { id: 'faculty-evaluation', title: 'Faculty Evaluation', visible: true, order: 0 },
     { id: 'charts', title: 'Charts', visible: true, order: 1 },
     { id: 'academic-ranks', title: 'Academic Ranks', visible: true, order: 2 },
-    { id: 'evaluation-candidates', title: 'Faculty Evaluation Candidates', visible: true, order: 3 },
+    { id: 'immunity-eligible', title: 'Immunity Eligible Faculty', visible: true, order: 3 },
     { id: 'government-ids', title: 'Government ID Distribution', visible: true, order: 4 }
   ];
   public showDashboardSettings = false;
-
-  // Add new properties for evaluation candidates
-  regularizationCandidates: RegularizationCandidate[] = [];
-  performanceReviewCandidates: PerformanceReviewCandidate[] = [];
-  selectedCandidate: RegularizationCandidate | PerformanceReviewCandidate | null = null;
-  showCandidateModal: boolean = false;
-  candidateFilters: CandidateFilterCriteria = {};
-
-  // Add loading states
-  isLoadingRegularization: boolean = false;
-  isLoadingPerformance: boolean = false;
-
-  // Add these properties to the DashboardComponent class
-  showAllRegularization: boolean = false;
-  showAllPerformance: boolean = false;
-
-  // Add these properties
-  showAllCandidatesModal: boolean = false;
-  modalType: 'regularization' | 'performance' | null = null;
 
   // Add these properties
   public doctorate: number = 0;
@@ -423,6 +426,26 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   // Add this property to store the original list
   originalUserList: any[] = [];
 
+  // Add these properties
+  immunityEligibleFaculty: ImmunityEligibleFaculty[] = [];
+
+  // Add these properties to your component class
+  showAllImmunity = false;
+  showImmunityModal = false;
+  immunityCurrentPage = 1;
+  immunityItemsPerPage = 10;
+  paginatedImmunityFaculty: ImmunityEligibleFaculty[] = [];
+
+  // Add these properties
+  selectedFaculty: ImmunityEligibleFaculty | null = null;
+
+  // Add these properties if not present
+  showImmunityDetailsModal: boolean = false;
+
+  // Add new properties
+  selectedDepartment: number | null = null;
+  selectedImmunityStatus: 'immune' | 'pending' | null = null;
+
   constructor(
     private dashboardService: DashboardService,
     private cdr: ChangeDetectorRef,
@@ -430,7 +453,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     private campusContextService: CampusContextService,
     private router: Router,
     private dashboardStateService: DashboardStateService,
-    private evaluationService: EvaluationService
+    private evaluationService: EvaluationService,
+    private departmentService: DepartmentService
   ) {
     this.campusSubscription = new Subscription();
     const decodedToken = this.authService.getDecodedToken();
@@ -485,7 +509,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.selectedSemester = currentMonth > 5 ? 'First Semester' : 'Second Semester';
 
     this.loadDashboardPreferences();
-    this.loadEvaluationCandidates();
 
     const campusId = this.campusContextService.getCurrentCampusId();
     if (campusId) {
@@ -496,14 +519,14 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
           
           // Store departments
           this.departments = data.departments;
-          
-          // Your existing code...
         },
         error: (error) => {
           console.error('Error loading dashboard data:', error);
         }
       });
     }
+
+    this.loadImmunityEligibleFaculty();
   }
 
   ngOnDestroy(): void {
@@ -675,6 +698,21 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         },
         error: (error) => {
           console.error('Error fetching government ID counts:', error);
+        }
+      });
+
+      // Add this to load immunity eligible faculty
+      this.evaluationService.getImmunityEligibleFaculty({ campusId }).subscribe({
+        next: (data) => {
+          this.immunityEligibleFaculty = data;
+          // Process the data to determine eligibility
+          this.immunityEligibleFaculty = this.immunityEligibleFaculty.map(faculty => ({
+            ...faculty,
+            isEligible: this.checkImmunityEligibility(faculty.FacultyEvaluations)
+          }));
+        },
+        error: (error) => {
+          console.error('Error loading immunity eligible faculty:', error);
         }
       });
     });
@@ -1040,12 +1078,12 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       try {
         const savedSections = JSON.parse(saved);
         
-        // Ensure all default sections exist
+        // Ensure all default sections exist (without evaluation candidates)
         const defaultSections = [
           { id: 'faculty-evaluation', title: 'Faculty Evaluation', visible: true, order: 0 },
           { id: 'charts', title: 'Charts', visible: true, order: 1 },
           { id: 'academic-ranks', title: 'Academic Ranks', visible: true, order: 2 },
-          { id: 'evaluation-candidates', title: 'Faculty Evaluation Candidates', visible: true, order: 3 },
+          { id: 'immunity-eligible', title: 'Immunity Eligible Faculty', visible: true, order: 3 },
           { id: 'government-ids', title: 'Government ID Distribution', visible: true, order: 4 }
         ];
 
@@ -1087,202 +1125,18 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     }, 250);
   }
 
-  loadEvaluationCandidates() {
-    const campusId = this.campusContextService.getCurrentCampusId();
-    if (!campusId) {
-      console.log('No campus ID found');
-      return;
-    }
-
-    console.log('Loading candidates for campus:', campusId);
-
-    this.isLoadingRegularization = true;
-    this.evaluationService.getRegularizationCandidates(campusId).subscribe({
-      next: (candidates) => {
-        console.log('Raw regularization candidates:', candidates);
-        
-        // Check each candidate's data
-        candidates.forEach(candidate => {
-          console.log('Candidate:', {
-            name: `${candidate.faculty?.Faculty?.Surname}, ${candidate.faculty?.Faculty?.FirstName}`,
-            employmentType: candidate.faculty?.Faculty?.EmploymentType,
-            evaluationsCount: candidate.evaluations?.length,
-            evaluations: candidate.evaluations
-          });
-        });
-
-        // Filter part-time faculty with 4 evaluations
-        this.regularizationCandidates = candidates.filter(candidate => {
-          const isPartTime = candidate.faculty?.Faculty?.EmploymentType?.toLowerCase().includes('part');
-          const hasFourEvals = candidate.evaluations?.length === 4;
-          
-          console.log('Candidate filtering:', {
-            name: `${candidate.faculty?.Faculty?.Surname}, ${candidate.faculty?.Faculty?.FirstName}`,
-            isPartTime,
-            hasFourEvals,
-            included: isPartTime && hasFourEvals
-          });
-
-          return isPartTime && hasFourEvals;
-        });
-
-        console.log('Filtered regularization candidates:', this.regularizationCandidates);
-      },
-      error: (error) => {
-        console.error('Error loading regularization candidates:', error);
-        this.regularizationCandidates = [];
-      },
-      complete: () => {
-        this.isLoadingRegularization = false;
-      }
-    });
-
-    // Similar debugging for performance review candidates
-    this.isLoadingPerformance = true;
-    this.evaluationService.getPerformanceReviewCandidates(campusId).subscribe({
-      next: (candidates) => {
-        console.log('Raw performance review candidates:', candidates);
-        
-        candidates.forEach(candidate => {
-          console.log('Performance candidate:', {
-            name: `${candidate.faculty?.Faculty?.Surname}, ${candidate.faculty?.Faculty?.FirstName}`,
-            employmentType: candidate.faculty?.Faculty?.EmploymentType,
-            evaluationsCount: candidate.evaluations?.length,
-            evaluations: candidate.evaluations
-          });
-        });
-
-        this.performanceReviewCandidates = candidates.filter(candidate => {
-          const isFullTime = candidate.faculty?.Faculty?.EmploymentType?.toLowerCase().includes('full');
-          const hasFourEvals = candidate.evaluations?.length === 4;
-          
-          console.log('Performance candidate filtering:', {
-            name: `${candidate.faculty?.Faculty?.Surname}, ${candidate.faculty?.Faculty?.FirstName}`,
-            isFullTime,
-            hasFourEvals,
-            included: isFullTime && hasFourEvals
-          });
-
-          return isFullTime && hasFourEvals;
-        });
-
-        console.log('Filtered performance review candidates:', this.performanceReviewCandidates);
-      },
-      error: (error) => {
-        console.error('Error loading performance review candidates:', error);
-        this.performanceReviewCandidates = [];
-      },
-      complete: () => {
-        this.isLoadingPerformance = false;
-      }
-    });
-  }
-
-  viewCandidateDetails(candidate: RegularizationCandidate | PerformanceReviewCandidate) {
-    this.selectedCandidate = candidate;
-    this.showCandidateModal = true;
-  }
-
-  calculateRating(score: number): string {
-    if (score === 0 || isNaN(score)) return 'N/A';
-    if (score >= 91) return 'Outstanding';
-    if (score >= 71) return 'Very Satisfactory';
-    if (score >= 51) return 'Satisfactory';
-    if (score >= 31) return 'Fair';
-    return 'Poor';
-  }
-
-  isRegularizationCandidate(candidate: any): candidate is RegularizationCandidate {
-    return candidate && 'recommendationStrength' in candidate;
-  }
-
-  closeCandidateModal() {
-    this.showCandidateModal = false;
-    this.selectedCandidate = null;
-  }
-
-  getTrendColor(trend: string): string {
-    switch (trend) {
-      case 'Improving': return 'text-green-600';
-      case 'Declining': return 'text-red-600';
-      default: return 'text-gray-600';
-    }
-  }
-
-  getConcernLevelColor(level: string): string {
-    switch (level) {
-      case 'High': return 'text-red-600';
-      case 'Moderate': return 'text-yellow-600';
-      case 'Low': return 'text-orange-600';
-      default: return 'text-gray-600';
-    }
-  }
-
   // Add this method
   clearDashboardPreferences(): void {
     const storageKey = `dashboardPreferences_${this.userID}`;
     localStorage.removeItem(storageKey);
-    // Reset to default sections
+    // Reset to default sections without evaluation candidates
     this.dashboardSections = [
       { id: 'faculty-evaluation', title: 'Faculty Evaluation', visible: true, order: 0 },
       { id: 'charts', title: 'Charts', visible: true, order: 1 },
       { id: 'academic-ranks', title: 'Academic Ranks', visible: true, order: 2 },
-      { id: 'evaluation-candidates', title: 'Faculty Evaluation Candidates', visible: true, order: 3 },
+      { id: 'immunity-eligible', title: 'Immunity Eligible Faculty', visible: true, order: 3 },
       { id: 'government-ids', title: 'Government ID Distribution', visible: true, order: 4 }
     ];
-  }
-
-  // Add these getter methods
-  get displayedRegularizationCandidates() {
-    return this.showAllRegularization 
-      ? this.regularizationCandidates 
-      : this.regularizationCandidates.slice(0, 3);
-  }
-
-  get displayedPerformanceReviewCandidates() {
-    return this.showAllPerformance 
-      ? this.performanceReviewCandidates 
-      : this.performanceReviewCandidates.slice(0, 3);
-  }
-
-  // Add these methods
-  toggleRegularizationDisplay() {
-    this.showAllRegularization = !this.showAllRegularization;
-  }
-
-  togglePerformanceDisplay() {
-    this.showAllPerformance = !this.showAllPerformance;
-  }
-
-  // Add these methods
-  openCandidatesModal(type: 'regularization' | 'performance') {
-    this.modalType = type;
-    this.showAllCandidatesModal = true;
-  }
-
-  closeCandidatesModal() {
-    this.showAllCandidatesModal = false;
-    this.modalType = null;
-  }
-
-  // Helper method to get modal title
-  getModalTitle(): string {
-    return this.modalType === 'regularization' 
-      ? 'All Regularization Candidates' 
-      : 'All Performance Review Candidates';
-  }
-
-  // Helper method to get candidates list for modal
-  get modalCandidates(): (RegularizationCandidate | PerformanceReviewCandidate)[] {
-    if (this.modalType === 'regularization') {
-      return this.regularizationCandidates;
-    }
-    return this.performanceReviewCandidates;
-  }
-
-  // Add this type guard method
-  isPerformanceCandidate(candidate: any): candidate is PerformanceReviewCandidate {
-    return candidate && 'performanceMetrics' in candidate;
   }
 
   // Add these methods
@@ -1450,12 +1304,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.selectedUser = user;
     this.showDetailsModal = true;
   }
-
-  closeDetailsModal(): void {
-    this.showDetailsModal = false;
-    this.selectedUser = null;
-  }
-
   // Pagination methods for user list
   getUserModalPageArray(): number[] {
     const pageCount = Math.ceil(this.currentUserList.length / this.userModalItemsPerPage);
@@ -1525,5 +1373,193 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.currentUserList = [...this.originalUserList];
     this.userModalCurrentPage = 1;
     this.updateUserModalPagination();
+  }
+
+  // Add helper method to check immunity eligibility
+  private checkImmunityEligibility(evaluations: any[]): boolean {
+    if (!evaluations || evaluations.length < 6) return false;
+    
+    // Get last 6 evaluations
+    const lastSixEvaluations = evaluations.slice(0, 6);
+    
+    // Check if all ratings are Outstanding or Very Satisfactory
+    return lastSixEvaluations.every(evaluation => 
+      evaluation.QualitativeRating === 'Outstanding' || 
+      evaluation.QualitativeRating === 'Very Satisfactory'
+    );
+  }
+
+
+
+  get immunityTotalPages(): number {
+    return Math.ceil(this.immunityEligibleFaculty.length / this.immunityItemsPerPage);
+  }
+
+  viewImmunityDetails(faculty: ImmunityEligibleFaculty) {
+    this.selectedFaculty = faculty;
+    this.showImmunityDetailsModal = true;
+  }
+
+  // Generate insights for a faculty member
+  private generateImmunityInsights(faculty: any) {
+    const recommendations: string[] = [];
+    let performanceLevel = '';
+    const trend = this.calculatePerformanceTrend(faculty.FacultyEvaluations);
+
+    // Status-based insights
+    if (faculty.highPerformanceCount >= 4) {
+      performanceLevel = 'Outstanding';
+      recommendations.push(
+        'Maintained consistent high performance',
+        'Eligible for classroom observation immunity',
+        'Consider mentoring other faculty members'
+      );
+    } else {
+      performanceLevel = 'Progressing';
+      const remaining = 4 - faculty.highPerformanceCount;
+      recommendations.push(
+        `Needs ${remaining} more Outstanding/Very Satisfactory ratings for immunity`,
+        'Focus on maintaining consistent performance',
+        'Review previous evaluation feedback'
+      );
+    }
+
+    // Trend-based recommendations
+    if (trend === 'Improving') {
+      recommendations.push('Showing positive performance trajectory');
+    } else if (trend === 'Stable') {
+      recommendations.push('Maintaining consistent performance levels');
+    }
+
+    return {
+      recommendations,
+      performanceLevel,
+      trend
+    };
+  }
+
+  // Calculate performance trend
+  private calculatePerformanceTrend(evaluations: any[]): 'Improving' | 'Stable' | 'Declining' {
+    if (!evaluations || evaluations.length < 2) return 'Stable';
+
+    const ratingValues: RatingValues = {
+      'Outstanding': 4,
+      'Very Satisfactory': 3,
+      'Satisfactory': 2,
+      'Fair': 1,
+      'Poor': 0
+    };
+
+    const scores = evaluations
+      .slice(0, 3)
+      .map(evaluation => ratingValues[evaluation.QualitativeRating as keyof RatingValues] || 0);
+
+    const trend = scores[0] - scores[scores.length - 1];
+    
+    if (trend > 0) return 'Improving';
+    if (trend < 0) return 'Declining';
+    return 'Stable';
+  }
+
+  // Close details modal
+  closeDetailsModal() {
+    this.selectedFaculty = null;
+  }
+
+  // Get page numbers for pagination
+  get immunityPageNumbers(): number[] {
+    const totalPages = Math.ceil(this.immunityEligibleFaculty.length / this.immunityItemsPerPage);
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  // Update pagination
+  updateImmunityPagination() {
+    const startIndex = (this.immunityCurrentPage - 1) * this.immunityItemsPerPage;
+    const endIndex = startIndex + this.immunityItemsPerPage;
+    this.paginatedImmunityFaculty = this.immunityEligibleFaculty.slice(startIndex, endIndex);
+  }
+
+  // View all faculty
+  viewAllImmunityFaculty() {
+    this.showImmunityModal = true;
+    this.updateImmunityPagination();
+  }
+
+  // Close immunity modal
+  closeImmunityModal() {
+    this.showImmunityModal = false;
+  }
+
+  // Change page
+  changeImmunityPage(page: number) {
+    this.immunityCurrentPage = page;
+    this.updateImmunityPagination();
+  }
+
+  // Add these methods
+  loadImmunityEligibleFaculty(): void {
+    const campusId = this.campusContextService.getCurrentCampusId();
+    if (!campusId) return;
+
+    const params: any = { campusId };
+    
+    if (this.selectedDepartment) {
+      params.departmentId = this.selectedDepartment;
+    }
+    
+    if (this.selectedImmunityStatus) {
+      params.immunityStatus = this.selectedImmunityStatus;
+    }
+
+    this.evaluationService.getImmunityEligibleFaculty(params).subscribe({
+      next: (data) => {
+        this.immunityEligibleFaculty = data;
+        this.updateImmunityPagination();
+      },
+      error: (error) => {
+        console.error('Error loading immunity eligible faculty:', error);
+      }
+    });
+  }
+
+  closeImmunityDetailsModal() {
+    this.showImmunityDetailsModal = false;
+    this.selectedFaculty = null;
+  }
+
+  calculateAverageRating(evaluations: FacultyEvaluation[]): number {
+    if (!evaluations || evaluations.length === 0) return 0;
+    const sum = evaluations.reduce((acc, evaluation) => acc + evaluation.TotalScore, 0);
+    return sum / evaluations.length;
+  }
+
+  calculateConsistencyScore(evaluations: FacultyEvaluation[]): number {
+    if (!evaluations || evaluations.length < 2) return 0;
+    const scores = evaluations.map(e => e.TotalScore);
+    const mean = scores.reduce((a, b) => a + b) / scores.length;
+    const variance = scores.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / scores.length;
+    return 100 - Math.sqrt(variance); // Convert to 0-100 scale where 100 is most consistent
+  }
+
+  getConsistencyMessage(score: number): string {
+    if (score >= 90) return 'Highly consistent performance';
+    if (score >= 70) return 'Moderately consistent performance';
+    return 'Variable performance';
+  }
+
+  getImmunityStatus(faculty: ImmunityEligibleFaculty): string {
+    if (faculty.highPerformanceCount >= 4) {
+      return 'Achieved immunity status with consistent outstanding evaluations';
+    }
+    return `Progress towards immunity: ${faculty.highPerformanceCount}/4 outstanding evaluations`;
+  }
+
+  // Add filter handlers
+  onDepartmentChange(): void {
+    this.loadImmunityEligibleFaculty();
+  }
+
+  onImmunityStatusChange(): void {
+    this.loadImmunityEligibleFaculty();
   }
 }
