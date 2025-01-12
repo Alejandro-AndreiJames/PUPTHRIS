@@ -31,6 +31,7 @@ import { CertificationComponent } from './pages/certification/certification.comp
 import { OAuthComponent } from './oauth/oauth-login/oauth-login.component';
 import { OAuthConsentComponent } from './oauth/oauth-consent/oauth-consent.component';
 import { TicketListComponent } from './pages/ticket-list/ticket-list.component';
+import { ObservationScheduleComponent } from './pages/observation-schedule/observation-schedule.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -162,6 +163,12 @@ export const routes: Routes = [
         data: { expectedRoles: ['faculty', 'staff', 'admin', 'superadmin'] },
       },
       { path: 'tickets', component: TicketListComponent, canActivate: [RoleGuard], data: { expectedRoles: ['faculty', 'staff', 'admin', 'superadmin'] } },
+      {
+        path: 'observation-schedule',
+        component: ObservationScheduleComponent,
+        canActivate: [RoleGuard],
+        data: { expectedRoles: ['admin', 'superadmin', 'faculty'] }
+      },
       { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
     ],
   },

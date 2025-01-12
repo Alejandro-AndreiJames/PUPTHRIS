@@ -1,0 +1,272 @@
+<div class="container mx-auto p-4">
+  <!-- Toast Notification -->
+  <div *ngIf="showToast" 
+       class="fixed top-4 right-4 p-4 rounded shadow-lg z-50"
+       [ngClass]="{
+         'bg-green-100 text-green-700': toastType === 'success',
+         'bg-red-100 text-red-700': toastType === 'error',
+         'bg-yellow-100 text-yellow-700': toastType === 'warning'
+       }">
+    {{ toastMessage }}
+  </div>
+
+  <!-- Action Buttons Container -->
+  <div class="flex gap-4 mb-4">
+    <!-- Observation Criteria Button -->
+    <button 
+      (click)="toggleCriteria()" 
+      class="px-4 py-2 bg-red-900 text-white rounded hover:bg-red-800 transition-colors">
+      {{ showCriteria ? 'Hide' : 'Show' }} Observation Criteria
+    </button>
+
+    <!-- Create Schedule Button - Only visible to Faculty -->
+    <button 
+      *ngIf="isFaculty"
+      (click)="toggleScheduleForm()" 
+      class="px-4 py-2 bg-red-900 text-white rounded hover:bg-red-800 transition-colors">
+      {{ showScheduleForm ? 'Hide' : 'Create New' }} Schedule
+    </button>
+  </div>
+
+  <!-- Observation Criteria Section -->
+  <div *ngIf="showCriteria" class="bg-white p-6 rounded-lg shadow mb-8">
+    <h3 class="text-xl font-semibold mb-4 text-red-900">Classroom Observation Criteria Reference</h3>
+    
+    <!-- Rating Scale Table -->
+    <div class="overflow-x-auto mb-6">
+      <table class="min-w-full border-collapse border">
+        <thead>
+          <tr class="bg-gray-50">
+            <th class="border p-2 bg-red-900 text-white">Scale</th>
+            <th class="border p-2 bg-red-900 text-white">Range</th>
+            <th class="border p-2 bg-red-900 text-white">Qualitative Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="border p-2 text-center">1</td>
+            <td class="border p-2">20 to 30.9999</td>
+            <td class="border p-2">Poor (P)</td>
+          </tr>
+          <tr>
+            <td class="border p-2 text-center">2</td>
+            <td class="border p-2">31 to 50.9999</td>
+            <td class="border p-2">Fair (F)</td>
+          </tr>
+          <tr>
+            <td class="border p-2 text-center">3</td>
+            <td class="border p-2">51 to 70.9999</td>
+            <td class="border p-2">Satisfactory (S)</td>
+          </tr>
+          <tr>
+            <td class="border p-2 text-center">4</td>
+            <td class="border p-2">71 to 90.9999</td>
+            <td class="border p-2">Very Satisfactory (VS)</td>
+          </tr>
+          <tr>
+            <td class="border p-2 text-center">5</td>
+            <td class="border p-2">91 to 100</td>
+            <td class="border p-2">Outstanding (O)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Criteria Table -->
+    <h4 class="text-lg font-semibold mb-2 text-red-900">Areas for Observation</h4>
+    <div class="overflow-x-auto">
+      <table class="min-w-full border-collapse border">
+        <thead>
+          <tr class="bg-gray-50">
+            <th class="border p-2 w-1/12 bg-red-900 text-white">No.</th>
+            <th class="border p-2 bg-red-900 text-white">Criteria</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="border p-2 text-center">1</td>
+            <td class="border p-2">Instruction and discussion facilitation referring to sharing control and direction with students.</td>
+          </tr>
+          <tr>
+            <td class="border p-2 text-center">2</td>
+            <td class="border p-2">Commitment referring to the course specialist's act or quality of fulfilling responsibility giving the dedication, discipline, and maturity for the learner's development and advancement.</td>
+          </tr>
+          <tr>
+            <td class="border p-2 text-center">3</td>
+            <td class="border p-2">Teaching for independent learning pertaining to the course specialist's ability to organize the teaching-learning process to enable learners maximize their potential.</td>
+          </tr>
+          <tr>
+            <td class="border p-2 text-center">4</td>
+            <td class="border p-2">Use instructional materials and other educational resources to help maximize learning.</td>
+          </tr>
+          <tr>
+            <td class="border p-2 text-center">5</td>
+            <td class="border p-2">Classroom climate and virtual community referring to facilitating collaborative action enabling learners to communicate openly and effectively.</td>
+          </tr>
+          <tr>
+            <td class="border p-2 text-center">6</td>
+            <td class="border p-2">Course organization referring to objectives, concepts, examples, and program fragments discussed in class.</td>
+          </tr>
+          <tr>
+            <td class="border p-2 text-center">7</td>
+            <td class="border p-2">Assessments referring to the activities required in the course to assess the competence of the students.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Optional: Add a note for faculty -->
+    <div class="mt-4 p-4 bg-gray-50 rounded-md">
+      <p class="text-sm text-gray-600">
+        <span class="font-semibold">Note:</span> These are the criteria that will be used during your classroom observation. 
+        Please ensure your preparation addresses these areas for the best evaluation outcome.
+      </p>
+    </div>
+  </div>
+
+  <!-- Schedule Form - Only visible to Faculty -->
+  <div *ngIf="isFaculty && showScheduleForm" class="mb-8 bg-white p-6 rounded-lg shadow">
+    <h2 class="text-2xl font-bold mb-4">Create Observation Schedule</h2>
+    <form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Topic -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Topic</label>
+          <input type="text" formControlName="Topic" 
+                 class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2">
+        </div>
+
+        <!-- Subject -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Subject</label>
+          <input type="text" formControlName="Subject" 
+                 class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2">
+        </div>
+
+        <!-- Room Number -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Room Number</label>
+          <input type="text" formControlName="RoomNumber" 
+                 class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2">
+        </div>
+
+        <!-- Date -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Date</label>
+          <input type="date" formControlName="ScheduledDate" 
+                 class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2">
+        </div>
+
+        <!-- Start Time -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Start Time</label>
+          <input type="time" formControlName="StartTime" 
+                 class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2">
+        </div>
+
+        <!-- End Time -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">End Time</label>
+          <input type="time" formControlName="EndTime" 
+                 class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2">
+        </div>
+
+        <!-- Academic Year -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Academic Year</label>
+          <select formControlName="AcademicYear" 
+                  class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2">
+            <option *ngFor="let year of academicYears" [value]="year">
+              {{ year }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Semester -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Semester</label>
+          <select formControlName="Semester" 
+                  class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2">
+            <option value="First Semester">First Semester</option>
+            <option value="Second Semester">Second Semester</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="flex justify-end mt-4">
+        <button type="submit" 
+                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
+                [disabled]="!scheduleForm.valid">
+          Create Schedule
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Schedules List -->
+  <div class="bg-white p-6 rounded-lg shadow">
+    <h2 class="text-2xl font-bold mb-4">
+      {{ isAdmin ? 'All Faculty Observation Schedules' : 'My Observation Schedules' }}
+    </h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th *ngIf="isAdmin" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Faculty Name</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Topic</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subject</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Room</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngFor="let schedule of schedules">
+            <td *ngIf="isAdmin" class="px-6 py-4">{{schedule.Faculty?.LastName}}, {{schedule.Faculty?.FirstName}}</td>
+            <td class="px-6 py-4">{{schedule.Topic}}</td>
+            <td class="px-6 py-4">{{schedule.Subject}}</td>
+            <td class="px-6 py-4">{{schedule.RoomNumber}}</td>
+            <td class="px-6 py-4">{{schedule.ScheduledDate | date}}</td>
+            <td class="px-6 py-4">{{schedule.StartTime}} - {{schedule.EndTime}}</td>
+            <td class="px-6 py-4">
+              <div *ngIf="isAdmin; else statusDisplay">
+                <select 
+                  [(ngModel)]="schedule.Status"
+                  (change)="updateStatus(schedule.ScheduleID!, schedule.Status)"
+                  class="block w-full rounded-md border border-gray-300 shadow-sm p-1"
+                  [ngClass]="{
+                    'text-yellow-600': schedule.Status === 'Pending',
+                    'text-green-600': schedule.Status === 'Completed',
+                    'text-red-600': schedule.Status === 'Cancelled'
+                  }">
+                  <option value="Pending">Pending</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
+              <ng-template #statusDisplay>
+                <span [ngClass]="{
+                  'text-yellow-600': schedule.Status === 'Pending',
+                  'text-green-600': schedule.Status === 'Completed',
+                  'text-red-600': schedule.Status === 'Cancelled'
+                }">
+                  {{schedule.Status}}
+                </span>
+              </ng-template>
+            </td>
+            <td class="px-6 py-4">
+              <button *ngIf="isAdmin || schedule.FacultyID === userId" 
+                      (click)="deleteSchedule(schedule.ScheduleID!)" 
+                      class="text-red-600 hover:text-red-900">
+                Delete
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

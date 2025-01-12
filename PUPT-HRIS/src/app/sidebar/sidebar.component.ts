@@ -157,6 +157,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
     } else if (url.includes('evaluation')) {
       this.isReportsDropdownOpen = true;
       this.isReportsActive = true;
+    } else if (url.includes('observation-schedule')) {
+      this.activeItem = 'observation-schedule';
+      this.isReportsDropdownOpen = true;
+      this.isReportsActive = true;
     } else if (url.includes('resources')) {
       this.activeItem = 'resources';
     } else if (url.includes('professional-license')) {
@@ -239,17 +243,21 @@ export class SidebarComponent implements OnInit, OnDestroy {
     return this.isSuperAdmin || (this.hasRole('admin') && this.currentCampusId === this.userDefaultCampusId);
   }
 
+  get canAccessObservationSchedule(): boolean {
+    return this.hasRole('faculty') || this.hasRole('admin') || this.hasRole('superadmin');
+  }
+
   get canAccessEvaluation(): boolean {
     return this.hasRole('admin') || this.hasRole('superadmin');
+  }
+
+  get showEvaluationMenu(): boolean {
+    return this.canAccessObservationSchedule || this.canAccessEvaluation;
   }
 
   get showMaintenanceMenu(): boolean {
     return this.canManageCollegeCampuses || this.canManageDepartments || 
            this.canManageCoordinators || this.canManageUsers;
-  }
-
-  get showReportsMenu(): boolean {
-    return this.canAccessEvaluation;
   }
 
   toggleMaintenanceDropdown() {

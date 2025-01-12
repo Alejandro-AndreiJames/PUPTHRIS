@@ -18,6 +18,7 @@ const EmploymentInformation = require('./employmentInformationModel');
 const Certification = require('./certificationModel');
 const PersonalDetails = require('./personalDetailsModel');
 const Ticket = require('./ticketModel');
+const ObservationSchedule = require('./observationScheduleModel');
 
 // CollegeCampus and User associations
 CollegeCampus.hasMany(User, { foreignKey: 'CollegeCampusID', as: 'Users' });
@@ -168,6 +169,17 @@ Role.hasMany(UserRole, {
   as: 'UserRoles'
 });
 
+// Add ObservationSchedule associations
+ObservationSchedule.belongsTo(User, {
+  foreignKey: 'FacultyID',
+  as: 'ObservedFaculty'
+});
+
+User.hasMany(ObservationSchedule, {
+  foreignKey: 'FacultyID',
+  as: 'Observations'
+});
+
 module.exports = { 
     User, 
     Department, 
@@ -186,5 +198,6 @@ module.exports = {
     ProfessionalLicense,
     Certification,
     PersonalDetails,
-    Ticket
+    Ticket,
+    ObservationSchedule
 };

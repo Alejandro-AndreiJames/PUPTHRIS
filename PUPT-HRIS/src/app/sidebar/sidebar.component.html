@@ -61,19 +61,27 @@
     </ul>
   </li>
 
-  <!-- Generate Reports Dropdown -->
-  <li *ngIf="showReportsMenu">
-    <a id="generate-reports" class="sidebar-link" (click)="toggleReportsDropdown()"
+  <!-- Evaluation section -->
+  <li *ngIf="showEvaluationMenu">
+    <a id="evaluation-menu" class="sidebar-link" (click)="toggleReportsDropdown()"
       [class.active]="isReportsActive">
-      <i class="fas fa-file-alt mr-3"></i>Generate Reports
+      <i class="fas fa-clipboard-check mr-3"></i>Evaluation
       <i [ngClass]="isReportsDropdownOpen ? 'fas fa-chevron-up' : 'fas fa-chevron-down'" class="ml-auto"></i>
     </a>
     <ul *ngIf="isReportsDropdownOpen" class="ml-6 mt-2 space-y-4 text-lg">
+      <!-- Observation Schedule - Visible to faculty, admin, and superadmin -->
+      <li *ngIf="canAccessObservationSchedule">
+        <a routerLink="/observation-schedule" (click)="setActive('observation-schedule')"
+          [class.active]="activeItem === 'observation-schedule'"
+          class="sidebar-link">
+          <i class="fas fa-calendar-check mr-3"></i>Schedule Evaluation</a>
+      </li>
+      <!-- Evaluation - Only visible to admin and superadmin -->
       <li *ngIf="canAccessEvaluation">
         <a routerLink="/evaluation" (click)="setActive('evaluation')"
           [class.active]="activeItem === 'evaluation'"
           class="sidebar-link">
-          <i class="fas fa-clipboard-check mr-3"></i>Evaluation</a>
+          <i class="fas fa-star mr-3"></i>Evaluate Faculty</a>
       </li>
     </ul>
   </li>
