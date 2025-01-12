@@ -69,9 +69,16 @@ interface ImmunityEligibleFaculty {
   Name: string;
   Department: string;
   highPerformanceCount: number;
+  outstandingCount: number;
   averageRating: number;
   consistencyScore: number;
-  FacultyEvaluations: FacultyEvaluation[];
+  FacultyEvaluations: Array<{
+    AcademicYear: string;
+    Semester: string;
+    TotalScore: number;
+    QualitativeRating: string;
+    Status: string;
+  }>;
 }
 
 // Interface for evaluation ratings
@@ -1548,11 +1555,15 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     return 'Variable performance';
   }
 
-  getImmunityStatus(faculty: ImmunityEligibleFaculty): string {
-    if (faculty.highPerformanceCount >= 4) {
-      return 'Achieved immunity status with consistent outstanding evaluations';
-    }
-    return `Progress towards immunity: ${faculty.highPerformanceCount}/4 outstanding evaluations`;
+  getImmunityStatus(faculty: ImmunityEligibleFaculty): { status: string; text: string } {
+    const consecutiveOutstanding = faculty.FacultyEvaluations?.filter(
+      evaluation => evaluation.TotalScore >= 95 && evaluation.Status === 'Outstanding'
+    ).length || 0;
+
+    return {
+      status: consecutiveOutstanding >= 4 ? 'Immune' : 'Pending',
+      text: `${consecutiveOutstanding}/4 Outstanding Evaluations`
+    };
   }
 
   // Add filter handlers
@@ -1562,5 +1573,20 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   onImmunityStatusChange(): void {
     this.loadImmunityEligibleFaculty();
+  }
+
+  // Update the method that generates the immunity progress text
+  private getImmunityProgressText(faculty: ImmunityEligibleFaculty): string {
+    // Count evaluations with scores >= 95 or Outstanding status
+    const outstandingCount = faculty.FacultyEvaluations?.filter(
+      evaluation => evaluation.TotalScore >= 95 || evaluation.Status === 'Outstanding'
+    ).length || 0;
+    
+    return `Progress towards immunity: ${outstandingCount}/4 outstanding evaluations`;
+  }
+
+  // Update the template display method
+  getImmunityAnalysis(faculty: ImmunityEligibleFaculty): string {
+    return this.getImmunityProgressText(faculty);
   }
 }

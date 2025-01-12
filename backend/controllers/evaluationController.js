@@ -609,10 +609,28 @@ exports.getImmunityEligibleFaculty = async (req, res) => {
       const plainUser = user.get({ plain: true });
       const evaluations = plainUser.FacultyEvaluations || [];
       
-      // Calculate metrics
-      const outstandingCount = evaluations.filter(
-        eval => eval.QualitativeRating === 'Outstanding'
-      ).length;
+      // Count consecutive evaluations with scores >= 95
+      let consecutiveHighScores = 0;
+      let currentStreak = 0;
+      
+      // Sort evaluations by academic year and semester in descending order
+      const sortedEvaluations = evaluations.sort((a, b) => {
+        if (a.AcademicYear === b.AcademicYear) {
+          // For same academic year, sort by semester (Second comes before First)
+          return b.Semester.localeCompare(a.Semester);
+        }
+        return b.AcademicYear.localeCompare(a.AcademicYear);
+      });
+
+      // Count consecutive scores >= 95
+      for (const eval of sortedEvaluations) {
+        if (Number(eval.TotalScore) >= 95) {
+          currentStreak++;
+          consecutiveHighScores = Math.max(consecutiveHighScores, currentStreak);
+        } else {
+          currentStreak = 0;
+        }
+      }
 
       // Calculate average rating from TotalScore
       const averageRating = evaluations.length > 0
@@ -626,25 +644,22 @@ exports.getImmunityEligibleFaculty = async (req, res) => {
         const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
         const variance = scores.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / scores.length;
         const stdDev = Math.sqrt(variance);
-        // Convert standard deviation to a 0-100 consistency score
-        // Lower deviation = higher consistency
         consistencyScore = Number((100 - (stdDev / mean) * 100).toFixed(2));
-        // Ensure score stays within 0-100 range
         consistencyScore = Math.max(0, Math.min(100, consistencyScore));
       }
 
       return {
         Name: `${plainUser.FirstName} ${plainUser.MiddleName ? plainUser.MiddleName + ' ' : ''}${plainUser.Surname}`,
         Department: plainUser.Department?.DepartmentName || 'N/A',
-        outstandingCount,
+        outstandingCount: consecutiveHighScores, // Using consecutive count instead of total count
         averageRating,
         consistencyScore,
-        FacultyEvaluations: evaluations.map(eval => ({
+        FacultyEvaluations: sortedEvaluations.map(eval => ({
           ...eval,
           TotalScore: Number(eval.TotalScore),
-          Status: eval.QualitativeRating === 'Outstanding' ? 'Outstanding' : 
-                 eval.QualitativeRating === 'Very Satisfactory' ? 'Very Satisfactory' : 
-                 'Other'
+          Status: Number(eval.TotalScore) >= 95 ? 'Outstanding' : 
+                  Number(eval.TotalScore) >= 90 ? 'Very Satisfactory' : 
+                  'Other'
         }))
       };
     }).filter(faculty => {

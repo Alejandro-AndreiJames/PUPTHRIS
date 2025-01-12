@@ -254,7 +254,7 @@
                         [ngClass]="faculty.highPerformanceCount >= 4 ? 
                                   'bg-green-100 text-green-800' : 
                                   'bg-yellow-100 text-yellow-800'">
-                    {{ faculty.highPerformanceCount >= 4 ? 'Immune' : 'Pending' }}
+                    {{ faculty.outstandingCount >= 4 ? 'Immune' : 'Pending' }}
                   </span>
                   
                   <!-- View Analysis Button -->
@@ -283,13 +283,13 @@
               <h4 class="font-semibold mb-2">Immunity Status</h4>
               <div class="flex items-center gap-2">
                 <span class="px-3 py-1 rounded-full text-sm"
-                      [ngClass]="selectedFaculty.highPerformanceCount >= 4 ? 
+                      [ngClass]="selectedFaculty.outstandingCount >= 4 ? 
                                 'bg-green-100 text-green-800' : 
                                 'bg-yellow-100 text-yellow-800'">
-                  {{ selectedFaculty.highPerformanceCount >= 4 ? 'Immune' : 'Pending' }}
+                  {{ selectedFaculty.outstandingCount >= 4 ? 'Immune' : 'Pending' }}
                 </span>
                 <span class="text-sm text-gray-600">
-                  {{ selectedFaculty.highPerformanceCount }}/4 Outstanding Evaluations
+                  {{ selectedFaculty.outstandingCount }}/4 Outstanding Evaluations
                 </span>
               </div>
             </div>
@@ -319,7 +319,11 @@
             <ul class="space-y-2">
               <li class="flex items-center gap-2">
                 <i class="fas fa-check-circle text-green-600"></i>
-                {{ getImmunityStatus(selectedFaculty) }}
+                <div class="immunity-analysis">
+                  <div class="flex items-center gap-2">
+                    <span>{{ getImmunityAnalysis(selectedFaculty) }}</span>
+                  </div>
+                </div>
               </li>
               <li class="flex items-center gap-2">
                 <i class="fas fa-chart-line text-blue-600"></i>
@@ -515,15 +519,17 @@
               <tr>
                 <th>Name</th>
                 <th>Department</th>
+                <th>Rating</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let faculty of facultiesList">
                 <td>{{ faculty.Faculty.Surname }}, {{ faculty.Faculty.FirstName }} {{ faculty.Faculty.MiddleName }}</td>
                 <td>{{ faculty.Faculty.Department.DepartmentName }}</td>
+                <td>{{ faculty.QualitativeRating }}</td>
               </tr>
               <tr *ngIf="facultiesList.length === 0">
-                <td colspan="2" class="text-center py-4">
+                <td colspan="3" class="text-center py-4">
                   No faculty members found with this rating for the selected period.
                 </td>
               </tr>
@@ -830,10 +836,10 @@
               <td>{{ faculty.Department }}</td>
               <td class="text-center">
                 <span class="px-3 py-1 rounded-full text-xs"
-                      [ngClass]="faculty.highPerformanceCount >= 4 ? 
+                      [ngClass]="faculty.outstandingCount >= 4 ? 
                                 'bg-green-100 text-green-800' : 
                                 'bg-yellow-100 text-yellow-800'">
-                  {{ faculty.highPerformanceCount >= 4 ? 'Immune' : 'Pending' }}
+                  {{ faculty.outstandingCount >= 4 ? 'Immune' : 'Pending' }}
                 </span>
               </td>
               <td class="text-center">
