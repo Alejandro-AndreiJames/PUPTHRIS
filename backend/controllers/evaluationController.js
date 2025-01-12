@@ -11,6 +11,7 @@ const {
   BasicInformation: BasicDetail  // Note: Using BasicInformation as BasicDetail
 } = require('../models/basicDetailsModel');
 const AcademicRank = require('../models/academicRanksModel');
+const ObservationSchedule = require('../models/observationScheduleModel');
 
 exports.submitEvaluation = async (req, res) => {
   let transaction;
@@ -91,6 +92,21 @@ exports.submitEvaluation = async (req, res) => {
       QualitativeRating: qualitativeRating,
       CreatedBy: createdBy
     }, { transaction });
+
+    // Check for matching observation schedule
+    const schedule = await ObservationSchedule.findOne({
+      where: {
+        FacultyID: facultyId,
+        AcademicYear: academicYear,
+        Semester: semester
+      },
+      transaction
+    });
+
+    if (schedule) {
+      // Update the observation schedule status
+      await schedule.update({ Status: 'Completed' }, { transaction });
+    }
 
     const chunkSize = 5;
     for (let i = 0; i < scores.length; i += chunkSize) {

@@ -34,13 +34,16 @@ const ObservationSchedule = sequelize.define('ObservationSchedule', {
   },
   AcademicYear: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: false,
+    validate: {
+      is: /^\d{4}-\d{4}$/
+    }
   },
   Semester: {
     type: DataTypes.STRING,
     allowNull: false,
     validate: {
-      isIn: [['1st', '2nd']]
+      isIn: [['First Semester', 'Second Semester']]
     }
   },
   Status: {

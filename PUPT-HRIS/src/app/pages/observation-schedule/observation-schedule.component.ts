@@ -25,6 +25,8 @@ export class ObservationScheduleComponent implements OnInit {
   toastMessage = '';
   toastType: 'success' | 'error' | 'warning' = 'success';
   campusId: number | null = null;
+  academicYears: string[] = [];
+  currentAcademicYear: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -59,6 +61,14 @@ export class ObservationScheduleComponent implements OnInit {
       console.log('Token Decoded:', decoded);
     }
 
+    // Generate academic years (current year and next 2 years)
+    const currentYear = new Date().getFullYear();
+    for (let i = 0; i < 3; i++) {
+      const year = currentYear + i;
+      this.academicYears.push(`${year}-${year + 1}`);
+    }
+    this.currentAcademicYear = `${currentYear}-${currentYear + 1}`;
+
     this.scheduleForm = this.initializeForm();
 
     // Get campus ID
@@ -73,7 +83,7 @@ export class ObservationScheduleComponent implements OnInit {
       ScheduledDate: ['', Validators.required],
       StartTime: ['', Validators.required],
       EndTime: ['', Validators.required],
-      AcademicYear: ['2023-2024', Validators.required],
+      AcademicYear: [this.currentAcademicYear, Validators.required],
       Semester: ['1st', Validators.required],
       FacultyID: [this.userId],
       CollegeCampusID: [this.campusId]

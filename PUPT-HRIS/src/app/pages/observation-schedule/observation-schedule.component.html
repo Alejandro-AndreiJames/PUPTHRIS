@@ -60,9 +60,12 @@
         <!-- Academic Year -->
         <div>
           <label class="block text-sm font-medium text-gray-700">Academic Year</label>
-          <input type="text" formControlName="AcademicYear" 
-                 class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2"
-                 value="2023-2024" readonly>
+          <select formControlName="AcademicYear" 
+                  class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2">
+            <option *ngFor="let year of academicYears" [value]="year">
+              {{ year }}
+            </option>
+          </select>
         </div>
 
         <!-- Semester -->
@@ -70,8 +73,8 @@
           <label class="block text-sm font-medium text-gray-700">Semester</label>
           <select formControlName="Semester" 
                   class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2">
-            <option value="1st">1st Semester</option>
-            <option value="2nd">2nd Semester</option>
+            <option value="First Semester">First Semester</option>
+            <option value="Second Semester">Second Semester</option>
           </select>
         </div>
       </div>
