@@ -69,9 +69,16 @@ interface ImmunityEligibleFaculty {
   Name: string;
   Department: string;
   highPerformanceCount: number;
+  outstandingCount: number;
   averageRating: number;
   consistencyScore: number;
-  FacultyEvaluations: FacultyEvaluation[];
+  FacultyEvaluations: Array<{
+    AcademicYear: string;
+    Semester: string;
+    TotalScore: number;
+    QualitativeRating: string;
+    Status: string;
+  }>;
 }
 
 // Interface for evaluation ratings
@@ -495,10 +502,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth(); // 0-11 where 0 is January
     
-    // If we're past June (month 5), start with current year, otherwise start with previous year
-    const startYear = currentMonth > 5 ? currentYear : currentYear - 1;
+    // If we're past June (month 5), start with next year, otherwise start with current year
+    const startYear = currentMonth > 5 ? currentYear + 1 : currentYear;
     
-    // Generate last 5 academic years
+    // Generate 5 academic years including one future year
     this.academicYears = Array.from({length: 5}, (_, i) => {
       const year = startYear - i;
       return `${year}-${year + 1}`;
@@ -1300,10 +1307,16 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.originalUserList = [];
   }
 
-  showUserDetails(user: any): void {
+  viewUserDetails(user: any) {
     this.selectedUser = user;
     this.showDetailsModal = true;
   }
+
+  closeDetailsModal() {
+    this.showDetailsModal = false;
+    this.selectedUser = null;
+  }
+
   // Pagination methods for user list
   getUserModalPageArray(): number[] {
     const pageCount = Math.ceil(this.currentUserList.length / this.userModalItemsPerPage);
@@ -1461,11 +1474,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     return 'Stable';
   }
 
-  // Close details modal
-  closeDetailsModal() {
-    this.selectedFaculty = null;
-  }
-
   // Get page numbers for pagination
   get immunityPageNumbers(): number[] {
     const totalPages = Math.ceil(this.immunityEligibleFaculty.length / this.immunityItemsPerPage);
@@ -1547,11 +1555,15 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     return 'Variable performance';
   }
 
-  getImmunityStatus(faculty: ImmunityEligibleFaculty): string {
-    if (faculty.highPerformanceCount >= 4) {
-      return 'Achieved immunity status with consistent outstanding evaluations';
-    }
-    return `Progress towards immunity: ${faculty.highPerformanceCount}/4 outstanding evaluations`;
+  getImmunityStatus(faculty: ImmunityEligibleFaculty): { status: string; text: string } {
+    const consecutiveOutstanding = faculty.FacultyEvaluations?.filter(
+      evaluation => evaluation.TotalScore >= 95 && evaluation.Status === 'Outstanding'
+    ).length || 0;
+
+    return {
+      status: consecutiveOutstanding >= 4 ? 'Immune' : 'Pending',
+      text: `${consecutiveOutstanding}/4 Outstanding Evaluations`
+    };
   }
 
   // Add filter handlers
@@ -1561,5 +1573,20 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   onImmunityStatusChange(): void {
     this.loadImmunityEligibleFaculty();
+  }
+
+  // Update the method that generates the immunity progress text
+  private getImmunityProgressText(faculty: ImmunityEligibleFaculty): string {
+    // Count evaluations with scores >= 95 or Outstanding status
+    const outstandingCount = faculty.FacultyEvaluations?.filter(
+      evaluation => evaluation.TotalScore >= 95 || evaluation.Status === 'Outstanding'
+    ).length || 0;
+    
+    return `Progress towards immunity: ${outstandingCount}/4 outstanding evaluations`;
+  }
+
+  // Update the template display method
+  getImmunityAnalysis(faculty: ImmunityEligibleFaculty): string {
+    return this.getImmunityProgressText(faculty);
   }
 }

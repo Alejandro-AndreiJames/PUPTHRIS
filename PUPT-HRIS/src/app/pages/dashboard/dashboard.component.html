@@ -251,10 +251,10 @@
                 <!-- Status Badge -->
                 <div class="flex items-center justify-between">
                   <span class="px-3 py-1 rounded-full text-sm"
-                        [ngClass]="faculty.highPerformanceCount >= 4 ? 
+                        [ngClass]="faculty.outstandingCount >= 4 ? 
                                   'bg-green-100 text-green-800' : 
                                   'bg-yellow-100 text-yellow-800'">
-                    {{ faculty.highPerformanceCount >= 4 ? 'Immune' : 'Pending' }}
+                    {{ faculty.outstandingCount >= 4 ? 'Immune' : 'Pending' }}
                   </span>
                   
                   <!-- View Analysis Button -->
@@ -283,13 +283,13 @@
               <h4 class="font-semibold mb-2">Immunity Status</h4>
               <div class="flex items-center gap-2">
                 <span class="px-3 py-1 rounded-full text-sm"
-                      [ngClass]="selectedFaculty.highPerformanceCount >= 4 ? 
+                      [ngClass]="selectedFaculty.outstandingCount >= 4 ? 
                                 'bg-green-100 text-green-800' : 
                                 'bg-yellow-100 text-yellow-800'">
-                  {{ selectedFaculty.highPerformanceCount >= 4 ? 'Immune' : 'Pending' }}
+                  {{ selectedFaculty.outstandingCount >= 4 ? 'Immune' : 'Pending' }}
                 </span>
                 <span class="text-sm text-gray-600">
-                  {{ selectedFaculty.highPerformanceCount }}/4 Outstanding Evaluations
+                  {{ selectedFaculty.outstandingCount }}/4 Outstanding Evaluations
                 </span>
               </div>
             </div>
@@ -319,7 +319,11 @@
             <ul class="space-y-2">
               <li class="flex items-center gap-2">
                 <i class="fas fa-check-circle text-green-600"></i>
-                {{ getImmunityStatus(selectedFaculty) }}
+                <div class="immunity-analysis">
+                  <div class="flex items-center gap-2">
+                    <span>{{ getImmunityAnalysis(selectedFaculty) }}</span>
+                  </div>
+                </div>
               </li>
               <li class="flex items-center gap-2">
                 <i class="fas fa-chart-line text-blue-600"></i>
@@ -371,7 +375,7 @@
           </div>
 
           <!-- Close Button -->
-          <div class="modal-action">
+          <div class="mt-8 flex justify-end">
             <button class="btn bg-maroon text-white hover:bg-black" 
                     (click)="closeImmunityDetailsModal()">
               Close
@@ -719,7 +723,7 @@
                 <td>{{user.rank}}</td>
                 <td>
                   <button class="btn btn-sm bg-maroon text-white hover:bg-black"
-                          (click)="showUserDetails(user)">
+                          (click)="viewUserDetails(user)">
                     View Details
                   </button>
                 </td>
@@ -736,71 +740,43 @@
     </div>
   </div>
 
-  <!-- Performance Analysis Modal -->
+  <!-- User Details Modal -->
   <div *ngIf="showDetailsModal" class="modal modal-open">
     <div class="modal-box w-11/12 max-w-5xl bg-white p-8">
       <!-- Header -->
       <h3 class="text-maroon text-2xl font-bold mb-4">{{ selectedUser?.name }}</h3>
       
       <!-- Basic Info -->
-      <p class="text-gray-600 mb-2">Department: {{ selectedUser?.department || 'N/A' }}</p>
-      <p class="text-gray-600 mb-6">Employment Type: {{ selectedUser?.employmentType || 'Full Time' }}</p>
-
-      <!-- Performance Assessment Section -->
-      <div class="mb-8">
-        <h4 class="text-lg font-semibold mb-4">Performance Assessment</h4>
-        <div class="grid grid-cols-2 gap-8 mb-4">
-          <div>
-            <p class="text-gray-600">Average Score</p>
-            <p class="text-3xl font-bold">{{ selectedUser?.averageScore || '88.37' }}</p>
-          </div>
-          <div>
-            <p class="text-gray-600">Lowest Score</p>
-            <p class="text-3xl font-bold">{{ selectedUser?.lowestScore || '85.72' }}</p>
-          </div>
+      <div class="grid grid-cols-2 gap-8 mb-6">
+        <div>
+          <p class="text-gray-600 mb-2">Department: {{ selectedUser?.department || 'N/A' }}</p>
+          <p class="text-gray-600 mb-2">Employment Type: {{ selectedUser?.employmentType || 'N/A' }}</p>
+          <p class="text-gray-600">Academic Rank: {{ selectedUser?.rank || 'N/A' }}</p>
         </div>
+      </div>
+
+      <!-- Education Details -->
+      <div class="mb-8">
+        <h4 class="text-lg font-semibold mb-4">Educational Background</h4>
         
-        <!-- Status Tags -->
-        <div class="flex gap-2">
-          <span class="px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
-            Low Concern
-          </span>
-          <span class="px-3 py-1 rounded-full text-sm bg-green-100 text-green-800">
-            Improving Trend
-          </span>
+        <!-- Masters Degree -->
+        <div class="mb-4">
+          <h5 class="font-medium text-gray-700">Masters Degree</h5>
+          <div *ngIf="selectedUser?.education?.masters" class="ml-4">
+            <p>School: {{selectedUser.education.masters.school}}</p>
+            <p>Graduation Date: {{selectedUser.education.masters.graduationDate}}</p>
+          </div>
+          <p *ngIf="!selectedUser?.education?.masters" class="ml-4 text-gray-500">No Masters Degree information available</p>
         </div>
-      </div>
 
-      <!-- Performance Analysis -->
-      <div class="mb-8">
-        <h4 class="text-lg font-semibold mb-4">Performance Analysis</h4>
-        <ul class="list-disc list-inside space-y-2 text-gray-600">
-          <li>Average Performance: {{ selectedUser?.averageScore || '88.37' }} over the last 4 evaluations.</li>
-        </ul>
-      </div>
-
-      <!-- Evaluation History -->
-      <div>
-        <h4 class="text-lg font-semibold mb-4">Evaluation History</h4>
-        <div class="overflow-x-auto">
-          <table class="w-full">
-            <thead class="bg-maroon text-white">
-              <tr>
-                <th class="px-4 py-2 text-left">Academic Year</th>
-                <th class="px-4 py-2 text-left">Semester</th>
-                <th class="px-4 py-2 text-left">Score</th>
-                <th class="px-4 py-2 text-left">Rating</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let eval of selectedUser?.evaluations" class="border-b">
-                <td class="px-4 py-2">{{ eval.academicYear }}</td>
-                <td class="px-4 py-2">{{ eval.semester }}</td>
-                <td class="px-4 py-2">{{ eval.score }}</td>
-                <td class="px-4 py-2">{{ eval.rating }}</td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- Doctorate Degree -->
+        <div>
+          <h5 class="font-medium text-gray-700">Doctorate Degree</h5>
+          <div *ngIf="selectedUser?.education?.doctoral" class="ml-4">
+            <p>School: {{selectedUser.education.doctoral.school}}</p>
+            <p>Graduation Date: {{selectedUser.education.doctoral.graduationDate}}</p>
+          </div>
+          <p *ngIf="!selectedUser?.education?.doctoral" class="ml-4 text-gray-500">No Doctorate Degree information available</p>
         </div>
       </div>
 
@@ -860,10 +836,10 @@
               <td>{{ faculty.Department }}</td>
               <td class="text-center">
                 <span class="px-3 py-1 rounded-full text-xs"
-                      [ngClass]="faculty.highPerformanceCount >= 4 ? 
+                      [ngClass]="faculty.outstandingCount >= 4 ? 
                                 'bg-green-100 text-green-800' : 
                                 'bg-yellow-100 text-yellow-800'">
-                  {{ faculty.highPerformanceCount >= 4 ? 'Immune' : 'Pending' }}
+                  {{ faculty.outstandingCount >= 4 ? 'Immune' : 'Pending' }}
                 </span>
               </td>
               <td class="text-center">
