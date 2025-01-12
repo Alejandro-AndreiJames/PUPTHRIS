@@ -330,9 +330,25 @@ export class ResearchPapersComponent implements OnInit {
   }
 
   // Add pagination methods
-  onPageChange(page: number): void {
-    this.currentPage = page;
-    this.loadResearchPapers();
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.loadResearchPapers();
+    }
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.loadResearchPapers();
+    }
+  }
+
+  setPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
+      this.currentPage = page;
+      this.loadResearchPapers();
+    }
   }
 
   // Add search method

@@ -164,19 +164,27 @@
   <!-- Add pagination -->
   <div class="flex justify-center mt-4 space-x-2">
     <button 
-      class="btn btn-sm"
+      class="btn bg-maroon text-white hover:bg-maroon-dark"
       [disabled]="currentPage === 1"
       (click)="onPageChange(currentPage - 1)"
     >
       Previous
     </button>
     
-    <span class="px-4 py-2">
-      Page {{currentPage}} of {{totalPages}}
-    </span>
+    <ng-container *ngFor="let page of [].constructor(totalPages); let i = index">
+      <button 
+        (click)="onPageChange(i + 1)" 
+        class="btn text-white" 
+        [class.bg-black]="i + 1 === currentPage"
+        [class.bg-maroon]="i + 1 !== currentPage"
+        [class.hover:bg-maroon-dark]="true"
+      >
+        {{ i + 1 }}
+      </button>
+    </ng-container>
     
     <button 
-      class="btn btn-sm"
+      class="btn bg-maroon text-white hover:bg-maroon-dark"
       [disabled]="currentPage === totalPages"
       (click)="onPageChange(currentPage + 1)"
     >
@@ -184,8 +192,8 @@
     </button>
   </div>
 
-  <!-- Show total items -->
-  <div class="text-center text-sm text-gray-600 mt-2">
+  <!-- Total items text with margin -->
+  <div class="text-center text-sm text-gray-600 mt-4">
     Total items: {{totalItems}}
   </div>
 

@@ -2,7 +2,7 @@
   <div class="flex justify-between items-center mb-4">
     <h2 class="text-xl font-bold">Lecture Materials</h2>
     <button *ngIf="viewMode === 'personal'" 
-            class="btn btn-primary" 
+            class="btn bg-black text-white hover:bg-gray-800" 
             (click)="toggleModal()">
       + Add Lecture Material
     </button>
@@ -131,7 +131,11 @@
       <tbody>
         <tr *ngFor="let material of materials" class="hover:bg-gray-100">
           <td class="p-4">{{ material.Title }}</td>
-          <td class="p-4">{{ material.Description }}</td>
+          <td class="p-4">
+            <span [class.text-gray-500]="!material.Description">
+              {{material.Description || 'No description available'}}
+            </span>
+          </td>
           <td class="p-4">
             <a *ngIf="material.ReferenceLink" 
                [href]="material.ReferenceLink" 
@@ -139,6 +143,9 @@
                class="text-blue-600 hover:text-blue-800">
               View Reference
             </a>
+            <span *ngIf="!material.ReferenceLink" class="text-gray-500">
+              No reference link available
+            </span>
           </td>
           <td class="p-4">
             <a *ngIf="material.FilePath" 
@@ -153,14 +160,18 @@
             {{material.User?.NameExtension ? ' ' + material.User?.NameExtension : ''}}
           </td>
           <td class="p-4 flex justify-center space-x-2">
-            <button *ngIf="material.FilePath" 
-                    class="btn btn-sm btn-info" 
-                    (click)="downloadFile(material.FilePath)">
+            <button 
+              class="btn-sm btn-view" 
+              (click)="downloadFile(material.FilePath)"
+              [disabled]="!material.FilePath"
+              [class.opacity-50]="!material.FilePath"
+              [class.cursor-not-allowed]="!material.FilePath"
+            >
               View
             </button>
             <ng-container *ngIf="viewMode === 'personal'">
-              <button class="btn btn-sm btn-warning" (click)="editMaterial(material)">Edit</button>
-              <button class="btn btn-sm btn-error" (click)="deleteMaterial(material.LectureID!)">Delete</button>
+              <button class="btn-sm btn-edit" (click)="editMaterial(material)">Edit</button>
+              <button class="btn-sm btn-delete" (click)="deleteMaterial(material.LectureID!)">Delete</button>
             </ng-container>
           </td>
         </tr>
@@ -214,19 +225,21 @@
   <!-- Add pagination -->
   <div class="flex justify-center mt-4 space-x-2">
     <button 
-      class="btn btn-sm"
+      class="btn bg-maroon text-white hover:bg-maroon-dark"
       [disabled]="currentPage === 1"
       (click)="onPageChange(currentPage - 1)"
     >
       Previous
     </button>
     
-    <span class="px-4 py-2">
-      Page {{currentPage}} of {{totalPages}}
-    </span>
+    <button 
+      class="btn text-white bg-black"
+    >
+      1
+    </button>
     
     <button 
-      class="btn btn-sm"
+      class="btn bg-maroon text-white hover:bg-maroon-dark"
       [disabled]="currentPage === totalPages"
       (click)="onPageChange(currentPage + 1)"
     >
@@ -234,7 +247,7 @@
     </button>
   </div>
 
-  <!-- Show total items -->
+  <!-- Total items text -->
   <div class="text-center text-sm text-gray-600 mt-2">
     Total items: {{totalItems}}
   </div>

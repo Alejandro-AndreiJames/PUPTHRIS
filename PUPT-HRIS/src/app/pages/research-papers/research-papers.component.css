@@ -4,30 +4,34 @@
 
 .table {
   width: 100%;
-  border-spacing: 0;
+  margin-top: 1rem;
   border-collapse: separate;
+  border-spacing: 0;
+  padding: 0;
   border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px #4B5563;
+  background-color: rgb(241, 241, 241);
+  animation: fadeIn 0.3s ease-out;
 }
 
 .overflow-x-auto {
-  max-width: 97%;  /* reduce from 100% to 95% */
+  max-width: 95%;  /* reduce from 100% to 95% */
   margin: 0 auto;  /* center the container */
 }
 
 .table th,
 .table td {
-  padding: 0.75rem;
-  border-bottom: 1px solid #e2e8f0;
+  border: none;
+  padding: 1rem;
 }
 
 .table tbody tr:nth-child(even) {
-  background-color: #f3f4f6;
+  background-color: #c9c9c9;
 }
 
 .table tbody tr:hover {
-  background-color: #e2e8f0;
+  background-color: #b1b1b1 !important;
+  transition: background-color 0.2s ease;
 }
 
 .bg-maroon {
@@ -39,6 +43,7 @@
   border-radius: 0.375rem;
   font-weight: 600;
   transition: all 0.3s ease;
+  color: white !important;
 }
 
 .btn-sm {
@@ -225,7 +230,7 @@ button:disabled {
   border-radius: 0.5rem;
   margin-bottom: 0.5rem;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  animation: slideUp 0.3s ease-out;
+  animation: fadeIn 0.3s ease-out;
 }
 
 .alert-success {
@@ -243,13 +248,11 @@ button:disabled {
   color: white;
 }
 
-@keyframes slideUp {
+@keyframes fadeIn {
   from {
-    transform: translateY(100%);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
     opacity: 1;
   }
 }
@@ -278,4 +281,58 @@ button:disabled {
 
 .hover\:text-maroon-dark:hover {
   color: #600000;
+}
+
+/* Add maroon header styling */
+.table thead tr {
+  background-color: #800000;
+  color: white;
+}
+
+.table thead tr:first-child th:first-child {
+  border-top-left-radius: 8px;
+}
+
+.table thead tr:first-child th:last-child {
+  border-top-right-radius: 8px;
+}
+
+.table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 8px;
+}
+
+.table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 8px;
+}
+
+/* Add these color definitions */
+.bg-maroon {
+  background-color: #800000;
+}
+
+.bg-maroon-dark {
+  background-color: #600000;
+}
+
+/* Style for disabled buttons */
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #cccccc !important;
+  color: #666666 !important;
+}
+
+/* Hover effect for maroon buttons */
+.btn.bg-maroon:hover {
+  background-color: #600000;
+}
+
+/* Hover effect for all buttons */
+.btn:hover {
+  background-color: #600000 !important;
+}
+
+/* Active/selected page */
+.btn.bg-black:hover {
+  background-color: #600000 !important;
 }
