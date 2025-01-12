@@ -27,6 +27,8 @@ export class ObservationScheduleComponent implements OnInit {
   campusId: number | null = null;
   academicYears: string[] = [];
   currentAcademicYear: string = '';
+  showCriteria: boolean = false;
+  showScheduleForm: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -185,6 +187,14 @@ export class ObservationScheduleComponent implements OnInit {
         this.showToastNotification('Error updating status', 'error');
       }
     });
+  }
+
+  toggleCriteria() {
+    this.showCriteria = !this.showCriteria;
+  }
+
+  toggleScheduleForm() {
+    this.showScheduleForm = !this.showScheduleForm;
   }
 
   ngOnInit(): void {
