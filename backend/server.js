@@ -80,6 +80,7 @@ const employmentInformationRoutes = require("./routes/employmentInformationRoute
 const certificationRoutes = require("./routes/certificationRoutes");
 const webhookRoutes = require("./routes/webhookRoutes");
 const ticketRoutes = require("./routes/ticketRoutes");
+const observationScheduleRoutes = require("./routes/observationScheduleRoutes");
 
 /**
  * Route Definitions
@@ -109,6 +110,7 @@ app.use("/api/professional-licenses", professionalLicenseRoutes);
 app.use("/api/employment-information", employmentInformationRoutes);
 app.use("/api/certifications", certificationRoutes);
 app.use('/api/tickets', ticketRoutes);
+app.use('/api/observation-schedules', observationScheduleRoutes);
 
 
 app.use("/api/user-management", userManagementRoutes);
