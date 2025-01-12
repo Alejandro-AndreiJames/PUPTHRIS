@@ -115,13 +115,30 @@
             <td class="px-6 py-4">{{schedule.ScheduledDate | date}}</td>
             <td class="px-6 py-4">{{schedule.StartTime}} - {{schedule.EndTime}}</td>
             <td class="px-6 py-4">
-              <span [ngClass]="{
-                'text-yellow-600': schedule.Status === 'Pending',
-                'text-green-600': schedule.Status === 'Completed',
-                'text-red-600': schedule.Status === 'Cancelled'
-              }">
-                {{schedule.Status}}
-              </span>
+              <div *ngIf="isAdmin; else statusDisplay">
+                <select 
+                  [(ngModel)]="schedule.Status"
+                  (change)="updateStatus(schedule.ScheduleID!, schedule.Status)"
+                  class="block w-full rounded-md border border-gray-300 shadow-sm p-1"
+                  [ngClass]="{
+                    'text-yellow-600': schedule.Status === 'Pending',
+                    'text-green-600': schedule.Status === 'Completed',
+                    'text-red-600': schedule.Status === 'Cancelled'
+                  }">
+                  <option value="Pending">Pending</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
+              <ng-template #statusDisplay>
+                <span [ngClass]="{
+                  'text-yellow-600': schedule.Status === 'Pending',
+                  'text-green-600': schedule.Status === 'Completed',
+                  'text-red-600': schedule.Status === 'Cancelled'
+                }">
+                  {{schedule.Status}}
+                </span>
+              </ng-template>
             </td>
             <td class="px-6 py-4">
               <button *ngIf="isAdmin || schedule.FacultyID === userId" 

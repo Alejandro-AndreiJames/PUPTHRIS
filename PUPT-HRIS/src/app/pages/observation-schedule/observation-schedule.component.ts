@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { jwtDecode } from 'jwt-decode';
@@ -12,7 +12,7 @@ import { CampusContextService } from '../../services/campus-context.service';
   templateUrl: './observation-schedule.component.html',
   styleUrls: ['./observation-schedule.component.css'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule]
+  imports: [CommonModule, ReactiveFormsModule, FormsModule]
 })
 export class ObservationScheduleComponent implements OnInit {
   scheduleForm: FormGroup = this.initializeForm();
@@ -162,6 +162,19 @@ export class ObservationScheduleComponent implements OnInit {
     setTimeout(() => {
       this.showToast = false;
     }, 3000);
+  }
+
+  updateStatus(scheduleId: number, newStatus: 'Pending' | 'Completed' | 'Cancelled'): void {
+    this.scheduleService.updateScheduleStatus(scheduleId, newStatus).subscribe({
+      next: () => {
+        this.loadSchedules();
+        this.showToastNotification(`Status updated to ${newStatus}`, 'success');
+      },
+      error: (error) => {
+        console.error('Error updating status:', error);
+        this.showToastNotification('Error updating status', 'error');
+      }
+    });
   }
 
   ngOnInit(): void {

@@ -48,32 +48,38 @@ exports.createSchedule = async (req, res) => {
 exports.getAllSchedules = async (req, res) => {
   try {
     const { campusId } = req.query;
-    console.log('Raw campusId from query:', campusId); // Debug log
+    console.log('Raw campusId from query:', campusId);
     
-    const whereClause = {};
-    const includeClause = [{
-      model: User,
-      as: 'ObservedFaculty',
-      attributes: ['UserID', 'FirstName', 'Surname', 'Email'],
-      required: true
-    }];
-
+    // Base where clauses
+    let scheduleWhereClause = {};
+    let userWhereClause = { isActive: true };
+    
     // Only add campus filter if campusId is valid
-    if (campusId && !isNaN(campusId)) {
-      includeClause[0].where = { 
-        CollegeCampusID: Number(campusId) // Convert to number explicitly
-      };
+    if (campusId && typeof campusId === 'string') {
+      const parsedCampusId = parseInt(campusId, 10);
+      if (!isNaN(parsedCampusId)) {
+        userWhereClause.CollegeCampusID = parsedCampusId;
+        scheduleWhereClause.CollegeCampusID = parsedCampusId;
+      }
     }
 
+    console.log('Schedule where clause:', scheduleWhereClause);
+    console.log('User where clause:', userWhereClause);
+
     const schedules = await ObservationSchedule.findAll({
-      where: whereClause,
-      include: includeClause,
+      where: scheduleWhereClause,
+      include: [{
+        model: User,
+        as: 'ObservedFaculty',
+        attributes: ['UserID', 'FirstName', 'Surname', 'Email'],
+        where: userWhereClause,
+        required: true
+      }],
       order: [['createdAt', 'DESC']]
     });
 
-    console.log('Found schedules:', schedules.length); // Debug log
+    console.log('Found schedules:', schedules.length);
 
-    // Format the response with explicit null checks
     const formattedSchedules = schedules.map(schedule => {
       const faculty = schedule.ObservedFaculty || {};
       return {
@@ -156,6 +162,14 @@ exports.updateSchedule = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Schedule not found'
+      });
+    }
+
+    // Validate status if it's being updated
+    if (updates.Status && !['Pending', 'Completed', 'Cancelled'].includes(updates.Status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status value'
       });
     }
 

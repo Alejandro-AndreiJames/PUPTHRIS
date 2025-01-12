@@ -90,4 +90,13 @@ export class ObservationScheduleService {
   getFacultySchedules(facultyId: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/faculty/${facultyId}`, { headers: this.getHeaders() });
   }
+
+  // Add this method to the ObservationScheduleService class
+  updateScheduleStatus(scheduleId: number, status: 'Pending' | 'Completed' | 'Cancelled'): Observable<any> {
+    return this.http.put(
+      `${this.apiUrl}/${scheduleId}`, 
+      { Status: status }, 
+      { headers: this.getHeaders() }
+    );
+  }
 }
