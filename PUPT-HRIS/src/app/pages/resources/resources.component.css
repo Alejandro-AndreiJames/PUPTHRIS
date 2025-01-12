@@ -74,3 +74,21 @@
   }
 }
 
+/* Add these styles for the view toggle buttons */
+.view-toggle-btn {
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+}
+
+.view-toggle-btn.active {
+  background-color: #800000;
+  color: white;
+}
+
+.view-toggle-btn:not(.active) {
+  background-color: #e2e2e2;
+  color: #333;
+}
+

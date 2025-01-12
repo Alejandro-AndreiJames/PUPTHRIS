@@ -9,16 +9,14 @@
       <h1 class="text-lg font-normal">Access and manage your academic resources.</h1>
       
       <!-- View Toggle for Admins -->
-      <div *ngIf="isAdminOrSuperAdmin" class="flex gap-4">
-        <button class="px-4 py-2 rounded-md transition-colors"
-                [class.bg-maroon]="viewMode === 'personal'"
-                [class.text-white]="viewMode === 'personal'"
+      <div *ngIf="isAdminOrSuperAdmin" class="flex gap-2">
+        <button class="view-toggle-btn"
+                [class.active]="viewMode === 'personal'"
                 (click)="toggleViewMode('personal')">
           My Resources
         </button>
-        <button class="px-4 py-2 rounded-md transition-colors"
-                [class.bg-maroon]="viewMode === 'all'"
-                [class.text-white]="viewMode === 'all'"
+        <button class="view-toggle-btn"
+                [class.active]="viewMode === 'all'"
                 (click)="toggleViewMode('all')">
           All Faculty Resources
         </button>
