@@ -4,11 +4,14 @@
 
 .table {
   width: 100%;
-  border-spacing: 0;
+  margin-top: 1rem;
   border-collapse: separate;
+  border-spacing: 0;
+  padding: 0;
   border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px #4B5563;
+  background-color: rgb(241, 241, 241);
+  animation: fadeIn 0.3s ease-out;
 }
 
 .overflow-x-auto {
@@ -18,16 +21,72 @@
 
 .table th,
 .table td {
-  padding: 0.75rem;
-  border-bottom: 1px solid #e2e8f0;
+  border: none;
+  padding: 1rem;
 }
 
 .table tbody tr:nth-child(even) {
-  background-color: #f3f4f6;
+  background-color: #c9c9c9;
 }
 
 .table tbody tr:hover {
-  background-color: #e2e8f0;
+  background-color: #b1b1b1 !important;
+  transition: background-color 0.2s ease;
+}
+
+/* Add maroon header styling */
+.table thead tr {
+  background-color: #800000;
+  color: white;
+}
+
+.table thead tr:first-child th:first-child {
+  border-top-left-radius: 8px;
+}
+
+.table thead tr:first-child th:last-child {
+  border-top-right-radius: 8px;
+}
+
+.table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 8px;
+}
+
+.table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 8px;
+}
+
+/* Pagination styles */
+.btn {
+  color: white !important;
+}
+
+.btn:hover {
+  background-color: #600000 !important;
+}
+
+.btn.bg-black:hover {
+  background-color: #600000 !important;
+}
+
+.btn.bg-maroon:hover {
+  background-color: #600000;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #cccccc !important;
+  color: #666666 !important;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .bg-maroon {
@@ -83,32 +142,44 @@
 /* Action Buttons */
 .btn-sm {
   padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
-  border: none;
   border-radius: 0.375rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
+  font-weight: 500;
+  transition: all 0.2s ease;
   color: white;
+}
+
+/* View button */
+.btn-view {
+  background-color: #000000;
+}
+
+.btn-view:hover:not(:disabled) {
+  background-color: #333333;
 }
 
 /* Edit button */
-button[class*="btn-sm"]:nth-child(1) {
+.btn-edit {
   background-color: #00A3FF;
-  color: white;
 }
 
-button[class*="btn-sm"]:nth-child(1):hover {
+.btn-edit:hover {
   background-color: #0089D6;
 }
 
 /* Delete button */
-button[class*="btn-sm"]:nth-child(2) {
+.btn-delete {
   background-color: #FF5757;
-  color: white;
 }
 
-button[class*="btn-sm"]:nth-child(2):hover {
+.btn-delete:hover {
   background-color: #FF0000;
+}
+
+/* Disabled state */
+.btn-sm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* Form Styles */
@@ -320,4 +391,18 @@ textarea {
   background-color: #cccccc;
   cursor: not-allowed;
   opacity: 0.7;
+}
+
+/* Add these button styles if not already present */
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-sm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }
