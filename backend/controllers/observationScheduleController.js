@@ -47,24 +47,55 @@ exports.createSchedule = async (req, res) => {
 // Get all schedules
 exports.getAllSchedules = async (req, res) => {
   try {
+    const { campusId } = req.query;
+    console.log('Raw campusId from query:', campusId); // Debug log
+    
+    const whereClause = {};
+    const includeClause = [{
+      model: User,
+      as: 'ObservedFaculty',
+      attributes: ['UserID', 'FirstName', 'Surname', 'Email'],
+      required: true
+    }];
+
+    // Only add campus filter if campusId is valid
+    if (campusId && !isNaN(campusId)) {
+      includeClause[0].where = { 
+        CollegeCampusID: Number(campusId) // Convert to number explicitly
+      };
+    }
+
     const schedules = await ObservationSchedule.findAll({
-      include: [{
-        model: User,
-        as: 'ObservedFaculty',
-        attributes: ['FirstName', 'LastName', 'Email']
-      }],
-      order: [['ScheduledDate', 'DESC']]
+      where: whereClause,
+      include: includeClause,
+      order: [['createdAt', 'DESC']]
+    });
+
+    console.log('Found schedules:', schedules.length); // Debug log
+
+    // Format the response with explicit null checks
+    const formattedSchedules = schedules.map(schedule => {
+      const faculty = schedule.ObservedFaculty || {};
+      return {
+        ...schedule.toJSON(),
+        Faculty: {
+          FirstName: faculty.FirstName || '',
+          LastName: faculty.Surname || '',
+          Email: faculty.Email || ''
+        }
+      };
     });
 
     res.status(200).json({
       success: true,
-      data: schedules
+      data: formattedSchedules
     });
+
   } catch (error) {
     console.error('Error fetching schedules:', error);
     res.status(500).json({ 
       success: false,
-      message: 'Failed to fetch schedules',
+      message: 'Error fetching schedules',
       error: error.message 
     });
   }
@@ -79,7 +110,7 @@ exports.getScheduleById = async (req, res) => {
       include: [{
         model: User,
         as: 'ObservedFaculty',
-        attributes: ['FirstName', 'LastName', 'Email']
+        attributes: ['firstname', 'lastname', 'email']
       }]
     });
 
@@ -90,9 +121,18 @@ exports.getScheduleById = async (req, res) => {
       });
     }
 
+    const transformedSchedule = {
+      ...schedule.toJSON(),
+      Faculty: {
+        FirstName: schedule.ObservedFaculty?.firstname,
+        LastName: schedule.ObservedFaculty?.lastname,
+        Email: schedule.ObservedFaculty?.email
+      }
+    };
+
     res.status(200).json({
       success: true,
-      data: schedule
+      data: transformedSchedule
     });
   } catch (error) {
     console.error('Error fetching schedule:', error);
@@ -203,20 +243,37 @@ exports.linkEvaluation = async (req, res) => {
 // Get pending schedules
 exports.getPendingSchedules = async (req, res) => {
   try {
+    const { campusId } = req.query;
+
+    // Base where clause
+    let whereClause = { Status: 'Pending' };
+    if (campusId) {
+      whereClause.CollegeCampusID = campusId;
+    }
+
     const schedules = await ObservationSchedule.findAll({
-      where: { Status: 'Pending' },
+      where: whereClause,
       include: [{
         model: User,
         as: 'ObservedFaculty',
-        attributes: ['FirstName', 'LastName', 'Email']
+        attributes: ['firstname', 'lastname', 'email']
       }],
       order: [['ScheduledDate', 'ASC']]
     });
 
+    const transformedSchedules = schedules.map(schedule => ({
+      ...schedule.toJSON(),
+      Faculty: {
+        FirstName: schedule.ObservedFaculty?.firstname,
+        LastName: schedule.ObservedFaculty?.lastname,
+        Email: schedule.ObservedFaculty?.email
+      }
+    }));
+
     res.status(200).json({
       success: true,
       message: 'Pending schedules retrieved successfully',
-      data: schedules
+      data: transformedSchedules
     });
   } catch (error) {
     console.error('Error fetching pending schedules:', error);
@@ -224,6 +281,44 @@ exports.getPendingSchedules = async (req, res) => {
       success: false,
       message: 'Failed to fetch pending schedules',
       error: error.message
+    });
+  }
+};
+
+// Get schedules for a specific faculty
+exports.getFacultySchedules = async (req, res) => {
+  try {
+    const { facultyId } = req.params;
+    
+    const schedules = await ObservationSchedule.findAll({
+      where: { FacultyID: facultyId },
+      include: [{
+        model: User,
+        as: 'ObservedFaculty',
+        attributes: ['UserID', 'FirstName', 'Surname', 'Email']
+      }],
+      order: [['createdAt', 'DESC']]
+    });
+
+    const transformedSchedules = schedules.map(schedule => ({
+      ...schedule.toJSON(),
+      Faculty: {
+        FirstName: schedule.ObservedFaculty?.FirstName,
+        LastName: schedule.ObservedFaculty?.Surname,
+        Email: schedule.ObservedFaculty?.Email
+      }
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: transformedSchedules
+    });
+  } catch (error) {
+    console.error('Error fetching faculty schedules:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to fetch faculty schedules',
+      error: error.message 
     });
   }
 };

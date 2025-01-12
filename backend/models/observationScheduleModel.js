@@ -1,5 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db.config');
+const User = require('./userModel');
 
 const ObservationSchedule = sequelize.define('ObservationSchedule', {
   ScheduleID: {
@@ -39,7 +40,7 @@ const ObservationSchedule = sequelize.define('ObservationSchedule', {
     type: DataTypes.STRING,
     allowNull: false,
     validate: {
-      isIn: [['1st', '2nd', 'Summer']]
+      isIn: [['1st', '2nd']]
     }
   },
   Status: {

@@ -1,0 +1,138 @@
+<div class="container mx-auto p-4">
+  <!-- Toast Notification -->
+  <div *ngIf="showToast" 
+       class="fixed top-4 right-4 p-4 rounded shadow-lg z-50"
+       [ngClass]="{
+         'bg-green-100 text-green-700': toastType === 'success',
+         'bg-red-100 text-red-700': toastType === 'error',
+         'bg-yellow-100 text-yellow-700': toastType === 'warning'
+       }">
+    {{ toastMessage }}
+  </div>
+
+  <!-- Schedule Form - Only visible to Faculty -->
+  <div *ngIf="isFaculty" class="mb-8 bg-white p-6 rounded-lg shadow">
+    <h2 class="text-2xl font-bold mb-4">Create Observation Schedule</h2>
+    <form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Topic -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Topic</label>
+          <input type="text" formControlName="Topic" 
+                 class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2">
+        </div>
+
+        <!-- Subject -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Subject</label>
+          <input type="text" formControlName="Subject" 
+                 class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2">
+        </div>
+
+        <!-- Room Number -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Room Number</label>
+          <input type="text" formControlName="RoomNumber" 
+                 class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2">
+        </div>
+
+        <!-- Date -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Date</label>
+          <input type="date" formControlName="ScheduledDate" 
+                 class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2">
+        </div>
+
+        <!-- Start Time -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Start Time</label>
+          <input type="time" formControlName="StartTime" 
+                 class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2">
+        </div>
+
+        <!-- End Time -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">End Time</label>
+          <input type="time" formControlName="EndTime" 
+                 class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2">
+        </div>
+
+        <!-- Academic Year -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Academic Year</label>
+          <input type="text" formControlName="AcademicYear" 
+                 class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2"
+                 value="2023-2024" readonly>
+        </div>
+
+        <!-- Semester -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Semester</label>
+          <select formControlName="Semester" 
+                  class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-2">
+            <option value="1st">1st Semester</option>
+            <option value="2nd">2nd Semester</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="flex justify-end mt-4">
+        <button type="submit" 
+                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
+                [disabled]="!scheduleForm.valid">
+          Create Schedule
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Schedules List -->
+  <div class="bg-white p-6 rounded-lg shadow">
+    <h2 class="text-2xl font-bold mb-4">
+      {{ isAdmin ? 'All Faculty Observation Schedules' : 'My Observation Schedules' }}
+    </h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th *ngIf="isAdmin" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Faculty Name</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Topic</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subject</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Room</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngFor="let schedule of schedules">
+            <td *ngIf="isAdmin" class="px-6 py-4">{{schedule.Faculty?.LastName}}, {{schedule.Faculty?.FirstName}}</td>
+            <td class="px-6 py-4">{{schedule.Topic}}</td>
+            <td class="px-6 py-4">{{schedule.Subject}}</td>
+            <td class="px-6 py-4">{{schedule.RoomNumber}}</td>
+            <td class="px-6 py-4">{{schedule.ScheduledDate | date}}</td>
+            <td class="px-6 py-4">{{schedule.StartTime}} - {{schedule.EndTime}}</td>
+            <td class="px-6 py-4">
+              <span [ngClass]="{
+                'text-yellow-600': schedule.Status === 'Pending',
+                'text-green-600': schedule.Status === 'Completed',
+                'text-red-600': schedule.Status === 'Cancelled'
+              }">
+                {{schedule.Status}}
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              <button *ngIf="isAdmin || schedule.FacultyID === userId" 
+                      (click)="deleteSchedule(schedule.ScheduleID!)" 
+                      class="text-red-600 hover:text-red-900">
+                Delete
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
