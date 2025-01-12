@@ -502,10 +502,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth(); // 0-11 where 0 is January
     
-    // If we're past June (month 5), start with current year, otherwise start with previous year
-    const startYear = currentMonth > 5 ? currentYear : currentYear - 1;
+    // If we're past June (month 5), start with next year, otherwise start with current year
+    const startYear = currentMonth > 5 ? currentYear + 1 : currentYear;
     
-    // Generate last 5 academic years
+    // Generate 5 academic years including one future year
     this.academicYears = Array.from({length: 5}, (_, i) => {
       const year = startYear - i;
       return `${year}-${year + 1}`;
