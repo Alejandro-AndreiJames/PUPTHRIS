@@ -113,34 +113,31 @@
   transition: all 0.3s ease;
 }
 
-/* Edit button */
+/* View button */
 button[class*="btn-sm"]:nth-child(1) {
-  background-color: #00A3FF;  /* light blue */
-  color: white;
+  background-color: #000000 !important;  /* black */
 }
 
 button[class*="btn-sm"]:nth-child(1):hover {
-  background-color: #0089D6;  /* darker blue */
+  background-color: #1a1a1a !important;  /* slightly lighter black */
 }
 
-/* Delete button */
+/* Edit button */
 button[class*="btn-sm"]:nth-child(2) {
-  background-color: #FF5757;  /* light red */
-  color: white;
+  background-color: #00A3FF !important;  /* blue */
 }
 
 button[class*="btn-sm"]:nth-child(2):hover {
-  background-color: #FF0000;  /* darker red */
+  background-color: #0082CC !important;  /* darker blue */
 }
 
-/* Download button */
+/* Delete button */
 button[class*="btn-sm"]:nth-child(3) {
-  background-color: black;
-  color: white;
+  background-color: #FF5757 !important;  /* red */
 }
 
 button[class*="btn-sm"]:nth-child(3):hover {
-  background-color: #333333;  /* slightly lighter black */
+  background-color: #FF2424 !important;  /* darker red */
 }
 
 .btn-maroon {
