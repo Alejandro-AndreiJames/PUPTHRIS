@@ -8,14 +8,76 @@
     </button>
   </div>
 
-  <!-- Add search bar -->
-  <div class="mb-4">
-    <input 
-      type="text"
-      placeholder="Search lecture materials..."
-      class="input input-bordered w-full max-w-xs"
-      (input)="onSearchInput($event)"
-    >
+  <!-- Material List section -->
+  <div class="mt-8 overflow-x-auto">
+    <h3 class="text-xl font-bold mb-2">Material List</h3>
+    
+    <!-- Search bar aligned with table -->
+    <div class="mb-4">
+      <input 
+        type="text"
+        placeholder="Search lecture materials..."
+        class="input input-bordered w-full max-w-xs"
+        (input)="onSearchInput($event)"
+      >
+    </div>
+
+    <table class="table w-full">
+      <thead>
+        <tr class="bg-maroon text-white">
+          <th class="p-4">Title</th>
+          <th class="p-4">Description</th>
+          <th class="p-4">Reference Link</th>
+          <th class="p-4">File</th>
+          <th class="p-4" *ngIf="viewMode === 'all'">Uploaded By</th>
+          <th class="p-4 w-36">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let material of materials" class="hover:bg-gray-100">
+          <td class="p-4">{{ material.Title }}</td>
+          <td class="p-4">{{ material.Description || 'No description available' }}</td>
+          <td class="p-4">
+            <a *ngIf="material.ReferenceLink" 
+               [href]="material.ReferenceLink" 
+               target="_blank" 
+               class="text-blue-600 hover:text-blue-800">
+              View Reference
+            </a>
+            <span *ngIf="!material.ReferenceLink" class="text-gray-500">
+              No reference link available
+            </span>
+          </td>
+          <td class="p-4">
+            <a *ngIf="material.FilePath" 
+               (click)="downloadFile(material.FilePath)" 
+               class="text-blue-600 hover:text-blue-800 cursor-pointer">
+              Download File
+            </a>
+            <span *ngIf="!material.FilePath" class="text-gray-500">No file available</span>
+          </td>
+          <td class="p-4" *ngIf="viewMode === 'all'">
+            {{material.User?.Surname}}, {{material.User?.FirstName}} 
+            {{material.User?.NameExtension ? ' ' + material.User?.NameExtension : ''}}
+          </td>
+          <td class="p-4 flex justify-center space-x-2">
+            <button 
+              class="btn-sm btn-view" 
+              (click)="downloadFile(material.FilePath)"
+              [disabled]="!material.FilePath"
+              [class.opacity-50]="!material.FilePath"
+              [class.cursor-not-allowed]="!material.FilePath"
+            >
+              View
+            </button>
+            <ng-container *ngIf="viewMode === 'personal'">
+              <button class="btn-sm btn-edit" (click)="editMaterial(material)">Edit</button>
+              <button class="btn-sm btn-delete" (click)="deleteMaterial(material.LectureID!)">Delete</button>
+            </ng-container>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
   <!-- Loading indicator -->
@@ -112,71 +174,6 @@
         </form>
       </div>
     </div>
-  </div>
-
-  <!-- Materials Table -->
-  <div class="mt-8 overflow-x-auto">
-    <h3 class="text-xl font-bold mb-2">Material List</h3>
-    <table class="table table-zebra w-full border-separate border-spacing-0">
-      <thead>
-        <tr class="bg-maroon text-white">
-          <th class="p-4">Title</th>
-          <th class="p-4">Description</th>
-          <th class="p-4">Reference Link</th>
-          <th class="p-4">File</th>
-          <th class="p-4" *ngIf="viewMode === 'all'">Uploaded By</th>
-          <th class="p-4 w-36">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let material of materials" class="hover:bg-gray-100">
-          <td class="p-4">{{ material.Title }}</td>
-          <td class="p-4">
-            <span [class.text-gray-500]="!material.Description">
-              {{material.Description || 'No description available'}}
-            </span>
-          </td>
-          <td class="p-4">
-            <a *ngIf="material.ReferenceLink" 
-               [href]="material.ReferenceLink" 
-               target="_blank" 
-               class="text-blue-600 hover:text-blue-800">
-              View Reference
-            </a>
-            <span *ngIf="!material.ReferenceLink" class="text-gray-500">
-              No reference link available
-            </span>
-          </td>
-          <td class="p-4">
-            <a *ngIf="material.FilePath" 
-               (click)="downloadFile(material.FilePath)" 
-               class="text-blue-600 hover:text-blue-800 cursor-pointer">
-              Download File
-            </a>
-            <span *ngIf="!material.FilePath" class="text-gray-500">No file available</span>
-          </td>
-          <td class="p-4" *ngIf="viewMode === 'all'">
-            {{material.User?.Surname}}, {{material.User?.FirstName}} 
-            {{material.User?.NameExtension ? ' ' + material.User?.NameExtension : ''}}
-          </td>
-          <td class="p-4 flex justify-center space-x-2">
-            <button 
-              class="btn-sm btn-view" 
-              (click)="downloadFile(material.FilePath)"
-              [disabled]="!material.FilePath"
-              [class.opacity-50]="!material.FilePath"
-              [class.cursor-not-allowed]="!material.FilePath"
-            >
-              View
-            </button>
-            <ng-container *ngIf="viewMode === 'personal'">
-              <button class="btn-sm btn-edit" (click)="editMaterial(material)">Edit</button>
-              <button class="btn-sm btn-delete" (click)="deleteMaterial(material.LectureID!)">Delete</button>
-            </ng-container>
-          </td>
-        </tr>
-      </tbody>
-    </table>
   </div>
 
   <!-- Delete Confirmation Modal -->
