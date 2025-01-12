@@ -12,5 +12,7 @@ router.get('/', observationScheduleController.getAllSchedules);
 router.get('/:id', observationScheduleController.getScheduleById);
 router.put('/:id', observationScheduleController.updateSchedule);
 router.delete('/:id', observationScheduleController.deleteSchedule);
+router.post('/schedules/:scheduleId/evaluation', observationScheduleController.linkEvaluation);
+router.get('/schedules/pending', observationScheduleController.getPendingSchedules);
 
 module.exports = router;

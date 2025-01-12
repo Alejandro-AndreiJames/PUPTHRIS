@@ -1,20 +1,11 @@
-const { DataTypes } = require('sequelize');
+const { Sequelize, DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db.config');
-const User = require('./userModel');
 
 const ObservationSchedule = sequelize.define('ObservationSchedule', {
   ScheduleID: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true
-  },
-  FacultyID: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: User,
-      key: 'UserID'
-    }
   },
   Topic: {
     type: DataTypes.STRING,
@@ -29,7 +20,7 @@ const ObservationSchedule = sequelize.define('ObservationSchedule', {
     allowNull: false
   },
   ScheduledDate: {
-    type: DataTypes.DATEONLY,
+    type: DataTypes.DATE,
     allowNull: false
   },
   StartTime: {
@@ -40,9 +31,40 @@ const ObservationSchedule = sequelize.define('ObservationSchedule', {
     type: DataTypes.TIME,
     allowNull: false
   },
+  AcademicYear: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  Semester: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      isIn: [['1st', '2nd', 'Summer']]
+    }
+  },
   Status: {
-    type: DataTypes.ENUM('pending', 'approved', 'completed', 'cancelled'),
-    defaultValue: 'pending'
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: 'Pending',
+    validate: {
+      isIn: [['Pending', 'Completed', 'Cancelled']]
+    }
+  },
+  EvaluationID: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'faculty_evaluations',
+      key: 'EvaluationID'
+    }
+  },
+  FacultyID: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'UserID'
+    }
   }
 }, {
   tableName: 'observation_schedules',

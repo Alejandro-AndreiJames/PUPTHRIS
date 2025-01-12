@@ -10,34 +10,36 @@ exports.createSchedule = async (req, res) => {
       RoomNumber,
       ScheduledDate,
       StartTime,
-      EndTime
+      EndTime,
+      AcademicYear,
+      Semester,
+      FacultyID
     } = req.body;
 
-    // Get FacultyID from authenticated user
-    const FacultyID = req.user.id;
-
-    const newSchedule = await ObservationSchedule.create({
-      FacultyID,
+    const schedule = await ObservationSchedule.create({
       Topic,
       Subject,
       RoomNumber,
       ScheduledDate,
       StartTime,
       EndTime,
-      Status: 'pending'
+      AcademicYear,
+      Semester,
+      FacultyID,
+      Status: 'Pending'
     });
 
     res.status(201).json({
       success: true,
       message: 'Schedule created successfully',
-      data: newSchedule
+      data: schedule
     });
   } catch (error) {
-    console.error('Error creating observation schedule:', error);
-    res.status(500).json({ 
+    console.error('Error creating schedule:', error);
+    res.status(500).json({
       success: false,
       message: 'Failed to create schedule',
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -160,6 +162,68 @@ exports.deleteSchedule = async (req, res) => {
       success: false,
       message: 'Failed to delete schedule',
       error: error.message 
+    });
+  }
+};
+
+// Add method to link evaluation to schedule
+exports.linkEvaluation = async (req, res) => {
+  try {
+    const { scheduleId } = req.params;
+    const { evaluationId } = req.body;
+
+    const schedule = await ObservationSchedule.findByPk(scheduleId);
+    if (!schedule) {
+      return res.status(404).json({
+        success: false,
+        message: 'Schedule not found'
+      });
+    }
+
+    await schedule.update({
+      EvaluationID: evaluationId,
+      Status: 'Completed'
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Evaluation linked to schedule successfully',
+      data: schedule
+    });
+  } catch (error) {
+    console.error('Error linking evaluation:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to link evaluation',
+      error: error.message
+    });
+  }
+};
+
+// Get pending schedules
+exports.getPendingSchedules = async (req, res) => {
+  try {
+    const schedules = await ObservationSchedule.findAll({
+      where: { Status: 'Pending' },
+      include: [{
+        model: User,
+        as: 'ObservedFaculty',
+        attributes: ['FirstName', 'LastName', 'Email']
+      }],
+      order: [['ScheduledDate', 'ASC']]
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Pending schedules retrieved successfully',
+      data: schedules
+    });
+  } catch (error) {
+    console.error('Error fetching pending schedules:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch pending schedules',
+      error: error.message
     });
   }
 };
