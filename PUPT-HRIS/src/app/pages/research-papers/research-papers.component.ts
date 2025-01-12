@@ -55,6 +55,10 @@ export class ResearchPapersComponent implements OnInit {
   // Add loading state
   isLoading: boolean = false;
 
+  // Add these properties to the class
+  selectedFileName: string | null = null;
+  isFileSelected: boolean = false;
+
   constructor(
     private fb: FormBuilder,
     private researchService: ResearchPaperService,
@@ -277,6 +281,13 @@ export class ResearchPapersComponent implements OnInit {
     const file = event.target.files[0];
     if (file) {
       this.selectedFile = file;
+      this.selectedFileName = file.name;
+      this.isFileSelected = true;
+      
+      // Optional: Update form value to trigger change detection
+      this.researchForm.patchValue({
+        DocumentPath: file.name
+      });
     }
   }
 
@@ -372,6 +383,19 @@ export class ResearchPapersComponent implements OnInit {
   viewDocument(documentPath: string): void {
     if (documentPath) {
       window.open(documentPath, '_blank');
+    }
+  }
+
+  // Add method to clear file selection
+  clearFileSelection(): void {
+    this.selectedFile = null;
+    this.selectedFileName = null;
+    this.isFileSelected = false;
+    
+    // Reset file input
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
     }
   }
 }

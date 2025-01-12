@@ -47,6 +47,8 @@ export class BooksComponent implements OnInit {
   totalItems: number = 0;
   searchTerm: string = '';
   isLoading: boolean = false;
+  selectedFileName: string | null = null;
+  isFileSelected: boolean = false;
 
   constructor(
     private fb: FormBuilder, 
@@ -279,6 +281,21 @@ export class BooksComponent implements OnInit {
     const file = event.target.files[0];
     if (file) {
       this.selectedFile = file;
+      this.selectedFileName = file.name;
+      this.isFileSelected = true;
+      this.hasChanges = true;
+    }
+  }
+
+  clearFileSelection(): void {
+    this.selectedFile = null;
+    this.selectedFileName = null;
+    this.isFileSelected = false;
+    
+    // Reset file input
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
     }
   }
 
