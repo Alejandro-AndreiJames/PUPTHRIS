@@ -26,7 +26,7 @@ thead th:last-child {
 
 /* Row Styles */
 tbody tr:nth-child(even) {
-  background-color: #f9fafb;
+  background-color: #e2dede;
 }
 
 tbody tr:hover {

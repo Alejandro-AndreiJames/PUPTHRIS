@@ -29,6 +29,7 @@ export class ObservationScheduleComponent implements OnInit {
   currentAcademicYear: string = '';
   showCriteria: boolean = false;
   showScheduleForm: boolean = false;
+  isLoading: boolean = true;
 
   constructor(
     private fb: FormBuilder,
@@ -121,35 +122,34 @@ export class ObservationScheduleComponent implements OnInit {
   }
 
   private loadSchedules(): void {
+    this.isLoading = true;
     if (this.isAdmin) {
-      this.loadAllSchedules();
+      this.scheduleService.getAllSchedules().subscribe({
+        next: (response) => {
+          this.schedules = response.data;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error loading schedules:', error);
+          this.showToastNotification('Error loading schedules', 'error');
+          this.schedules = [];
+          this.isLoading = false;
+        }
+      });
     } else if (this.isFaculty) {
-      this.loadFacultySchedules();
+      this.scheduleService.getFacultySchedules(this.userId).subscribe({
+        next: (response) => {
+          this.schedules = response.data;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error loading faculty schedules:', error);
+          this.showToastNotification('Error loading your schedules', 'error');
+          this.schedules = [];
+          this.isLoading = false;
+        }
+      });
     }
-  }
-
-  loadAllSchedules(): void {
-    this.scheduleService.getAllSchedules().subscribe({
-      next: (response) => {
-        this.schedules = response.data;
-      },
-      error: (error) => {
-        console.error('Error loading schedules:', error);
-        this.showToastNotification('Error loading schedules', 'error');
-      }
-    });
-  }
-
-  loadFacultySchedules(): void {
-    this.scheduleService.getFacultySchedules(this.userId).subscribe({
-      next: (response) => {
-        this.schedules = response.data;
-      },
-      error: (error) => {
-        console.error('Error loading faculty schedules:', error);
-        this.showToastNotification('Error loading your schedules', 'error');
-      }
-    });
   }
 
   deleteSchedule(id: number): void {
