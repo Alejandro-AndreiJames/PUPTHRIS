@@ -213,6 +213,36 @@ export class ObservationScheduleComponent implements OnInit {
     this.showScheduleForm = !this.showScheduleForm;
   }
 
+  downloadPdf(schedule: ObservationSchedule): void {
+    if (!schedule.EvaluationID) {
+      this.showToastNotification('No evaluation available for this schedule', 'warning');
+      return;
+    }
+
+    this.scheduleService.generatePdf(schedule.EvaluationID).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        
+        // Create descriptive filename
+        const facultyName = schedule.Faculty?.LastName || 'Unknown';
+        const academicYear = schedule.AcademicYear?.replace('-', '_') || 'Unknown';
+        const semester = schedule.Semester?.replace(' ', '') || 'Unknown';
+        const filename = `${facultyName}_${academicYear}_${semester}_evaluation.pdf`;
+        
+        link.download = filename;
+        link.click();
+        window.URL.revokeObjectURL(url);
+        this.showToastNotification('PDF downloaded successfully', 'success');
+      },
+      error: (error) => {
+        console.error('Error downloading PDF:', error);
+        this.showToastNotification('Error downloading PDF', 'error');
+      }
+    });
+  }
+
   ngOnInit(): void {
     this.loadSchedules();
 

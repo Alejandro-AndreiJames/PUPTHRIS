@@ -312,11 +312,20 @@
                         </span>
                       </ng-template>
                     </td>
-                    <td class="px-6 py-4 text-sm">
-                      <button *ngIf="isAdmin || schedule.FacultyID === userId" 
+                    <td class="px-6 py-4 text-sm space-x-2">
+                      <!-- Delete button - only show for admin/superadmin -->
+                      <button *ngIf="isAdmin" 
                               (click)="deleteSchedule(schedule.ScheduleID!)" 
                               class="px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200 text-sm font-medium">
                         Delete
+                      </button>
+
+                      <!-- Download PDF button - show for both admin and faculty -->
+                      <button *ngIf="schedule.Status === 'Completed' && schedule.EvaluationID"
+                              (click)="downloadPdf(schedule)" 
+                              class="px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-medium flex items-center gap-1">
+                        <i class="fas fa-download"></i>
+                        PDF
                       </button>
                     </td>
                   </tr>
