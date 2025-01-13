@@ -7,11 +7,32 @@ const User = require('../models/userModel');
 const ObservationSchedule = require('../models/observationScheduleModel');
 const EvaluationScore = require('../models/evaluationScoresModel');
 
+const formatDate = (date) => {
+  console.log('Formatting date:', date);
+  if (!date) {
+    console.log('No date provided');
+    return 'N/A';
+  }
+  try {
+    const formatted = new Date(date).toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric'
+    });
+    console.log('Formatted date:', formatted);
+    return formatted;
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return 'N/A';
+  }
+};
+
 exports.generateEvaluationPdf = async (req, res) => {
   try {
     const { evaluationId } = req.params;
+    console.log('Generating PDF for evaluationId:', evaluationId);
 
-    // First find the evaluation
+    // First find the evaluation with detailed logging
     const evaluation = await FacultyEvaluation.findOne({
       where: { EvaluationID: evaluationId },
       include: [
@@ -19,20 +40,19 @@ exports.generateEvaluationPdf = async (req, res) => {
           model: User,
           as: 'Faculty',
           attributes: ['UserID', 'FirstName', 'Surname']
+        },
+        {
+          model: ObservationSchedule,
+          as: 'ObservationSchedule',
+          attributes: ['Subject', 'ScheduledDate', 'Topic', 'RoomNumber']
         }
-      ],
-      attributes: [
-        'EvaluationID',
-        'FacultyID',
-        'AcademicYear',
-        'Semester',
-        'CourseSection',
-        'TotalScore',
-        'Comments'
       ]
     });
 
+    console.log('Raw Evaluation Data:', JSON.stringify(evaluation, null, 2));
+
     if (!evaluation) {
+      console.log('No evaluation found for ID:', evaluationId);
       return res.status(404).json({ error: 'Evaluation not found' });
     }
 
@@ -46,24 +66,42 @@ exports.generateEvaluationPdf = async (req, res) => {
       attributes: ['ScheduledDate', 'Subject', 'Topic', 'RoomNumber']
     });
 
-    console.log('observationSchedule:', observationSchedule);
+    console.log('Raw Observation Schedule Data:', JSON.stringify(observationSchedule, null, 2));
 
-    // Format date safely
-    const formatDate = (date) => {
-      if (!date) return 'N/A';
-      try {
-        return new Date(date).toLocaleString('en-US', {
-          year: 'numeric',
-          month: 'numeric',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true
-        });
-      } catch (error) {
-        return 'N/A';
-      }
+    // Get evaluation scores with logging
+    const evaluationScores = await EvaluationScore.findAll({
+      where: { EvaluationID: evaluationId },
+      order: [['CriteriaID', 'ASC']]
+    });
+
+    console.log('Raw Evaluation Scores:', JSON.stringify(evaluationScores, null, 2));
+
+    // Create a map of criteria scores with logging
+    const scoreMap = evaluationScores.reduce((map, score) => {
+      map[score.CriteriaID] = score.Score;
+      return map;
+    }, {});
+
+    console.log('Score Map:', scoreMap);
+
+    // Log the evaluation data being used
+    const evaluationData = {
+      facultyName: evaluation?.Faculty ? `${evaluation.Faculty.FirstName} ${evaluation.Faculty.Surname}` : 'N/A',
+      subject: evaluation?.ObservationSchedule?.Subject || observationSchedule?.Subject || 'N/A',
+      observationDate: evaluation?.ObservationSchedule?.ScheduledDate 
+        ? formatDate(evaluation.ObservationSchedule.ScheduledDate) 
+        : observationSchedule?.ScheduledDate 
+          ? formatDate(observationSchedule.ScheduledDate) 
+          : 'N/A',
+      courseSection: evaluation?.CourseSection || 'N/A',
+      academicYear: evaluation?.AcademicYear || 'N/A',
+      semester: evaluation?.Semester || 'N/A',
+      totalScore: evaluation?.TotalScore || 'N/A',
+      topic: evaluation?.ObservationSchedule?.Topic || observationSchedule?.Topic || 'N/A',
+      roomNumber: evaluation?.ObservationSchedule?.RoomNumber || observationSchedule?.RoomNumber || 'N/A'
     };
+
+    console.log('Processed Evaluation Data:', evaluationData);
 
     // Initialize PDF document with legal size paper (8.5 x 14 inches)
     const doc = new jsPDF({
@@ -136,17 +174,6 @@ exports.generateEvaluationPdf = async (req, res) => {
     doc.setFontSize(12);
     doc.text('CLASSROOM EVALUATION TOOL', doc.internal.pageSize.width/2, 2, { align: 'center' });
     
-    // Add default values for missing data
-    const evaluationData = {
-      facultyName: evaluation?.Faculty ? `${evaluation.Faculty.FirstName} ${evaluation.Faculty.Surname}` : 'N/A',
-      subject: observationSchedule?.Subject || 'N/A',
-      observationDate: observationSchedule?.ScheduledDate ? formatDate(observationSchedule.ScheduledDate) : 'N/A',
-      courseSection: evaluation?.CourseSection || 'N/A',
-      academicYear: evaluation?.AcademicYear || 'N/A',
-      semester: evaluation?.Semester || 'N/A',
-      totalScore: evaluation?.TotalScore || 'N/A'
-    };
-
     // Basic Information Table - Simple 2-column layout
     doc.autoTable({
       startY: 2.3,
@@ -204,18 +231,6 @@ exports.generateEvaluationPdf = async (req, res) => {
       ],
       theme: 'plain'
     });
-
-    // Add this new query to get the scores
-    const evaluationScores = await EvaluationScore.findAll({
-      where: { EvaluationID: evaluationId },
-      order: [['CriteriaID', 'ASC']]
-    });
-
-    // Create a map of criteria scores
-    const scoreMap = evaluationScores.reduce((map, score) => {
-      map[score.CriteriaID] = score.Score;
-      return map;
-    }, {});
 
     // Update the Classroom Observation Criteria Table
     doc.autoTable({
@@ -338,11 +353,14 @@ exports.generateEvaluationPdf = async (req, res) => {
     res.setHeader('Content-Disposition', 'attachment; filename=classroom_evaluation.pdf');
     res.send(Buffer.from(pdfBuffer));
 
+    console.log('PDF generation completed successfully');
+
   } catch (error) {
-    console.error('Error generating PDF:', error);
+    console.error('Error in generateEvaluationPdf:', error);
     res.status(500).json({ 
       error: 'Error generating PDF',
-      details: error.message 
+      details: error.message,
+      stack: error.stack 
     });
   }
 };

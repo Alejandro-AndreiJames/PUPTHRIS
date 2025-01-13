@@ -98,14 +98,18 @@ exports.submitEvaluation = async (req, res) => {
       where: {
         FacultyID: facultyId,
         AcademicYear: academicYear,
-        Semester: semester
+        Semester: semester,
+        Status: 'Pending'  // Only update pending schedules
       },
       transaction
     });
 
     if (schedule) {
-      // Update the observation schedule status
-      await schedule.update({ Status: 'Completed' }, { transaction });
+      // Update the observation schedule with evaluation ID and status
+      await schedule.update({ 
+        Status: 'Completed',
+        EvaluationID: evaluation.EvaluationID 
+      }, { transaction });
     }
 
     const chunkSize = 5;
