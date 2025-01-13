@@ -2,9 +2,69 @@ const { jsPDF } = require('jspdf');
 const fs = require('fs');
 const path = require('path');
 require('jspdf-autotable');
+const FacultyEvaluation = require('../models/facultyEvaluationModel');
+const User = require('../models/userModel');
+const ObservationSchedule = require('../models/observationScheduleModel');
+const EvaluationScore = require('../models/evaluationScoresModel');
 
 exports.generateEvaluationPdf = async (req, res) => {
   try {
+    const { evaluationId } = req.params;
+
+    // First find the evaluation
+    const evaluation = await FacultyEvaluation.findOne({
+      where: { EvaluationID: evaluationId },
+      include: [
+        {
+          model: User,
+          as: 'Faculty',
+          attributes: ['UserID', 'FirstName', 'Surname']
+        }
+      ],
+      attributes: [
+        'EvaluationID',
+        'FacultyID',
+        'AcademicYear',
+        'Semester',
+        'CourseSection',
+        'TotalScore',
+        'Comments'
+      ]
+    });
+
+    if (!evaluation) {
+      return res.status(404).json({ error: 'Evaluation not found' });
+    }
+
+    // Then find the matching observation schedule using faculty, year and semester
+    const observationSchedule = await ObservationSchedule.findOne({
+      where: { 
+        FacultyID: evaluation.FacultyID,
+        AcademicYear: evaluation.AcademicYear,
+        Semester: evaluation.Semester
+      },
+      attributes: ['ScheduledDate', 'Subject', 'Topic', 'RoomNumber']
+    });
+
+    console.log('observationSchedule:', observationSchedule);
+
+    // Format date safely
+    const formatDate = (date) => {
+      if (!date) return 'N/A';
+      try {
+        return new Date(date).toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        });
+      } catch (error) {
+        return 'N/A';
+      }
+    };
+
     // Initialize PDF document with legal size paper (8.5 x 14 inches)
     const doc = new jsPDF({
       orientation: 'portrait',
@@ -76,6 +136,17 @@ exports.generateEvaluationPdf = async (req, res) => {
     doc.setFontSize(12);
     doc.text('CLASSROOM EVALUATION TOOL', doc.internal.pageSize.width/2, 2, { align: 'center' });
     
+    // Add default values for missing data
+    const evaluationData = {
+      facultyName: evaluation?.Faculty ? `${evaluation.Faculty.FirstName} ${evaluation.Faculty.Surname}` : 'N/A',
+      subject: observationSchedule?.Subject || 'N/A',
+      observationDate: observationSchedule?.ScheduledDate ? formatDate(observationSchedule.ScheduledDate) : 'N/A',
+      courseSection: evaluation?.CourseSection || 'N/A',
+      academicYear: evaluation?.AcademicYear || 'N/A',
+      semester: evaluation?.Semester || 'N/A',
+      totalScore: evaluation?.TotalScore || 'N/A'
+    };
+
     // Basic Information Table - Simple 2-column layout
     doc.autoTable({
       startY: 2.3,
@@ -87,13 +158,22 @@ exports.generateEvaluationPdf = async (req, res) => {
         lineColor: [0, 0, 0]
       },
       columnStyles: {
-        0: { cellWidth: 3.5 },  // Left column
-        1: { cellWidth: 4 }   // Right column
+        0: { cellWidth: 3.5 },
+        1: { cellWidth: 4 }
       },
       body: [
-        ['Faculty Name: Test Name', 'Date of Classroom Observation: 2024-01-01'],
-        ['School Year and Semester: 2024-2025 1st Semester', 'Class Section: BIST 4-1'],
-        ['Course/Subject: Test Subject', 'Overall Rating: 89.0']
+        [
+          `Faculty Name: ${evaluationData.facultyName}`,
+          `Date of Classroom Observation: ${evaluationData.observationDate}`
+        ],
+        [
+          `School Year and Semester: ${evaluationData.academicYear} ${evaluationData.semester}`,
+          `Class Section: ${evaluationData.courseSection}`
+        ],
+        [
+          `Course/Subject: ${evaluationData.subject}`,
+          `Overall Rating: ${evaluationData.totalScore}`
+        ]
       ],
       theme: 'plain'
     });
@@ -125,7 +205,19 @@ exports.generateEvaluationPdf = async (req, res) => {
       theme: 'plain'
     });
 
-    // Classroom Observation Criteria Table
+    // Add this new query to get the scores
+    const evaluationScores = await EvaluationScore.findAll({
+      where: { EvaluationID: evaluationId },
+      order: [['CriteriaID', 'ASC']]
+    });
+
+    // Create a map of criteria scores
+    const scoreMap = evaluationScores.reduce((map, score) => {
+      map[score.CriteriaID] = score.Score;
+      return map;
+    }, {});
+
+    // Update the Classroom Observation Criteria Table
     doc.autoTable({
       startY: doc.lastAutoTable.finalY + 0.01,
       margin: { left: 0.5, right: 0.5 },
@@ -136,23 +228,33 @@ exports.generateEvaluationPdf = async (req, res) => {
         lineColor: [0, 0, 0]
       },
       columnStyles: {
-        0: { cellWidth: 6 },    // Wider column for criteria
-        1: { cellWidth: 1.5, halign: 'center' }   // Center the "Rating" column
+        0: { cellWidth: 6 },
+        1: { cellWidth: 1.5, halign: 'center' }
       },
       body: [
         [{content: "Classroom Observation Criteria", styles: {fontStyle: "bold"}}, {content: "Rating", styles: {fontStyle: "bold"}}],
-        ['1. Instruction and discussion facilitation refer to sharing control and direction with students.', ''],
-        ['2. Commitment refers to the course specialist act or quality of fulfilling responsibility giving the dedication, discipline, maturity for the learners development and advancement', ''],
-        ['3. Teaching for independent learning pertains to the course specialist\'s ability to organize teaching-learning process to enable learners to maximize their potentials', ''],
-        ['4. Use of instructional materials and other educational resources to help maximize learning', ''],
-        ['5. Classroom climate and virtual community referring to facilitating collaborative and effective interaction.', ''],
-        ['6. Course organization referring to objectives, concepts, examples, and program fragments discussed in class.', ''],
-        ['7. Assessments referring to the activities required in the course to assess the competence of the students.', ''],
-        [{ content: 'Average', styles: { halign: 'right' } }, ''],
-        [{ content: 'Qualitative Description', styles: { halign: 'right' } }, '']
+        ['1. Instruction and discussion facilitation refer to sharing control and direction with students.', scoreMap[1] || ''],
+        ['2. Commitment refers to the course specialist act or quality of fulfilling responsibility giving the dedication, discipline, maturity for the learners development and advancement', scoreMap[2] || ''],
+        ['3. Teaching for independent learning pertains to the course specialist\'s ability to organize teaching-learning process to enable learners to maximize their potentials', scoreMap[3] || ''],
+        ['4. Use of instructional materials and other educational resources to help maximize learning', scoreMap[4] || ''],
+        ['5. Classroom climate and virtual community referring to facilitating collaborative and effective interaction.', scoreMap[5] || ''],
+        ['6. Course organization referring to objectives, concepts, examples, and program fragments discussed in class.', scoreMap[6] || ''],
+        ['7. Assessments referring to the activities required in the course to assess the competence of the students.', scoreMap[7] || ''],
+        [{ content: 'Average', styles: { halign: 'right' } }, evaluation.TotalScore || ''],
+        [{ content: 'Qualitative Description', styles: { halign: 'right' } }, getQualitativeDescription(evaluation.TotalScore)]
       ],
       theme: 'plain'
     });
+
+    // Add this helper function to get qualitative description
+    function getQualitativeDescription(score) {
+      if (!score) return '';
+      if (score >= 91) return 'Outstanding (O)';
+      if (score >= 71) return 'Very Satisfactory (VS)';
+      if (score >= 51) return 'Satisfactory (S)';
+      if (score >= 31) return 'Fair (F)';
+      return 'Poor (P)';
+    }
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
@@ -160,9 +262,29 @@ exports.generateEvaluationPdf = async (req, res) => {
 
     doc.text('Comments:', 0.5, doc.lastAutoTable.finalY + 0.80);
 
+    // Add comments section
+    const commentY = doc.lastAutoTable.finalY + 1;
+    
+    // Add the comment text
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    
+    const comment = evaluation.Comments || 'No comments provided.';
+    const splitComment = doc.splitTextToSize(comment, 7.3);
+    
+    // Draw text and underline for each line
+    splitComment.forEach((line, index) => {
+        const yPosition = commentY + 0.2 + (index * 0.2);
+        doc.text(line, 0.6, yPosition);
+        
+        // Draw underline for the text
+        const textWidth = doc.getTextWidth(line);
+        doc.line(0.6, yPosition + 0.02, 0.6 + textWidth, yPosition + 0.02);
+    });
 
-
-
+    // Signature lines at the bottom of comments section
+    const signatureY = commentY + 2;
+    
     // Add footer text
     // Set starting Y position near bottom of page
     const footerY = doc.internal.pageSize.height - 1; // 2 inches from bottom
@@ -188,13 +310,25 @@ exports.generateEvaluationPdf = async (req, res) => {
     doc.setFontSize(15);
     doc.text('THE COUNTRY\'S 1st POLYTECHNICU', 0.5, footerY + 0.5);
 
+    // Add evaluator information before the stamp, positioned on the right
+    const evaluatorY = footerY - 1.5; // Position above the stamp
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text('Evaluated by:', 5, evaluatorY);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.text('Rhyan V. Molinar, Ph.D', 5, evaluatorY + 0.5);
+    doc.text('Head of Academic Programs', 5, evaluatorY + 0.7);
+
+    // Then add the stamp image (existing code)
     doc.addImage(
         `data:image/jpg;base64,${logoBase643}`,
         'JPEG',
-        5,  // x position (moved left to accommodate wider width)
-        footerY - 0.4,  // y position (aligned with footer text)
-        2.8,    // width (7.11 cm ≈ 2.8 inches)
-        1.13    // height (2.88 cm ≈ 1.13 inches)
+        5,  // x position (keep same as evaluator text)
+        footerY - 0.4,  // y position
+        2.8,    // width
+        1.13    // height
     );
 
     // Send the PDF as response
