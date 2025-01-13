@@ -29,6 +29,9 @@ export class ObservationScheduleComponent implements OnInit {
   currentAcademicYear: string = '';
   showCriteria: boolean = false;
   showScheduleForm: boolean = false;
+  isLoading: boolean = true;
+  showDeletePrompt: boolean = false;
+  scheduleToDelete: number | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -121,47 +124,60 @@ export class ObservationScheduleComponent implements OnInit {
   }
 
   private loadSchedules(): void {
+    this.isLoading = true;
     if (this.isAdmin) {
-      this.loadAllSchedules();
+      this.scheduleService.getAllSchedules().subscribe({
+        next: (response) => {
+          this.schedules = response.data;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error loading schedules:', error);
+          this.showToastNotification('Error loading schedules', 'error');
+          this.schedules = [];
+          this.isLoading = false;
+        }
+      });
     } else if (this.isFaculty) {
-      this.loadFacultySchedules();
+      this.scheduleService.getFacultySchedules(this.userId).subscribe({
+        next: (response) => {
+          this.schedules = response.data;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error loading faculty schedules:', error);
+          this.showToastNotification('Error loading your schedules', 'error');
+          this.schedules = [];
+          this.isLoading = false;
+        }
+      });
     }
   }
 
-  loadAllSchedules(): void {
-    this.scheduleService.getAllSchedules().subscribe({
-      next: (response) => {
-        this.schedules = response.data;
-      },
-      error: (error) => {
-        console.error('Error loading schedules:', error);
-        this.showToastNotification('Error loading schedules', 'error');
-      }
-    });
+  deleteSchedule(scheduleId: number): void {
+    this.scheduleToDelete = scheduleId;
+    this.showDeletePrompt = true;
   }
 
-  loadFacultySchedules(): void {
-    this.scheduleService.getFacultySchedules(this.userId).subscribe({
-      next: (response) => {
-        this.schedules = response.data;
-      },
-      error: (error) => {
-        console.error('Error loading faculty schedules:', error);
-        this.showToastNotification('Error loading your schedules', 'error');
-      }
-    });
+  cancelDelete(): void {
+    this.showDeletePrompt = false;
+    this.scheduleToDelete = null;
   }
 
-  deleteSchedule(id: number): void {
-    if (confirm('Are you sure you want to delete this schedule?')) {
-      this.scheduleService.deleteSchedule(id).subscribe({
+  confirmDelete(): void {
+    if (this.scheduleToDelete) {
+      this.scheduleService.deleteSchedule(this.scheduleToDelete).subscribe({
         next: () => {
           this.loadSchedules();
           this.showToastNotification('Schedule deleted successfully', 'success');
+          this.showDeletePrompt = false;
+          this.scheduleToDelete = null;
         },
         error: (error) => {
           console.error('Error deleting schedule:', error);
           this.showToastNotification('Error deleting schedule', 'error');
+          this.showDeletePrompt = false;
+          this.scheduleToDelete = null;
         }
       });
     }

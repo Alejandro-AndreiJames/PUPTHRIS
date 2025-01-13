@@ -22,6 +22,9 @@ export class CollegeCampusManagementComponent implements OnInit {
   toastMessage: string = '';
   toastType: 'success' | 'error' | 'warning' = 'success';
 
+  showDeletePrompt: boolean = false;
+  pendingDeleteId: number | null = null;
+
   constructor(
     private collegeCampusService: CollegeCampusService,
     private fb: FormBuilder
@@ -109,18 +112,31 @@ export class CollegeCampusManagementComponent implements OnInit {
       this.showToastNotification('Invalid campus ID', 'error');
       return;
     }
+    this.pendingDeleteId = id;
+    this.showDeletePrompt = true;
+  }
 
-    if (confirm('Are you sure you want to delete this college campus?')) {
-      this.collegeCampusService.deleteCollegeCampus(id).subscribe(
-        () => {
+  cancelDelete(): void {
+    this.showDeletePrompt = false;
+    this.pendingDeleteId = null;
+  }
+
+  confirmDelete(): void {
+    if (this.pendingDeleteId) {
+      this.collegeCampusService.deleteCollegeCampus(this.pendingDeleteId).subscribe({
+        next: () => {
           this.loadCampuses();
           this.showToastNotification('College campus deleted successfully', 'success');
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         },
-        (error) => {
-          this.showToastNotification('Error deleting college campus', 'error');
+        error: (error) => {
           console.error('Error deleting college campus', error);
+          this.showToastNotification('Error deleting college campus', 'error');
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         }
-      );
+      });
     }
   }
 
