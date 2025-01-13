@@ -30,6 +30,8 @@ export class ObservationScheduleComponent implements OnInit {
   showCriteria: boolean = false;
   showScheduleForm: boolean = false;
   isLoading: boolean = true;
+  showDeletePrompt: boolean = false;
+  scheduleToDelete: number | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -152,16 +154,30 @@ export class ObservationScheduleComponent implements OnInit {
     }
   }
 
-  deleteSchedule(id: number): void {
-    if (confirm('Are you sure you want to delete this schedule?')) {
-      this.scheduleService.deleteSchedule(id).subscribe({
+  deleteSchedule(scheduleId: number): void {
+    this.scheduleToDelete = scheduleId;
+    this.showDeletePrompt = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeletePrompt = false;
+    this.scheduleToDelete = null;
+  }
+
+  confirmDelete(): void {
+    if (this.scheduleToDelete) {
+      this.scheduleService.deleteSchedule(this.scheduleToDelete).subscribe({
         next: () => {
           this.loadSchedules();
           this.showToastNotification('Schedule deleted successfully', 'success');
+          this.showDeletePrompt = false;
+          this.scheduleToDelete = null;
         },
         error: (error) => {
           console.error('Error deleting schedule:', error);
           this.showToastNotification('Error deleting schedule', 'error');
+          this.showDeletePrompt = false;
+          this.scheduleToDelete = null;
         }
       });
     }
