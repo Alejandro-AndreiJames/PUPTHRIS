@@ -29,6 +29,9 @@ export class DepartmentManagementComponent implements OnInit, OnDestroy {
 
   showModal: boolean = false;
 
+  showDeletePrompt: boolean = false;
+  pendingDeleteId: number | null = null;
+
   constructor(
     private departmentService: DepartmentService,
     private campusContextService: CampusContextService,
@@ -126,17 +129,31 @@ export class DepartmentManagementComponent implements OnInit, OnDestroy {
       this.showToastNotification('Cannot delete department with undefined ID', 'error');
       return;
     }
-    if (confirm('Are you sure you want to delete this department?')) {
-      this.departmentService.deleteDepartment(id).subscribe(
-        () => {
+    this.pendingDeleteId = id;
+    this.showDeletePrompt = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeletePrompt = false;
+    this.pendingDeleteId = null;
+  }
+
+  confirmDelete(): void {
+    if (this.pendingDeleteId) {
+      this.departmentService.deleteDepartment(this.pendingDeleteId).subscribe({
+        next: () => {
           this.loadDepartments();
           this.showToastNotification('Department deleted successfully', 'success');
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         },
-        (error) => {
-          this.showToastNotification('Error deleting department', 'error');
+        error: (error) => {
           console.error('Error deleting department', error);
+          this.showToastNotification('Error deleting department', 'error');
+          this.showDeletePrompt = false;
+          this.pendingDeleteId = null;
         }
-      );
+      });
     }
   }
 
