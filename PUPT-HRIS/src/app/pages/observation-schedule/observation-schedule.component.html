@@ -245,34 +245,32 @@
         <div class="p-6">
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th *ngIf="isAdmin" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Faculty Name
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Topic</th>
-                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Subject</th>
-                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Room</th>
-                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
-                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Time</th>
-                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+              <thead>
+                <tr class="bg-[#800000]">
+                  <th *ngIf="isAdmin" class="px-6 py-4 text-left text-sm font-semibold text-white">Faculty Name</th>
+                  <th class="px-6 py-4 text-left text-sm font-semibold text-white">Topic</th>
+                  <th class="px-6 py-4 text-left text-sm font-semibold text-white">Subject</th>
+                  <th class="px-6 py-4 text-left text-sm font-semibold text-white">Room</th>
+                  <th class="px-6 py-4 text-left text-sm font-semibold text-white">Date</th>
+                  <th class="px-6 py-4 text-left text-sm font-semibold text-white">Time</th>
+                  <th class="px-6 py-4 text-left text-sm font-semibold text-white">Status</th>
+                  <th class="px-6 py-4 text-left text-sm font-semibold text-white">Actions</th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
-                <tr *ngFor="let schedule of schedules">
-                  <td *ngIf="isAdmin" class="px-6 py-4">{{schedule.Faculty?.LastName}}, {{schedule.Faculty?.FirstName}}</td>
-                  <td class="px-6 py-4">{{schedule.Topic}}</td>
-                  <td class="px-6 py-4">{{schedule.Subject}}</td>
-                  <td class="px-6 py-4">{{schedule.RoomNumber}}</td>
-                  <td class="px-6 py-4">{{schedule.ScheduledDate | date}}</td>
-                  <td class="px-6 py-4">{{schedule.StartTime}} - {{schedule.EndTime}}</td>
-                  <td class="px-6 py-4">
+                <tr *ngFor="let schedule of schedules" class="hover:bg-gray-100 transition-colors duration-150">
+                  <td *ngIf="isAdmin" class="px-6 py-4 text-sm text-gray-900">{{schedule.Faculty?.LastName}}, {{schedule.Faculty?.FirstName}}</td>
+                  <td class="px-6 py-4 text-sm text-gray-900">{{schedule.Topic}}</td>
+                  <td class="px-6 py-4 text-sm text-gray-900">{{schedule.Subject}}</td>
+                  <td class="px-6 py-4 text-sm text-gray-900">{{schedule.RoomNumber}}</td>
+                  <td class="px-6 py-4 text-sm text-gray-900">{{schedule.ScheduledDate | date}}</td>
+                  <td class="px-6 py-4 text-sm text-gray-900">{{schedule.StartTime}} - {{schedule.EndTime}}</td>
+                  <td class="px-6 py-4 text-sm">
                     <div *ngIf="isAdmin; else statusDisplay">
                       <select 
                         [(ngModel)]="schedule.Status"
                         (change)="updateStatus(schedule.ScheduleID!, schedule.Status)"
-                        class="block w-full rounded-md border border-gray-300 shadow-sm p-1"
+                        class="block w-full rounded-md border border-gray-300 py-1 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#800000] focus:border-[#800000]"
                         [ngClass]="{
                           'text-yellow-600': schedule.Status === 'Pending',
                           'text-green-600': schedule.Status === 'Completed',
@@ -293,10 +291,10 @@
                       </span>
                     </ng-template>
                   </td>
-                  <td class="px-6 py-4">
+                  <td class="px-6 py-4 text-sm">
                     <button *ngIf="isAdmin || schedule.FacultyID === userId" 
                             (click)="deleteSchedule(schedule.ScheduleID!)" 
-                            class="text-red-600 hover:text-red-900">
+                            class="px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200 text-sm font-medium">
                       Delete
                     </button>
                   </td>
