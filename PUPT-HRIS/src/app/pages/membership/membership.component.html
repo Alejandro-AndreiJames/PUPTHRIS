@@ -52,11 +52,20 @@
                 </td>
                 <td>
                   <ng-container *ngIf="membership.Proof; else noProof">
-                    <button *ngIf="membership.ProofType === 'file'" (click)="openProofModal(membership.Proof, membership.SupportingDocument)" class="btn btn-link">View File</button>
-                    <a *ngIf="membership.ProofType === 'link'" [href]="membership.Proof" target="_blank" class="btn btn-link">View Link</a>
+                    <button *ngIf="membership.ProofType === 'file'" 
+                            (click)="openProofModal(membership.Proof, membership.SupportingDocument)" 
+                            class="btn-link">
+                      View File
+                    </button>
+                    <a *ngIf="membership.ProofType === 'link'" 
+                       [href]="membership.Proof" 
+                       target="_blank" 
+                       class="btn-link">
+                      View Link
+                    </a>
                   </ng-container>
                   <ng-template #noProof>
-                    <span>No Proof</span>
+                    <span class="no-proof">No Proof</span>
                   </ng-template>
                 </td>
                 <td>

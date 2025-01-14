@@ -419,3 +419,33 @@ body {
   background-color: #cccccc;
   transform: none;
 }
+
+/* Add these styles for table cell alignment */
+.table td {
+  vertical-align: middle;
+  text-align: left;
+}
+
+/* Specific style for the Proof column */
+.btn-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+  padding: 8px 12px;
+  color: #3498db;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.btn-link:hover {
+  color: #2980b9;
+  text-decoration: underline;
+}
+
+/* Style for No Proof text */
+.no-proof {
+  display: inline-block;
+  padding: 8px 12px;
+  color: #666;
+}
