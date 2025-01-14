@@ -99,4 +99,12 @@ export class ObservationScheduleService {
       { headers: this.getHeaders() }
     );
   }
+
+  generatePdf(evaluationId: number): Observable<Blob> {
+    const headers = this.getHeaders();
+    return this.http.get(`${environment.apiBaseUrl}/evaluation/generate-pdf/${evaluationId}`, {
+      headers,
+      responseType: 'blob'  // Important for PDF download
+    });
+  }
 }

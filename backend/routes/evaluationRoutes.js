@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const evaluationController = require('../controllers/evaluationController');
 const authenticateJWT = require('../middleware/authMiddleware');
+const evaluationPdfController = require('../controllers/evaluationPdfController');
 
 // Evaluation submission and retrieval
 router.post('/evaluations', authenticateJWT, evaluationController.submitEvaluation);
@@ -30,5 +31,8 @@ router.get('/evaluations/faculties-by-rating/:campusId', authenticateJWT, evalua
 
 // Add this new route
 router.get('/immunity-eligible', authenticateJWT, evaluationController.getImmunityEligibleFaculty);
+
+// Add this new route
+router.get('/generate-pdf/:evaluationId', evaluationPdfController.generateEvaluationPdf);
 
 module.exports = router;

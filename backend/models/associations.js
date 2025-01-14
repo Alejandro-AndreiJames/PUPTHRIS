@@ -180,6 +180,17 @@ User.hasMany(ObservationSchedule, {
   as: 'Observations'
 });
 
+// Add these associations for FacultyEvaluation and ObservationSchedule
+FacultyEvaluation.hasOne(ObservationSchedule, { 
+    foreignKey: 'EvaluationID',
+    as: 'ObservationSchedule'
+});
+
+ObservationSchedule.belongsTo(FacultyEvaluation, { 
+    foreignKey: 'EvaluationID',
+    as: 'Evaluation'
+});
+
 module.exports = { 
     User, 
     Department, 
