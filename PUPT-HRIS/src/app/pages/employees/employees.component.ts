@@ -76,6 +76,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   certifications: Certification[] | null = null;
   private searchSubject = new Subject<string>();
   private readonly DEBOUNCE_TIME = 300; // 300ms delay
+  sortColumn: string = 'name';
+  sortDirection: 'asc' | 'desc' = 'asc';
 
   constructor(
     private campusContextService: CampusContextService,
@@ -115,6 +117,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         }
       }
     );
+
+    this.sortUsersByName();
   }
 
   ngOnDestroy(): void {
@@ -166,6 +170,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         this.filteredUsers = [...this.users];
         this.totalPages = response.metadata.totalPages;
         this.paginateUsers();
+        this.sortUsersByName();
       },
       error: (error) => {
         console.error('Error loading users:', error);
@@ -469,14 +474,27 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   }
 
   formatUserName(user: User): string {
-    const nameParts = [
-      user.FirstName,
-      user.MiddleName,
-      user.Surname,
-      user.NameExtension
-    ].filter(part => part !== null && part !== undefined && part !== '');
+    if (!user) return 'No information entered';
 
-    return nameParts.length > 0 ? nameParts.join(' ') : 'No information entered';
+    // Start with Surname/Last Name
+    let formattedName = user.Surname || '';
+
+    // Add comma and First Name
+    if (user.FirstName) {
+      formattedName += ', ' + user.FirstName;
+    }
+
+    // Add Middle Name
+    if (user.MiddleName) {
+      formattedName += ' ' + user.MiddleName;
+    }
+
+    // Add Name Extension (if exists)
+    if (user.NameExtension) {
+      formattedName += ' ' + user.NameExtension;
+    }
+
+    return formattedName || 'No information entered';
   }
 
   openProofModal(proofUrl: string, supportingDocument?: string): void {
@@ -575,5 +593,53 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     console.log('Selected role:', this.selectedRole); // Debug log
     this.currentPage = 1; // Reset to first page
     this.loadActiveUsers();
+  }
+
+  formatFullName(details: any): string {
+    if (!details) return '';
+
+    const nameParts = [
+      details.Honorific,
+      details.FirstName,
+      // Only include middle initial if it exists and is not null
+      details.MiddleInitial ? details.MiddleInitial : '',
+      details.LastName,
+      details.NameExtension
+    ].filter(part => part && part !== 'null' && part !== '');
+
+    return nameParts.length > 0 ? nameParts.join(' ') : '';
+  }
+
+  sortData(column: string): void {
+    // If clicking the same column, toggle direction
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+
+    this.paginatedUsers.sort((a, b) => {
+      let comparison = 0;
+      
+      if (column === 'name') {
+        const nameA = this.formatUserName(a).toLowerCase();
+        const nameB = this.formatUserName(b).toLowerCase();
+        comparison = nameA.localeCompare(nameB);
+      }
+      
+      // Reverse if descending
+      return this.sortDirection === 'desc' ? -comparison : comparison;
+    });
+  }
+
+  private sortUsersByName(): void {
+    if (this.paginatedUsers) {
+      this.paginatedUsers.sort((a, b) => {
+        const nameA = this.formatUserName(a).toLowerCase();
+        const nameB = this.formatUserName(b).toLowerCase();
+        return nameA.localeCompare(nameB);
+      });
+    }
   }
 }

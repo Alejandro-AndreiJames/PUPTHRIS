@@ -68,7 +68,16 @@
         <tr class="bg-red-900 text-white">
           <th class="p-4">#</th>
           <th class="p-4">Fcode</th>
-          <th class="p-4">Name</th>
+          <th class="p-4 cursor-pointer" (click)="sortData('name')">
+            Name
+            <i class="fas" 
+               [ngClass]="{
+                 'fa-sort-alpha-down': sortColumn === 'name' && sortDirection === 'asc',
+                 'fa-sort-alpha-up': sortColumn === 'name' && sortDirection === 'desc',
+                 'fa-sort': sortColumn !== 'name'
+               }">
+            </i>
+          </th>
           <th class="p-4">Instructor Status</th>
           <th class="p-4">Department</th>
           <th class="p-4">Employment Type</th>
@@ -158,9 +167,7 @@
                   </tr>
                   <tr>
                     <th>Name:</th>
-                    <td>{{ (basicDetails?.Honorific || basicDetails?.FirstName || basicDetails?.MiddleInitial || basicDetails?.LastName || basicDetails?.NameExtension) ? 
-                           (basicDetails?.Honorific + ' ' + basicDetails?.FirstName + ' ' + basicDetails?.MiddleInitial + ' ' + basicDetails?.LastName + ' ' + basicDetails?.NameExtension).trim() : 
-                           'No information entered' }}</td>
+                    <td>{{ formatFullName(basicDetails) || 'No information entered' }}</td>
                   </tr>
                   <tr>
                     <th>Date of Birth:</th>
