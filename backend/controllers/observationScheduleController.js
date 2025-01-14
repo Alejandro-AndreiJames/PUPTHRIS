@@ -47,14 +47,17 @@ exports.createSchedule = async (req, res) => {
 // Get all schedules
 exports.getAllSchedules = async (req, res) => {
   try {
-    const { campusId } = req.query;
+    const { campusId, status, sortBy = 'date', sortOrder = 'asc' } = req.query;
     console.log('Raw campusId from query:', campusId);
+    console.log('Status filter:', status);
+    console.log('Sort by:', sortBy);
+    console.log('Sort order:', sortOrder);
     
     // Base where clauses
     let scheduleWhereClause = {};
     let userWhereClause = { isActive: true };
     
-    // Only add campus filter if campusId is valid
+    // Add campus filter if campusId is valid
     if (campusId && typeof campusId === 'string') {
       const parsedCampusId = parseInt(campusId, 10);
       if (!isNaN(parsedCampusId)) {
@@ -63,8 +66,32 @@ exports.getAllSchedules = async (req, res) => {
       }
     }
 
+    // Add status filter if provided
+    if (status && ['Pending', 'Completed', 'Cancelled'].includes(status)) {
+      scheduleWhereClause.Status = status;
+    }
+
+    // Define sorting options
+    let order = [];
+    switch(sortBy) {
+      case 'date':
+        order.push(['ScheduledDate', sortOrder.toUpperCase()]);
+        order.push(['StartTime', sortOrder.toUpperCase()]); // Secondary sort by time
+        break;
+      case 'time':
+        order.push(['StartTime', sortOrder.toUpperCase()]);
+        break;
+      case 'status':
+        order.push(['Status', sortOrder.toUpperCase()]);
+        break;
+      default:
+        order.push(['ScheduledDate', 'ASC']); // Default sorting
+        order.push(['StartTime', 'ASC']);
+    }
+
     console.log('Schedule where clause:', scheduleWhereClause);
     console.log('User where clause:', userWhereClause);
+    console.log('Order:', order);
 
     const schedules = await ObservationSchedule.findAll({
       where: scheduleWhereClause,
@@ -75,10 +102,8 @@ exports.getAllSchedules = async (req, res) => {
         where: userWhereClause,
         required: true
       }],
-      order: [['createdAt', 'DESC']]
+      order: order
     });
-
-    console.log('Found schedules:', schedules.length);
 
     const formattedSchedules = schedules.map(schedule => {
       const faculty = schedule.ObservedFaculty || {};

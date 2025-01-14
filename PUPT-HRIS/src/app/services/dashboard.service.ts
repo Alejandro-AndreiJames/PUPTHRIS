@@ -34,6 +34,13 @@ export interface GovernmentIdCounts {
   };
 }
 
+interface ProfileCompletionResponse {
+  completionPercentage: number;
+  incompleteSections: string[];
+  completedSections: number;
+  totalSections: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -76,8 +83,8 @@ export class DashboardService {
   }
 
   // New method to get profile completion percentage
-  getProfileCompletion(userId: number): Observable<{ completionPercentage: number; incompleteSections: string[] }> {
-    return this.http.get<{ completionPercentage: number; incompleteSections: string[] }>(
+  getProfileCompletion(userId: number): Observable<ProfileCompletionResponse> {
+    return this.http.get<ProfileCompletionResponse>(
       `${this.apiUrl}/profile-completion/${userId}`,
       { headers: this.getHeaders() }
     ).pipe(

@@ -16,6 +16,7 @@ const SpecialSkill = require('../models/specialSkillModel');
 const moment = require('moment');
 const EmploymentInformation = require('../models/employmentInformationModel');
 const ProfessionalLicense = require('../models/professionalLicenseModel');
+const Certification = require('../models/certificationModel');
 
 exports.getDashboardData = async (req, res) => {
   try {
@@ -288,17 +289,18 @@ exports.getProfileCompletion = async (req, res) => {
 
     // Fetch data from each model
     const basicDetails = await BasicDetails.findOne({ where: { UserID: userId } });
-    const specialSkills = await SpecialSkill.findAll({ where: { userID: userId } });
-    const voluntaryWork = await VoluntaryWork.findAll({ where: { userID: userId } });
     const achievementAwards = await AchievementAward.findAll({ where: { UserID: userId } });
     const personalDetails = await PersonalDetails.findOne({ where: { UserID: userId } });
-    const officershipMembership = await OfficerMembership.findAll({ where: { UserID: userId } });
+    const officershipMembership = await OfficerMembership.findAll({ where: { userID: userId } });
     const profileImage = await ProfileImage.findOne({ where: { UserID: userId } });
     const academicRank = await AcademicRank.findOne({ where: { UserID: userId } });
     const education = await Education.findAll({ where: { UserID: userId } });
+    const professionalLicense = await ProfessionalLicense.findAll({ where: { UserID: userId } });
+    const employmentInformation = await EmploymentInformation.findOne({ where: { UserID: userId } });
+    const certification = await Certification.findAll({ where: { UserID: userId } });
 
     // Define the total number of sections
-    const totalSections = 19;
+    const totalSections = 10; // Updated total sections count
     let completedSections = 0;
     const incompleteSections = [];
 
@@ -308,15 +310,21 @@ exports.getProfileCompletion = async (req, res) => {
     if (education.length > 0) completedSections++; else incompleteSections.push('Add your education details');
     if (profileImage) completedSections++; else incompleteSections.push('Add your profile image');
     if (academicRank) completedSections++; else incompleteSections.push('Add your academic rank');
-    if (specialSkills.length > 0) completedSections++; else incompleteSections.push('Add your special skills');
-    if (voluntaryWork.length > 0) completedSections++; else incompleteSections.push('Add your voluntary work');
     if (achievementAwards.length > 0) completedSections++; else incompleteSections.push('Add your achievement awards');
     if (officershipMembership.length > 0) completedSections++; else incompleteSections.push('Add your officership memberships');
+    if (professionalLicense.length > 0) completedSections++; else incompleteSections.push('Add your professional licenses');
+    if (employmentInformation) completedSections++; else incompleteSections.push('Add your employment information');
+    if (certification.length > 0) completedSections++; else incompleteSections.push('Add your certifications');
 
     // Calculate the completion percentage
-    const completionPercentage = (completedSections / totalSections) * 100;
+    const completionPercentage = Math.round((completedSections / totalSections) * 100);
 
-    res.status(200).json({ completionPercentage, incompleteSections });
+    res.status(200).json({ 
+      completionPercentage, 
+      incompleteSections,
+      completedSections,
+      totalSections
+    });
   } catch (error) {
     console.error('Error calculating profile completion:', error);
     res.status(500).json({ message: 'Internal Server Error' });

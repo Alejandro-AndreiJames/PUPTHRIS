@@ -453,6 +453,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   selectedDepartment: number | null = null;
   selectedImmunityStatus: 'immune' | 'pending' | null = null;
 
+  public completedSections: number = 0;
+  public totalSections: number = 0;
+
   constructor(
     private dashboardService: DashboardService,
     private cdr: ChangeDetectorRef,
@@ -850,8 +853,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.dashboardService.getProfileCompletion(this.userID).subscribe({
       next: (data) => {
         this.profileCompletionPercentage = data.completionPercentage;
-        this.gaugeValue = Math.round(this.profileCompletionPercentage);
-        this.incompleteTasks = data.incompleteSections; // Store incomplete tasks
+        this.gaugeValue = Math.round(data.completionPercentage);
+        this.incompleteTasks = data.incompleteSections;
+        this.completedSections = data.completedSections;
+        this.totalSections = data.totalSections;
       },
       error: (error) => {
         console.error('Error loading profile completion:', error);
@@ -863,50 +868,54 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.showAllTasks = !this.showAllTasks;
   }
 
-  getProfileMessage(): { title: string, description: string } {
-    if (this.gaugeValue === 0) {
+  getProfileMessage(): { title: string; description: string } {
+    const percentage = this.gaugeValue;
+    
+    if (percentage === 0) {
       return {
-        title: "Let's Get Started!",
-        description: "Begin building your professional profile today."
+        title: "Let's Get Started! 🚀",
+        description: "Your journey to a complete profile begins here."
       };
-    } else if (this.gaugeValue === 100) {
+    } else if (percentage <= 25) {
       return {
-        title: "Profile Complete!",
-        description: "Thank you for keeping your information up to date."
+        title: "Great First Steps! 👣",
+        description: `You've begun your profile journey. Keep going!`
       };
-    } else if (this.gaugeValue >= 50) {
+    } else if (percentage <= 50) {
       return {
-        title: "Making Great Progress!",
-        description: "You're more than halfway there. Keep going!"
+        title: "Making Progress! 💪",
+        description: "You're making progress on your profile. What's next?"
+      };
+    } else if (percentage <= 75) {
+      return {
+        title: "Almost There! ⭐",
+        description: "Your profile is taking shape nicely!"
+      };
+    } else if (percentage < 100) {
+      return {
+        title: "So Close! 🎯",
+        description: "Just a few more sections to perfect your profile!"
       };
     } else {
       return {
-        title: "Profile In Progress",
-        description: "Take a few moments to complete your profile information."
+        title: "Profile Complete! 🎉",
+        description: "Excellent work! Your profile is now complete."
       };
     }
   }
 
   // Map task descriptions to their corresponding routes
   private taskRoutes: { [key: string]: string } = {
-    'Add your work experience': '/work-experience',
-    'Add your contact details': '/contact-details',
-    'Add your family background': '/family-background',
-    'Add your profile image': '/basic-details',
-    'Add your special skills': '/other-information',
-    'Add your voluntary work': '/voluntary-works',
-    'Add your character references': '/character-reference',
     'Add your basic details': '/basic-details',
     'Add your personal details': '/personal-details',
     'Add your education details': '/educational-background',
-    'Add your children details': '/children',
-    'Add your signature': '/signature',
+    'Add your profile image': '/basic-details',
     'Add your academic rank': '/academic-rank',
-    'Add your memberships': '/officer-membership',
-    'Add your civil service eligibility': '/civil-service-eligibility',
-    'Answer additional questions': '/additional-question',
-    'Add your learning and development': '/learning-development',
-    'Add your achievement awards': '/outstanding-achievement'
+    'Add your achievement awards': '/outstanding-achievement',
+    'Add your officership memberships': '/officer-membership',
+    'Add your professional licenses': '/professional-license',
+    'Add your employment information': '/employment-information',
+    'Add your certifications': '/certification'
   };
 
   navigateToTask(task: string): void {

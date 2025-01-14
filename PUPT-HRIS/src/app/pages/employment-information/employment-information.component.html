@@ -65,9 +65,20 @@
               <input 
                 formControlName="AnnualSalary" 
                 class="input input-bordered w-full" 
+                [ngClass]="{'input-error': employmentForm.get('AnnualSalary')?.invalid && employmentForm.get('AnnualSalary')?.touched}"
                 type="number"
                 step="0.01"
               >
+              <label class="label" *ngIf="employmentForm.get('AnnualSalary')?.invalid && employmentForm.get('AnnualSalary')?.touched">
+                <span class="label-text-alt text-error">
+                  <ng-container *ngIf="employmentForm.get('AnnualSalary')?.errors?.['required']">
+                    Annual salary is required
+                  </ng-container>
+                  <ng-container *ngIf="employmentForm.get('AnnualSalary')?.errors?.['min']">
+                    Annual salary cannot be negative
+                  </ng-container>
+                </span>
+              </label>
             </div>
 
             <div class="form-control">
@@ -77,8 +88,16 @@
               <input 
                 formControlName="SalaryGradeStep" 
                 class="input input-bordered w-full" 
+                [ngClass]="{'input-error': employmentForm.get('SalaryGradeStep')?.invalid && employmentForm.get('SalaryGradeStep')?.touched}"
                 type="text"
               >
+              <label class="label" *ngIf="employmentForm.get('SalaryGradeStep')?.invalid && employmentForm.get('SalaryGradeStep')?.touched">
+                <span class="label-text-alt text-error">
+                  <ng-container *ngIf="employmentForm.get('SalaryGradeStep')?.errors?.['required']">
+                    Salary grade step is required
+                  </ng-container>
+                </span>
+              </label>
             </div>
 
             <div class="form-control">
@@ -88,9 +107,20 @@
               <input 
                 formControlName="RatePerHour" 
                 class="input input-bordered w-full" 
+                [ngClass]="{'input-error': employmentForm.get('RatePerHour')?.invalid && employmentForm.get('RatePerHour')?.touched}"
                 type="number"
                 step="0.01"
               >
+              <label class="label" *ngIf="employmentForm.get('RatePerHour')?.invalid && employmentForm.get('RatePerHour')?.touched">
+                <span class="label-text-alt text-error">
+                  <ng-container *ngIf="employmentForm.get('RatePerHour')?.errors?.['required']">
+                    Rate per hour is required
+                  </ng-container>
+                  <ng-container *ngIf="employmentForm.get('RatePerHour')?.errors?.['min']">
+                    Rate per hour cannot be negative
+                  </ng-container>
+                </span>
+              </label>
             </div>
 
             <div class="form-control">
@@ -100,8 +130,16 @@
               <input 
                 formControlName="DateOfLastPromotion" 
                 class="input input-bordered w-full" 
+                [ngClass]="{'input-error': employmentForm.get('DateOfLastPromotion')?.invalid && employmentForm.get('DateOfLastPromotion')?.touched}"
                 type="date"
               >
+              <label class="label" *ngIf="employmentForm.get('DateOfLastPromotion')?.invalid && employmentForm.get('DateOfLastPromotion')?.touched">
+                <span class="label-text-alt text-error">
+                  <ng-container *ngIf="employmentForm.get('DateOfLastPromotion')?.errors?.['required']">
+                    Date of last promotion is required
+                  </ng-container>
+                </span>
+              </label>
             </div>
 
             <div class="form-control">
@@ -111,8 +149,19 @@
               <input 
                 formControlName="InitialYearOfTeaching" 
                 class="input input-bordered w-full" 
+                [ngClass]="{'input-error': employmentForm.get('InitialYearOfTeaching')?.invalid && employmentForm.get('InitialYearOfTeaching')?.touched}"
                 type="number"
               >
+              <label class="label" *ngIf="employmentForm.get('InitialYearOfTeaching')?.invalid && employmentForm.get('InitialYearOfTeaching')?.touched">
+                <span class="label-text-alt text-error">
+                  <ng-container *ngIf="employmentForm.get('InitialYearOfTeaching')?.errors?.['required']">
+                    Initial year of teaching is required
+                  </ng-container>
+                  <ng-container *ngIf="employmentForm.get('InitialYearOfTeaching')?.errors?.['max']">
+                    Initial year of teaching cannot be greater than the current year
+                  </ng-container>
+                </span>
+              </label>
             </div>
           </div>
         </div>

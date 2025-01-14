@@ -12,7 +12,10 @@ exports.login = async (req, res) => {
 
   try {
     const user = await User.findOne({
-      where: { Email: email },
+      where: { 
+        Email: email,
+        isActive: true
+      },
       include: [
         {
           model: Department,
@@ -20,20 +23,20 @@ exports.login = async (req, res) => {
           attributes: ['DepartmentName'],
         },
         {
-          model: Role, // Include roles
-          through: { attributes: [] }, // No need for UserRole attributes
+          model: Role,
+          through: { attributes: [] },
         }
       ]
     });
 
     if (!user) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ message: 'Invalid email, password, or account is deactivated' });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.PasswordHash);
 
     if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ message: 'Invalid email, password, or account is deactivated' });
     }
 
     // Extract roles as an array of role names
