@@ -193,7 +193,12 @@
 
         <!-- Form Actions -->
         <div class="flex justify-end mt-6">
-          <button type="submit" class="btn btn-save mr-4">{{ currentEducationId ? 'Update' : 'Save' }}</button>
+          <button type="submit" 
+                  class="btn btn-save mr-4" 
+                  [disabled]="!educationForm.valid"
+                  [ngClass]="{'opacity-50 cursor-not-allowed': !educationForm.valid}">
+            {{ currentEducationId ? 'Update' : 'Save' }}
+          </button>
           <button type="button" class="btn btn-cancel" (click)="toggleForm()">Cancel</button>
         </div>
       </form>
