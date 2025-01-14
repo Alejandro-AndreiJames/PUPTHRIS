@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { CampusContextService } from './campus-context.service';
+import { map } from 'rxjs/operators';
 
 export interface ObservationSchedule {
   ScheduleID?: number;
@@ -46,11 +47,17 @@ export class ObservationScheduleService {
   }
 
   // Get all schedules
-  getAllSchedules(): Observable<any> {
+  getAllSchedules(status?: string, sortBy: string = 'date', sortOrder: string = 'asc'): Observable<any> {
     const campusId = this.campusContextService.getCampusId();
-    return this.http.get(`${this.apiUrl}?campusId=${campusId}`, { 
-      headers: this.getHeaders() 
-    });
+    let url = `${this.apiUrl}?campusId=${campusId}`;
+    
+    if (status) {
+      url += `&status=${status}`;
+    }
+    
+    url += `&sortBy=${sortBy}&sortOrder=${sortOrder}`;
+    
+    return this.http.get(url, { headers: this.getHeaders() });
   }
 
   // Get schedule by ID
@@ -106,5 +113,14 @@ export class ObservationScheduleService {
       headers,
       responseType: 'blob'  // Important for PDF download
     });
+  }
+
+  // Add this method
+  getAcademicYears(): Observable<string[]> {
+    return this.http.get<{success: boolean, data: string[]}>(`${this.apiUrl}/academic-years`, {
+      headers: this.getHeaders()
+    }).pipe(
+      map(response => response.data)
+    );
   }
 }

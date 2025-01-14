@@ -32,6 +32,19 @@ export class ObservationScheduleComponent implements OnInit {
   isLoading: boolean = true;
   showDeletePrompt: boolean = false;
   scheduleToDelete: number | null = null;
+  selectedStatus: string = '';
+  statusOptions = [
+    { value: '', label: 'All Status' },
+    { value: 'Pending', label: 'Pending' },
+    { value: 'Completed', label: 'Completed' },
+    { value: 'Cancelled', label: 'Cancelled' }
+  ];
+  sortBy: string = 'date';
+  sortOrder: string = 'asc';
+  sortOptions = [
+    { value: 'date', label: 'Sort by Date' },
+    { value: 'time', label: 'Sort by Time' }
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -126,9 +139,13 @@ export class ObservationScheduleComponent implements OnInit {
   private loadSchedules(): void {
     this.isLoading = true;
     if (this.isAdmin) {
-      this.scheduleService.getAllSchedules().subscribe({
+      this.scheduleService.getAllSchedules(
+        this.selectedStatus, 
+        this.sortBy, 
+        this.sortOrder
+      ).subscribe({
         next: (response) => {
-          this.schedules = response.data;
+          this.schedules = response.data || [];
           this.isLoading = false;
         },
         error: (error) => {
@@ -241,6 +258,15 @@ export class ObservationScheduleComponent implements OnInit {
         this.showToastNotification('Error downloading PDF', 'error');
       }
     });
+  }
+
+  onStatusChange(status: string): void {
+    this.selectedStatus = status;
+    this.loadSchedules();
+  }
+
+  onSortChange(): void {
+    this.loadSchedules();
   }
 
   ngOnInit(): void {
