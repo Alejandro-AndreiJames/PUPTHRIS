@@ -153,6 +153,15 @@ export class SettingsComponent implements OnInit {
       this.authService.changePassword(currentPassword, newPassword).subscribe({
         next: () => {
           this.showToastNotification('Password changed successfully!', 'success');
+          // Reset the form after successful password change
+          this.changePasswordForm.reset();
+          // Clear touched/dirty states
+          Object.keys(this.changePasswordForm.controls).forEach(key => {
+            const control = this.changePasswordForm.get(key);
+            control?.setErrors(null);
+            control?.markAsUntouched();
+            control?.markAsPristine();
+          });
         },
         error: () => {
           this.showToastNotification('Failed to change password. Please try again.', 'error');
