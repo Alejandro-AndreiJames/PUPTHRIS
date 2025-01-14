@@ -41,11 +41,11 @@ export class EmploymentInformationComponent implements OnInit {
     }
 
     this.employmentForm = this.fb.group({
-      AnnualSalary: [''],
-      SalaryGradeStep: [''],
-      RatePerHour: [''],
-      DateOfLastPromotion: [''],
-      InitialYearOfTeaching: [''],
+      AnnualSalary: ['', [Validators.required, Validators.min(0)]],
+      SalaryGradeStep: ['', Validators.required],
+      RatePerHour: ['', [Validators.required, Validators.min(0)]],
+      DateOfLastPromotion: ['', Validators.required],
+      InitialYearOfTeaching: ['', [Validators.required, Validators.max(new Date().getFullYear())]],
       UserID: [this.userId]
     });
   }
@@ -85,6 +85,16 @@ export class EmploymentInformationComponent implements OnInit {
   onSubmit(): void {
     if (this.employmentForm.valid) {
       const formData = this.employmentForm.value;
+      
+      const hasValue = Object.values(formData).some(value => 
+        value !== '' && value !== 0 && value !== null && value !== this.userId
+      );
+
+      if (!hasValue) {
+        this.showToastNotification('Please fill in at least one field', 'warning');
+        return;
+      }
+
       formData.UserID = this.userId;
 
       if (this.employmentInfo) {
@@ -112,6 +122,8 @@ export class EmploymentInformationComponent implements OnInit {
           }
         });
       }
+    } else {
+      this.showToastNotification('Please fill in all required fields correctly', 'error');
     }
   }
 
