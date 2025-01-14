@@ -441,9 +441,35 @@
                         [label]="''">
               </ngx-gauge>
               <div class="ml-4">
-                <p class="font-bold text-lg">{{ getProfileMessage().title }}</p>
-                <p class="text-sm">{{ getProfileMessage().description }}</p>
-                <p class="text-sm text-black mt-2">Please complete your profile to generate PDS</p>
+                <p class="font-bold text-xl text-maroon mb-1">{{ getProfileMessage().title }}</p>
+                <p class="text-sm text-gray-600 mb-2">{{ getProfileMessage().description }}</p>
+                <div class="flex flex-col text-sm space-y-2">
+                  <!-- Sections Left -->
+                  <div class="flex items-center">
+                    <i class="fas fa-tasks text-maroon mr-2"></i>
+                    <p class="font-medium text-gray-700">
+                      {{ totalSections - completedSections }} sections left to complete
+                    </p>
+                  </div>
+                  
+                  <!-- Progress -->
+                  <div class="flex items-center">
+                    <i class="fas fa-chart-line text-maroon mr-2"></i>
+                    <p class="text-gray-500">
+                      {{ completedSections }}/{{ totalSections }} sections completed
+                    </p>
+                  </div>
+
+                  <!-- Progress Bar (Optional) -->
+                  <div class="flex items-center mt-1">
+                    <i class="fas fa-check-circle text-maroon mr-2"></i>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                      <div class="bg-maroon h-2 rounded-full" 
+                           [style.width]="(completedSections / totalSections * 100) + '%'">
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -451,15 +477,40 @@
             <div class="border-t border-gray-200 my-4"></div>
 
             <div class="tasks">
-              <!-- First 3 Tasks (Always Visible) -->
+              <!-- Task Items -->
               <div *ngFor="let task of (showAllTasks ? incompleteTasks : incompleteTasks.slice(0, 3))" 
-                   class="task-item p-3 bg-maroon text-white rounded-lg shadow-sm mb-2 cursor-pointer transition-all duration-200 hover:bg-black"
+                   class="task-item bg-maroon hover:bg-black text-white rounded-lg mb-2 transition-all duration-200"
                    (click)="navigateToTask(task)">
-                <div class="flex items-center justify-between">
-                  <span>{{ task }}</span>
-                  <span class="text-white">→</span>
+                <div class="flex items-center justify-between p-4 cursor-pointer">
+                  <div class="flex items-center space-x-3">
+                    <!-- Task Icons -->
+                    <i class="fas" [ngClass]="{
+                      'fa-image': task.includes('profile image'),
+                      'fa-trophy': task.includes('achievement awards'),
+                      'fa-users': task.includes('officership memberships'),
+                      'fa-user-circle': task.includes('basic details'),
+                      'fa-id-card': task.includes('personal details'),
+                      'fa-graduation-cap': task.includes('education'),
+                      'fa-certificate': task.includes('certification'),
+                      'fa-star': task.includes('academic rank'),
+                      'fa-tools': task.includes('special skills'),
+                      'fa-hands-helping': task.includes('voluntary work'),
+                      'fa-id-badge': task.includes('professional'),
+                      'fa-briefcase': task.includes('employment')
+                    }"></i>
+                    <span>{{ task }}</span>
+                  </div>
+                  <i class="fas fa-arrow-right"></i>
                 </div>
               </div>
+
+              <!-- Show More Button -->
+              <button *ngIf="incompleteTasks.length > 3" 
+                      (click)="toggleTasksView()"
+                      class="flex items-center space-x-2 text-maroon hover:text-black transition-colors duration-200 mt-4 font-medium">
+                <i class="fas" [ngClass]="showAllTasks ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                <span>{{ showAllTasks ? 'Show Less' : 'Show More' }}</span>
+              </button>
             </div>
           </div>
         </div>
