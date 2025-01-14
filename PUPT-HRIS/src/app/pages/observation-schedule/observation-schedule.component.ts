@@ -43,7 +43,8 @@ export class ObservationScheduleComponent implements OnInit {
   sortOrder: string = 'asc';
   sortOptions = [
     { value: 'date', label: 'Sort by Date' },
-    { value: 'time', label: 'Sort by Time' }
+    { value: 'time', label: 'Sort by Time' },
+    { value: 'status', label: 'Sort by Status' }
   ];
 
   constructor(
@@ -79,13 +80,24 @@ export class ObservationScheduleComponent implements OnInit {
       console.log('Token Decoded:', decoded);
     }
 
-    // Generate academic years (current year and next 2 years)
-    const currentYear = new Date().getFullYear();
-    for (let i = 0; i < 3; i++) {
-      const year = currentYear + i;
+    // Generate academic years dynamically
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth(); // 0-11 where 0 is January
+
+    // If we're in the latter half of the year (July onwards), 
+    // start from current year, otherwise start from previous year
+    const startYear = currentMonth >= 6 ? currentYear : currentYear - 1;
+
+    // Generate 4 academic years (current + 3 future years)
+    this.academicYears = [];
+    for (let i = 0; i < 4; i++) {
+      const year = startYear + i;
       this.academicYears.push(`${year}-${year + 1}`);
     }
-    this.currentAcademicYear = `${currentYear}-${currentYear + 1}`;
+
+    // Set current academic year based on date
+    this.currentAcademicYear = `${startYear}-${startYear + 1}`;
 
     this.scheduleForm = this.initializeForm();
 
