@@ -157,3 +157,68 @@
   animation: fadeIn 0.4s ease-out forwards;
   opacity: 0;
 }
+
+/* Toast/Alert styles */
+.toast {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 9999;
+  animation: slideUp 0.3s ease-out;
+}
+
+.alert {
+  padding: 1rem;
+  border-radius: 0.375rem;
+  color: #ffffff;
+}
+
+.alert-success {
+  background-color: #10b981;
+}
+
+.alert-error {
+  background-color: #ef4444;
+}
+
+.alert-warning {
+  background-color: #f59e0b;
+}
+
+/* Toast animation */
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.toast, .alert {
+  animation: slideUp 0.3s ease-out;
+}
+
+.btn-save:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+
+.btn-save:disabled:hover {
+  background-color: #cccccc;
+  transform: none;
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+
+.btn-save:disabled:focus {
+  outline: none;
+  box-shadow: none;
+}

@@ -171,7 +171,12 @@
           </div>
 
           <div class="flex justify-end mt-6">
-            <button type="submit" class="btn btn-save mr-4">{{ currentAchievementId ? 'Update' : 'Add' }}</button>
+            <button type="submit" 
+                    class="btn btn-save mr-4" 
+                    [disabled]="achievementAwardForm.invalid"
+                    [ngClass]="{'opacity-50 cursor-not-allowed': achievementAwardForm.invalid}">
+              {{ currentAchievementId ? 'Update' : 'Add' }}
+            </button>
             <button type="button" class="btn btn-cancel" (click)="resetForm()">Cancel</button>
           </div>
         </form>

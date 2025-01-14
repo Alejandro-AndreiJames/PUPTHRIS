@@ -30,6 +30,9 @@ export class SettingsComponent implements OnInit {
   userID: number;
   userRole: string = '';
   isSuperAdmin = false;
+  showCurrentPassword = false;
+  showNewPassword = false;
+  showConfirmPassword = false;
 
   @Output() campusChanged = new EventEmitter<number>();
 
@@ -153,6 +156,15 @@ export class SettingsComponent implements OnInit {
       this.authService.changePassword(currentPassword, newPassword).subscribe({
         next: () => {
           this.showToastNotification('Password changed successfully!', 'success');
+          // Reset the form after successful password change
+          this.changePasswordForm.reset();
+          // Clear touched/dirty states
+          Object.keys(this.changePasswordForm.controls).forEach(key => {
+            const control = this.changePasswordForm.get(key);
+            control?.setErrors(null);
+            control?.markAsUntouched();
+            control?.markAsPristine();
+          });
         },
         error: () => {
           this.showToastNotification('Failed to change password. Please try again.', 'error');
@@ -176,5 +188,19 @@ export class SettingsComponent implements OnInit {
   // You might want to add a method to check if the campus selection should be visible
   showCampusSelection(): boolean {
     return this.userRole === 'admin' || this.userRole === 'superadmin';
+  }
+
+  togglePasswordVisibility(field: 'current' | 'new' | 'confirm'): void {
+    switch (field) {
+      case 'current':
+        this.showCurrentPassword = !this.showCurrentPassword;
+        break;
+      case 'new':
+        this.showNewPassword = !this.showNewPassword;
+        break;
+      case 'confirm':
+        this.showConfirmPassword = !this.showConfirmPassword;
+        break;
+    }
   }
 }
