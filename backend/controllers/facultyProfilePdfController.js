@@ -6,6 +6,8 @@ const User = require('../models/userModel');
 const Department = require('../models/departmentModel');
 const PersonalDetails = require('../models/personalDetailsModel');
 const BasicDetails = require('../models/basicDetailsModel');
+const Education = require('../models/educationModel');
+const ProfessionalLicense = require('../models/professionalLicenseModel');
 
 const generateFacultyProfilePdf = async (req, res) => {
     try {
@@ -54,12 +56,12 @@ const generateFacultyProfilePdf = async (req, res) => {
             console.log(`Creating row ${index + 1} for UserID: ${user.UserID}`);
             return [
                 (index + 1).toString(),
-                user.BasicDetail?.FacultyCode || '',
-                `${user.BasicDetail?.LastName || ''}, ${user.BasicDetail?.FirstName || ''} ${user.BasicDetail?.MiddleInitial || ''}`,
-                user.Department?.DepartmentName || '',
-                user.personalDetails?.CivilStatus || '',
-                user.BasicDetail?.DateOfBirth ? new Date(user.BasicDetail.DateOfBirth).toLocaleDateString() : '',
-                user.EmploymentType || ''
+                user.BasicDetail?.FacultyCode || 'N/A',
+                `${user.BasicDetail?.LastName || 'N/A'}, ${user.BasicDetail?.FirstName || 'N/A'} ${user.BasicDetail?.MiddleInitial || ''}`,
+                user.Department?.DepartmentName || 'N/A',
+                user.personalDetails?.CivilStatus || 'N/A',
+                user.BasicDetail?.DateOfBirth ? new Date(user.BasicDetail.DateOfBirth).toLocaleDateString() : 'N/A',
+                user.EmploymentType || 'N/A'
             ];
         });
 
@@ -154,6 +156,283 @@ const generateFacultyProfilePdf = async (req, res) => {
                 4: { cellWidth: 1.7 },    // Civil Status
                 5: { cellWidth: 1.7 },    // Date of Birth
                 6: { cellWidth: 2.3 }     // Employment Status
+            },
+            theme: 'grid'
+        });
+
+        // After the first table (personal info), add educational background for Bachelors
+        doc.addPage();
+
+        // Fetch educational background for all users (Bachelors only)
+        const educationData = await Promise.all(uniqueUsers.map(async (user, index) => {
+            const education = await Education.findAll({
+                where: {
+                    UserID: user.UserID,
+                    Level: 'Bachelors Degree'  // Filter for Bachelors degrees only
+                }
+            });
+            
+            // If no education records found, return one row with N/A
+            if (education.length === 0) {
+                return [[
+                    (index + 1).toString(),
+                    'N/A',
+                    'N/A',
+                    'N/A'
+                ]];
+            }
+            
+            // If education records exist, map them maintaining the same index
+            return education.map(edu => [
+                (index + 1).toString(),
+                edu.Course || 'N/A',
+                edu.NameOfSchool || 'N/A',
+                edu.YearGraduated || 'N/A'
+            ]);
+        }));
+
+        // Flatten the array of arrays
+        const flatEducationData = educationData.flat();
+
+        // Add the education table
+        doc.autoTable({
+            startY: 1,
+            margin: { left: 0.5, right: 0.5 },
+            headStyles: {
+                fillColor: false,
+                textColor: [0, 0, 0],
+                fontStyle: 'bold',
+                lineWidth: 0.01,
+                lineColor: [0, 0, 0]
+            },
+            head: [
+                [{ content: 'II. EDUCATIONAL BACKGROUND', colSpan: 4, styles: { halign: 'left' } }],
+                [{ content: "BACHELOR'S DEGREE", colSpan: 4, styles: { halign: 'left' } }],
+                ['#', 'COURSE TAKEN', 'COLLEGE/UNIVERSITY', 'YEAR GRADUATED']
+            ],
+            body: flatEducationData,
+            styles: {
+                fontSize: 8,
+                cellPadding: 0.05,
+                lineWidth: 0.01,
+                lineColor: [0, 0, 0]
+            },
+            columnStyles: {
+                0: { cellWidth: 0.5 },     // #
+                1: { cellWidth: 4.5 },       // Course
+                2: { cellWidth: 4.5 },       // School
+                3: { cellWidth: 3.5 }      // Year
+            },
+            theme: 'grid'
+        });
+
+        doc.addPage();
+
+        // After Bachelor's table, add Master's degree data
+        const masterEducationData = await Promise.all(uniqueUsers.map(async (user, index) => {
+            const education = await Education.findAll({
+                where: {
+                    UserID: user.UserID,
+                    Level: 'Masters'  // Filter for Masters degrees
+                }
+            });
+            
+            if (education.length === 0) {
+                return [[
+                    (index + 1).toString(),
+                    'N/A',
+                    'N/A',
+                    'N/A',
+                    'N/A',
+                    'N/A',
+                    'N/A'
+                ]];
+            }
+            
+            return education.map(edu => [
+                (index + 1).toString(),
+                edu.Course || 'N/A',
+                edu.NameOfSchool || 'N/A',
+                edu.MeansOfEducationSupport || 'N/A',
+                edu.FundingAgency || 'N/A',
+                edu.DurationOfFundingSupport || 'N/A',
+                edu.YearGraduated || 'N/A'
+            ]);
+        }));
+
+        const flatMasterEducationData = masterEducationData.flat();
+
+        // Add the Master's education table
+        doc.autoTable({
+            startY: 1,
+            margin: { left: 0.5, right: 0.5 },
+            headStyles: {
+                fillColor: [169, 169, 169],
+                textColor: [0, 0, 0],
+                fontStyle: 'bold',
+                lineWidth: 0.01,
+                lineColor: [0, 0, 0]
+            },
+            head: [
+                [{ content: "MASTER'S DEGREE", colSpan: 6, styles: { halign: 'left', fillColor: [211, 211, 211] } }],
+                ['#', "MASTER'S DEGREE", 'COLLEGE/UNIVERSITY', 'MEANS OF EDUCATION SUPPORT', 'FUNDING AGENCY', 'YEAR GRADUATED']
+            ],
+            body: flatMasterEducationData.map(row => [
+                row[0],          // #
+                row[1],          // Master's Degree
+                row[2],          // College/University
+                row[3],          // Means of Education
+                row[4],          // Funding Agency
+                row[6]           // Year Graduated (removed Duration)
+            ]),
+            styles: {
+                fontSize: 8,
+                cellPadding: 0.05,
+                lineWidth: 0.01,
+                lineColor: [0, 0, 0]
+            },
+            columnStyles: {
+                0: { cellWidth: 0.5 },      // #
+                1: { cellWidth: 2.5 },      // Master's Degree
+                2: { cellWidth: 3 },      // College/University
+                3: { cellWidth: 3 },      // Means of Education
+                4: { cellWidth: 2.5 },      // Funding Agency
+                5: { cellWidth: 1.5 }       // Year Graduated
+            },
+            theme: 'grid'
+        });
+
+        // After the first table (personal info), add educational background for Bachelors
+        doc.addPage();
+
+        // Fetch Doctoral education data first
+        const doctoralEducationData = await Promise.all(uniqueUsers.map(async (user, index) => {
+            const education = await Education.findAll({
+                where: {
+                    UserID: user.UserID,
+                    Level: 'Doctoral'  // Filter for Doctoral degrees
+                }
+            });
+            
+            if (education.length === 0) {
+                return [[
+                    (index + 1).toString(),
+                    'N/A',
+                    'N/A',
+                    'N/A',
+                    'N/A',
+                    'N/A',
+                    'N/A',
+                    'N/A'
+                ]];
+            }
+            
+            return education.map(edu => [
+                (index + 1).toString(),
+                edu.Course || 'N/A',
+                edu.NameOfSchool || 'N/A',
+                edu.MeansOfEducationSupport || 'N/A',
+                edu.FundingAgency || 'N/A',
+                edu.DurationOfFundingSupport || 'N/A',
+                edu.UnitsEarned || 'N/A',
+                edu.YearGraduated || 'N/A'
+            ]);
+        }));
+
+        const flatDoctoralEducationData = doctoralEducationData.flat();
+
+        // Then create the Doctoral table with the fetched data
+        doc.autoTable({
+            startY: 1,
+            margin: { left: 0.5, right: 0.5 },
+            headStyles: {
+                fillColor: [169, 169, 169],
+                textColor: [0, 0, 0],
+                fontStyle: 'bold',
+                lineWidth: 0.01,
+                lineColor: [0, 0, 0]
+            },
+            head: [
+                [{ content: 'DOCTORAL DEGREE', colSpan: 8, styles: { halign: 'left', fillColor: [211, 211, 211] } }],
+                ['#', 'DOCTORAL DEGREE', 'COLLEGE/UNIVERSITY', 'MEANS OF EDUCATION SUPPORT', 'FUNDING AGENCY', 'DURATION', 'UNITS EARNED', 'YEAR GRADUATED']
+            ],
+            body: flatDoctoralEducationData,  // Use the fetched data instead of empty values
+            styles: {
+                fontSize: 8,
+                cellPadding: 0.05,
+                lineWidth: 0.01,
+                lineColor: [0, 0, 0]
+            },
+            columnStyles: {
+                0: { cellWidth: 0.5 },      // #
+                1: { cellWidth: 1.5 },        // Doctoral Degree
+                2: { cellWidth: 2.5 },        // College/University
+                3: { cellWidth: 2.5 },      // Means of Education
+                4: { cellWidth: 2 },        // Funding Agency
+                5: { cellWidth: 1.5 },      // Duration
+                6: { cellWidth: 1 },      // Units Earned
+                7: { cellWidth: 1.5 }       // Year Graduated
+            },
+            theme: 'grid'
+        });
+
+        // After the first table (personal info), add educational background for Bachelors
+        doc.addPage();
+
+        // Fetch Professional License data
+        const professionalLicenseData = await Promise.all(uniqueUsers.map(async (user, index) => {
+            const licenses = await ProfessionalLicense.findAll({
+                where: {
+                    UserID: user.UserID
+                }
+            });
+            
+            if (licenses.length === 0) {
+                return [[
+                    (index + 1).toString(),
+                    'N/A',
+                    'N/A',
+                    'N/A'
+                ]];
+            }
+            
+            return licenses.map(license => [
+                (index + 1).toString(),
+                license.ProfessionalLicenseEarned || 'N/A',
+                license.YearObtained?.toString() || 'N/A',
+                license.ExpirationDate ? new Date(license.ExpirationDate).toLocaleDateString() : 'N/A'
+            ]);
+        }));
+
+        const flatProfessionalLicenseData = professionalLicenseData.flat();
+
+        // Add Professional License table
+        doc.autoTable({
+            startY: 1,
+            margin: { left: 0.5, right: 0.5 },
+            headStyles: {
+                fillColor: [169, 169, 169],
+                textColor: [0, 0, 0],
+                fontStyle: 'bold',
+                lineWidth: 0.01,
+                lineColor: [0, 0, 0]
+            },
+            head: [
+                [{ content: 'III. PROFESSIONAL CREDENTIALS', colSpan: 4, styles: { halign: 'left', fillColor: [211, 211, 211] } }],
+                ['#', 'PROFESSIONAL LICENSE EARNED', 'YEAR OBTAINED', 'EXPIRATION DATE']
+            ],
+            body: flatProfessionalLicenseData,
+            styles: {
+                fontSize: 8,
+                cellPadding: 0.05,
+                lineWidth: 0.01,
+                lineColor: [0, 0, 0]
+            },
+            columnStyles: {
+                0: { cellWidth: 0.5 },      // #
+                1: { cellWidth: 5 },        // Professional License
+                2: { cellWidth: 4 },        // Year Obtained
+                3: { cellWidth: 3.5 }         // Expiration Date
             },
             theme: 'grid'
         });

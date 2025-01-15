@@ -10,6 +10,7 @@ import { OfficershipMembershipService } from '../../services/officership-members
 import { ProfessionalLicenseService } from '../../services/professional-license.service';
 import { EmploymentInformationService } from '../../services/employment-information.service';
 import { CertificationService } from '../../services/certification.service';
+import { PdfService } from '../../services/pdf.service';
 
 import { User } from '../../model/user.model';
 import { BasicDetails } from '../../model/basic-details.model';
@@ -92,7 +93,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     private officershipMembershipService: OfficershipMembershipService,
     private professionalLicenseService: ProfessionalLicenseService,
     private employmentInformationService: EmploymentInformationService,
-    private certificationService: CertificationService
+    private certificationService: CertificationService,
+    private pdfService: PdfService
   ) {
     // Setup search debouncing in constructor
     this.searchSubject.pipe(
@@ -635,5 +637,17 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     };
 
     return formats[type.toLowerCase()] || type;
+  }
+
+  generatePdf(): void {
+    this.pdfService.generateFacultyProfilePdf().subscribe({
+      next: (blob: Blob) => {
+        this.pdfService.openPdfInNewTab(blob);
+      },
+      error: (error) => {
+        console.error('Error generating PDF:', error);
+        // Add error handling here
+      }
+    });
   }
 }
