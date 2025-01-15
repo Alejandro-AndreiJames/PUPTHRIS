@@ -286,12 +286,6 @@
             <!-- Permanent Address -->
             <div class="form-control">
               <h3 class="text-lg font-medium mb-2 text-gray-600">Permanent Address</h3>
-              <div class="mb-2">
-                <label class="inline-flex items-center">
-                  <input type="checkbox" (change)="onCopyResidentialToPermanent($event)" class="form-checkbox">
-                  <span class="ml-2">Same as Residential Address</span>
-                </label>
-              </div>
               <input formControlName="PermanentHouseBlockLot" class="input input-bordered w-full mt-2" placeholder="House/Block/Lot No." type="text">
               <input formControlName="PermanentStreet" class="input input-bordered w-full mt-2" placeholder="Street" type="text">
               <input formControlName="PermanentSubdivisionVillage" class="input input-bordered w-full mt-2" placeholder="Subdivision/Village" type="text">
@@ -299,6 +293,14 @@
               <input formControlName="PermanentCityMunicipality" class="input input-bordered w-full mt-2" placeholder="City/Municipality" type="text">
               <input formControlName="PermanentProvince" class="input input-bordered w-full mt-2" placeholder="Province" type="text">
               <input formControlName="PermanentZipCode" class="input input-bordered w-full mt-2" placeholder="Zip Code" type="text">
+              
+              <!-- Moved checkbox to bottom -->
+              <div class="mt-4">
+                <label class="inline-flex items-center cursor-pointer">
+                  <input type="checkbox" (change)="onCopyResidentialToPermanent($event)" class="form-checkbox">
+                  <span class="ml-2">Same as Residential Address</span>
+                </label>
+              </div>
             </div>
           </div>
         </div>
