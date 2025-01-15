@@ -6,6 +6,7 @@ import { environment } from '../../environments/environment';
 import { jwtDecode } from 'jwt-decode'; 
 import { CampusContextService } from './campus-context.service';
 import { UserService } from './user.service';
+import { TokenExpirationService } from './token-expiration.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,13 +16,17 @@ export class AuthService {
 
   constructor(
     private http: HttpClient, 
-    private injector: Injector
+    private injector: Injector,
+    private tokenExpirationService: TokenExpirationService
   ) {}
 
   login(email: string, password: string): Observable<{ token: string }> {
     return this.http.post<{ token: string }>(`${this.apiUrl}/login`, { email, password }).pipe(
       tap(response => {
         localStorage.setItem('token', response.token);
+        // Reset inactivity timer on login
+        this.tokenExpirationService.resetActivity();
+        
         // After storing token, initialize campus context
         const decodedToken = this.getDecodedToken();
         if (decodedToken?.userId) {

@@ -1,47 +1,94 @@
 import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { BehaviorSubject, timer } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { jwtDecode } from 'jwt-decode';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TokenExpirationService {
-  private warningThreshold = 5 * 60; // 5 minutes warning before expiration
+  private inactivityTimeout = 10 * 1000; // 1 minute for testing
+  private lastActivity: number = Date.now();
+  private inactivityTimer: any;
   private tokenExpiring = new BehaviorSubject<boolean>(false);
   tokenExpiring$ = this.tokenExpiring.asObservable();
+  private isLoginPage: boolean = false;
 
   constructor(private router: Router) {
-    timer(0, 60000).subscribe(() => { // Check every minute
-      this.checkTokenExpiration();
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: any) => {
+      this.isLoginPage = event.url === '/login';
+      
+      if (!this.isLoginPage) {
+        this.startInactivityMonitoring();
+      } else {
+        this.stopInactivityMonitoring();
+      }
+    });
+
+    timer(0, 5000).subscribe(() => {
+      if (!this.isLoginPage) {
+        this.checkInactivity();
+      }
     });
   }
 
-  checkTokenExpiration() {
-    const token = localStorage.getItem('token');
+  private startInactivityMonitoring() {
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
     
-    if (!token) return;
+    events.forEach(event => {
+      document.addEventListener(event, () => this.resetInactivityTimer());
+    });
 
-    try {
-      const decodedToken: any = jwtDecode(token);
-      const currentTime = Math.floor(Date.now() / 1000);
-      const timeUntilExpiration = decodedToken.exp - currentTime;
+    this.resetInactivityTimer();
+  }
 
-      if (timeUntilExpiration <= 0) {
-        localStorage.removeItem('token');
-        this.router.navigate(['/login']);
-        return;
-      }
+  private stopInactivityMonitoring() {
+    clearTimeout(this.inactivityTimer);
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    
+    events.forEach(event => {
+      document.removeEventListener(event, () => this.resetInactivityTimer());
+    });
+  }
 
-      if (timeUntilExpiration <= this.warningThreshold) {
-        this.tokenExpiring.next(true);
-      } else {
-        this.tokenExpiring.next(false);
-      }
+  private resetInactivityTimer() {
+    if (this.isLoginPage) return;
+    
+    this.lastActivity = Date.now();
+    clearTimeout(this.inactivityTimer);
+    
+    this.inactivityTimer = setTimeout(() => {
+      this.logoutDueToInactivity();
+    }, this.inactivityTimeout);
+  }
 
-    } catch (error) {
-      localStorage.removeItem('token');
-      this.router.navigate(['/login']);
+  private checkInactivity() {
+    if (this.isLoginPage) return;
+
+    const currentTime = Date.now();
+    const timeSinceLastActivity = currentTime - this.lastActivity;
+
+    if (timeSinceLastActivity >= this.inactivityTimeout) {
+      this.logoutDueToInactivity();
+    }
+  }
+
+  private logoutDueToInactivity() {
+    localStorage.removeItem('token');
+    this.tokenExpiring.next(true);
+    this.router.navigate(['/login']);
+  }
+
+  public closeWarning() {
+    this.tokenExpiring.next(false);
+  }
+
+  public resetActivity() {
+    if (!this.isLoginPage) {
+      this.resetInactivityTimer();
     }
   }
 }
