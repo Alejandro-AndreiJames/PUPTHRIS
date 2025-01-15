@@ -214,45 +214,51 @@
       </div>
 
       <!-- Immunity Eligible Faculty Section -->
-      <div *ngIf="section.id === 'immunity-eligible' && section.visible" class="bg-base-200 rounded-lg shadow-lg">
-        <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
-          <div class="flex justify-between items-center">
-            <div>
-              <h2 class="text-xl font-bold">Immunity Eligible Faculty</h2>
-              <p class="text-sm">Faculty members eligible for classroom observation immunity</p>
-            </div>
-            <button *ngIf="immunityEligibleFaculty.length > 3" 
-                    class="btn btn-sm bg-white text-black hover:bg-black"
-                    (click)="viewAllImmunityFaculty()">
-              View All Faculty
-            </button>
-          </div>
+      <div *ngIf="section.id === 'immunity-eligible' && section.visible" class="mt-8">
+        <div class="flex w-full flex-col">
+          <div class="divider divider-neutral divider-end">Immunity Eligible Faculty</div>
         </div>
         
-        <!-- Faculty Cards Grid -->
-        <div class="p-6">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div *ngFor="let faculty of immunityEligibleFaculty.slice(0, 3)" 
-                 class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
-              <div class="p-4">
-                <!-- Faculty Info -->
-                <h3 class="text-lg font-semibold mb-2">{{ faculty.Name }}</h3>
-                <p class="text-gray-600 text-sm mb-3">{{ faculty.Department }}</p>
-                
-                <!-- Status Badge -->
-                <div class="flex items-center justify-between">
-                  <span class="px-3 py-1 rounded-full text-sm"
-                        [ngClass]="faculty.outstandingCount >= 4 ? 
-                                  'bg-green-100 text-green-800' : 
-                                  'bg-yellow-100 text-yellow-800'">
-                    {{ faculty.outstandingCount >= 4 ? 'Immune' : 'Pending' }}
-                  </span>
+        <div class="bg-base-200 rounded-lg shadow-lg">
+          <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
+            <div class="flex justify-between items-center">
+              <div>
+                <h2 class="text-xl font-bold">Immunity Eligible Faculty</h2>
+                <p class="text-sm">Faculty members eligible for classroom observation immunity</p>
+              </div>
+              <button *ngIf="immunityEligibleFaculty.length > 3" 
+                      class="btn btn-sm bg-white text-black hover:bg-black"
+                      (click)="viewAllImmunityFaculty()">
+                View All Faculty
+              </button>
+            </div>
+          </div>
+          
+          <!-- Faculty Cards Grid -->
+          <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div *ngFor="let faculty of immunityEligibleFaculty.slice(0, 3)" 
+                   class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
+                <div class="p-4">
+                  <!-- Faculty Info -->
+                  <h3 class="text-lg font-semibold mb-2">{{ faculty.Name }}</h3>
+                  <p class="text-gray-600 text-sm mb-3">{{ faculty.Department }}</p>
                   
-                  <!-- View Analysis Button -->
-                  <button class="btn btn-sm bg-maroon text-white hover:bg-black"
-                          (click)="viewImmunityDetails(faculty)">
-                    View Analysis
-                  </button>
+                  <!-- Status Badge -->
+                  <div class="flex items-center justify-between">
+                    <span class="px-3 py-1 rounded-full text-sm"
+                          [ngClass]="faculty.outstandingCount >= 4 ? 
+                                    'bg-green-100 text-green-800' : 
+                                    'bg-yellow-100 text-yellow-800'">
+                      {{ faculty.outstandingCount >= 4 ? 'Immune' : 'Pending' }}
+                    </span>
+                    
+                    <!-- View Analysis Button -->
+                    <button class="btn btn-sm bg-maroon text-white hover:bg-black"
+                            (click)="viewImmunityDetails(faculty)">
+                      View Analysis
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
