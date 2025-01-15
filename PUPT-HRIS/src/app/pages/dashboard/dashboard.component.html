@@ -227,7 +227,7 @@
                 <p class="text-sm">Faculty members eligible for classroom observation immunity</p>
               </div>
               <button *ngIf="immunityEligibleFaculty.length > 3" 
-                      class="btn btn-sm bg-white text-black hover:bg-black"
+                      class="btn btn-sm bg-black text-white hover:bg-gray-800"
                       (click)="viewAllImmunityFaculty()">
                 View All Faculty
               </button>
@@ -903,20 +903,28 @@
 
       <!-- Pagination -->
       <div class="flex justify-center gap-2 mt-4">
-        <button class="btn btn-sm" 
+        <button class="btn btn-sm text-white"
+                [ngClass]="immunityCurrentPage === 1 ? 
+                           'bg-gray-400 cursor-not-allowed' : 
+                           'bg-maroon hover:bg-black'"
                 [disabled]="immunityCurrentPage === 1"
                 (click)="changeImmunityPage(immunityCurrentPage - 1)">
           Previous
         </button>
         
         <button *ngFor="let page of immunityPageNumbers" 
-                class="btn btn-sm"
-                [class.btn-active]="page === immunityCurrentPage"
+                class="btn btn-sm text-white"
+                [ngClass]="page === immunityCurrentPage ? 
+                           'bg-black hover:bg-black' : 
+                           'bg-maroon hover:bg-black'"
                 (click)="changeImmunityPage(page)">
           {{ page }}
         </button>
         
-        <button class="btn btn-sm" 
+        <button class="btn btn-sm text-white"
+                [ngClass]="immunityCurrentPage === immunityTotalPages ? 
+                           'bg-gray-400 cursor-not-allowed' : 
+                           'bg-maroon hover:bg-black'"
                 [disabled]="immunityCurrentPage === immunityTotalPages"
                 (click)="changeImmunityPage(immunityCurrentPage + 1)">
           Next
