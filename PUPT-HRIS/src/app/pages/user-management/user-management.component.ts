@@ -59,6 +59,9 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   private searchSubject = new Subject<string>();
   private readonly DEBOUNCE_TIME = 300; // 300ms delay
 
+  sortColumn: string = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
   constructor(
     private userManagementService: UserManagementService,
     private campusContextService: CampusContextService
@@ -409,5 +412,28 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     }
     
     this.checkForChanges(user);
+  }
+
+  sortData(column: string): void {
+    if (this.sortColumn === column) {
+      // If clicking the same column, toggle direction
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // If clicking a new column, set it with ascending direction
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+
+    // Sort the users array
+    this.paginatedUsers.sort((a, b) => {
+      let comparison = 0;
+      if (column === 'name') {
+        const nameA = `${a.Surname}, ${a.FirstName}`.toLowerCase();
+        const nameB = `${b.Surname}, ${b.FirstName}`.toLowerCase();
+        comparison = nameA.localeCompare(nameB);
+      }
+      
+      return this.sortDirection === 'asc' ? comparison : -comparison;
+    });
   }
 }
