@@ -81,6 +81,7 @@ const certificationRoutes = require("./routes/certificationRoutes");
 const webhookRoutes = require("./routes/webhookRoutes");
 const ticketRoutes = require("./routes/ticketRoutes");
 const observationScheduleRoutes = require("./routes/observationScheduleRoutes");
+const facultyProfileRoutes = require("./routes/facultyProfileRoutes");
 
 /**
  * Route Definitions
@@ -119,6 +120,7 @@ app.use("/api/academic-ranks", academicRanksRoutes);
 app.use("/api/department", departmentRoutes);
 app.use("/api/college-campuses", collegeCampusRoutes);
 app.use("/api/evaluation", evaluationRoutes);
+app.use("/api/faculty-profile", facultyProfileRoutes);
 
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/excel-import", excelImportRoutes);
