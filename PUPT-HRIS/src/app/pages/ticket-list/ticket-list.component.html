@@ -1,8 +1,15 @@
 <div class="container">
-  <!-- Header Section -->
   <div class="bg-maroon">
     <h1>Support Tickets Management</h1>
     <p class="header-subtitle">Manage and respond to user tickets</p>
+  </div>
+
+  <!-- Back Button -->
+  <div class="px-6 pt-4 pb-2">
+    <button routerLink="/settings" class="flex items-center text-gray-600 hover:text-gray-800 transition-colors">
+      <i class="fas fa-arrow-left mr-2"></i>
+      Back to Settings
+    </button>
   </div>
 
   <!-- Content Section -->
@@ -403,7 +410,6 @@
     </div>
   </div>
 </div>
-
 <!-- Delete Confirmation Modal -->
 <div *ngIf="showDeletePrompt" class="modal modal-open">
   <div class="modal-box max-w-md bg-white rounded-lg shadow-lg">
@@ -433,3 +439,4 @@
     </div>
   </div>
 </div>
+
