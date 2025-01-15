@@ -59,7 +59,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   private campusSubscription: Subscription | undefined;
   searchTerm: string = '';
   filteredUsers: User[] = [];
-  selectedRole: string = '';
   selectedEmploymentType: string = '';
   departments: any[] = [];
   selectedDepartment: string = '';
@@ -139,17 +138,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       limit: this.itemsPerPage,
       campusId: this.campusId
     };
-
-    // Modified role filter logic
-    if (this.selectedRole && this.selectedRole !== 'All Roles') {
-      // Make sure we're using the exact role name as stored in the database
-      params.role = this.selectedRole === 'Staff' ? 'staff' : 
-                    this.selectedRole === 'Faculty' ? 'faculty' : 
-                    this.selectedRole === 'Admin' ? 'admin' : 
-                    this.selectedRole.toLowerCase();
-      
-      console.log('Filtering by role:', params.role); // Debug log
-    }
 
     if (this.selectedDepartment) {
       params.departmentId = this.selectedDepartment;
@@ -588,13 +576,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Add this method to handle role selection changes
-  onRoleChange(): void {
-    console.log('Selected role:', this.selectedRole); // Debug log
-    this.currentPage = 1; // Reset to first page
-    this.loadActiveUsers();
-  }
-
   formatFullName(details: any): string {
     if (!details) return '';
 
@@ -641,5 +622,18 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         return nameA.localeCompare(nameB);
       });
     }
+  }
+
+  formatEmploymentType(type: string | null): string {
+    if (!type) return 'No information entered';
+    
+    const formats: { [key: string]: string } = {
+      'fulltime': 'Full-Time',
+      'parttime': 'Part-Time',
+      'temporary': 'Temporary',
+      'designee': 'Designee'
+    };
+
+    return formats[type.toLowerCase()] || type;
   }
 }

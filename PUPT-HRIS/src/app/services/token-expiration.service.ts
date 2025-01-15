@@ -8,8 +8,8 @@ import { jwtDecode } from 'jwt-decode';
   providedIn: 'root'
 })
 export class TokenExpirationService {
-  private inactivityTimeout = 60 * 1000;  // 1 minute inactivity for testing
-  private warningTime = 60 * 1000;        // Show warning 1 minute before token expires
+  private inactivityTimeout = 5 * 60 * 1000;  // 5 minutes inactivity
+  private warningTime = 3 * 60 * 1000;        // Show warning 3 minutes before token expires
   private lastActivity: number = Date.now();
   private inactivityTimer: any;
   private tokenExpiring = new BehaviorSubject<boolean>(false);
