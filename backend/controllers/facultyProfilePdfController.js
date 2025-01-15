@@ -8,6 +8,21 @@ const PersonalDetails = require('../models/personalDetailsModel');
 const BasicDetails = require('../models/basicDetailsModel');
 const Education = require('../models/educationModel');
 const ProfessionalLicense = require('../models/professionalLicenseModel');
+const EmploymentInformation = require('../models/employmentInformationModel');
+const AcademicRank = require('../models/academicRanksModel');
+
+const mapEmploymentStatus = (status) => {
+    if (!status) return 'N/A';
+    
+    const statusMap = {
+        'parttime': 'Part-time',
+        'designee': 'Designee',
+        'temporary': 'Temporary',
+        'fulltime': 'Full-time'
+    };
+
+    return statusMap[status.toLowerCase()] || 'N/A';
+};
 
 const generateFacultyProfilePdf = async (req, res) => {
     try {
@@ -53,7 +68,6 @@ const generateFacultyProfilePdf = async (req, res) => {
         // Format the data with null handling using uniqueUsers
         console.log('Formatting users data...');
         const facultyData = uniqueUsers.map((user, index) => {
-            console.log(`Creating row ${index + 1} for UserID: ${user.UserID}`);
             return [
                 (index + 1).toString(),
                 user.BasicDetail?.FacultyCode || 'N/A',
@@ -61,7 +75,7 @@ const generateFacultyProfilePdf = async (req, res) => {
                 user.Department?.DepartmentName || 'N/A',
                 user.personalDetails?.CivilStatus || 'N/A',
                 user.BasicDetail?.DateOfBirth ? new Date(user.BasicDetail.DateOfBirth).toLocaleDateString() : 'N/A',
-                user.EmploymentType || 'N/A'
+                mapEmploymentStatus(user.EmploymentType)
             ];
         });
 
@@ -131,15 +145,28 @@ const generateFacultyProfilePdf = async (req, res) => {
             startY: 2.2,
             margin: { left: 0.5, right: 0.5 },
             headStyles: {
-                fillColor: false,
+                fillColor: [169, 169, 169],
                 textColor: [0, 0, 0],
                 fontStyle: 'bold',
                 lineWidth: 0.01,
-                lineColor: [0, 0, 0]
+                lineColor: [0, 0, 0],
+                halign: 'center'
+            },
+            bodyStyles: {
+                textColor: [0, 0, 0],
+                fontStyle: 'normal'
             },
             head: [
-                [{ content: 'I. PERSONAL INFORMATION', colSpan: 7, styles: { halign: 'left' } }],
-                ['#', 'FACULTY CODE', 'NAME', 'DEPARTMENT', 'CIVIL STATUS', 'DATE OF BIRTH', 'EMPLOYMENT STATUS']
+                [{ content: 'I. PERSONAL INFORMATION', colSpan: 7, styles: { halign: 'left', fillColor: [211, 211, 211] } }],
+                [
+                    { content: '#', styles: { halign: 'center' } },
+                    { content: 'FACULTY CODE', styles: { halign: 'center' } },
+                    { content: 'NAME', styles: { halign: 'center' } },
+                    { content: 'DEPARTMENT', styles: { halign: 'center' } },
+                    { content: 'CIVIL STATUS', styles: { halign: 'center' } },
+                    { content: 'DATE OF BIRTH', styles: { halign: 'center' } },
+                    { content: 'EMPLOYMENT STATUS', styles: { halign: 'center' } }
+                ]
             ],
             body: facultyData,
             styles: {
@@ -199,16 +226,26 @@ const generateFacultyProfilePdf = async (req, res) => {
             startY: 1,
             margin: { left: 0.5, right: 0.5 },
             headStyles: {
-                fillColor: false,
+                fillColor: [169, 169, 169],
                 textColor: [0, 0, 0],
                 fontStyle: 'bold',
                 lineWidth: 0.01,
-                lineColor: [0, 0, 0]
+                lineColor: [0, 0, 0],
+                halign: 'center'
+            },
+            bodyStyles: {
+                textColor: [0, 0, 0],
+                fontStyle: 'normal'
             },
             head: [
-                [{ content: 'II. EDUCATIONAL BACKGROUND', colSpan: 4, styles: { halign: 'left' } }],
+                [{ content: 'II. EDUCATIONAL BACKGROUND', colSpan: 4, styles: { halign: 'left', fillColor: [211, 211, 211] } }],
                 [{ content: "BACHELOR'S DEGREE", colSpan: 4, styles: { halign: 'left' } }],
-                ['#', 'COURSE TAKEN', 'COLLEGE/UNIVERSITY', 'YEAR GRADUATED']
+                [
+                    { content: '#', styles: { halign: 'center' } },
+                    { content: 'COURSE TAKEN', styles: { halign: 'center' } },
+                    { content: 'COLLEGE/UNIVERSITY', styles: { halign: 'center' } },
+                    { content: 'YEAR GRADUATED', styles: { halign: 'center' } }
+                ]
             ],
             body: flatEducationData,
             styles: {
@@ -273,9 +310,20 @@ const generateFacultyProfilePdf = async (req, res) => {
                 lineWidth: 0.01,
                 lineColor: [0, 0, 0]
             },
+            bodyStyles: {
+                textColor: [0, 0, 0],
+                fontStyle: 'normal'
+            },
             head: [
                 [{ content: "MASTER'S DEGREE", colSpan: 6, styles: { halign: 'left', fillColor: [211, 211, 211] } }],
-                ['#', "MASTER'S DEGREE", 'COLLEGE/UNIVERSITY', 'MEANS OF EDUCATION SUPPORT', 'FUNDING AGENCY', 'YEAR GRADUATED']
+                [
+                    { content: '#', styles: { halign: 'center' } },
+                    { content: "MASTER'S DEGREE", styles: { halign: 'center' } },
+                    { content: 'COLLEGE/UNIVERSITY', styles: { halign: 'center' } },
+                    { content: 'MEANS OF EDUCATION SUPPORT', styles: { halign: 'center' } },
+                    { content: 'FUNDING AGENCY', styles: { halign: 'center' } },
+                    { content: 'YEAR GRADUATED', styles: { halign: 'center' } }
+                ]
             ],
             body: flatMasterEducationData.map(row => [
                 row[0],          // #
@@ -352,9 +400,22 @@ const generateFacultyProfilePdf = async (req, res) => {
                 lineWidth: 0.01,
                 lineColor: [0, 0, 0]
             },
+            bodyStyles: {
+                textColor: [0, 0, 0],
+                fontStyle: 'normal'
+            },
             head: [
                 [{ content: 'DOCTORAL DEGREE', colSpan: 8, styles: { halign: 'left', fillColor: [211, 211, 211] } }],
-                ['#', 'DOCTORAL DEGREE', 'COLLEGE/UNIVERSITY', 'MEANS OF EDUCATION SUPPORT', 'FUNDING AGENCY', 'DURATION', 'UNITS EARNED', 'YEAR GRADUATED']
+                [
+                    { content: '#', styles: { halign: 'center' } },
+                    { content: 'DOCTORAL DEGREE', styles: { halign: 'center' } },
+                    { content: 'COLLEGE/UNIVERSITY', styles: { halign: 'center' } },
+                    { content: 'MEANS OF EDUCATION SUPPORT', styles: { halign: 'center' } },
+                    { content: 'FUNDING AGENCY', styles: { halign: 'center' } },
+                    { content: 'DURATION', styles: { halign: 'center' } },
+                    { content: 'UNITS EARNED', styles: { halign: 'center' } },
+                    { content: 'YEAR GRADUATED', styles: { halign: 'center' } }
+                ]
             ],
             body: flatDoctoralEducationData,  // Use the fetched data instead of empty values
             styles: {
@@ -417,9 +478,18 @@ const generateFacultyProfilePdf = async (req, res) => {
                 lineWidth: 0.01,
                 lineColor: [0, 0, 0]
             },
+            bodyStyles: {
+                textColor: [0, 0, 0],
+                fontStyle: 'normal'
+            },
             head: [
                 [{ content: 'III. PROFESSIONAL CREDENTIALS', colSpan: 4, styles: { halign: 'left', fillColor: [211, 211, 211] } }],
-                ['#', 'PROFESSIONAL LICENSE EARNED', 'YEAR OBTAINED', 'EXPIRATION DATE']
+                [
+                    { content: '#', styles: { halign: 'center' } },
+                    { content: 'PROFESSIONAL LICENSE EARNED', styles: { halign: 'center' } },
+                    { content: 'YEAR OBTAINED', styles: { halign: 'center' } },
+                    { content: 'EXPIRATION DATE', styles: { halign: 'center' } }
+                ]
             ],
             body: flatProfessionalLicenseData,
             styles: {
@@ -436,6 +506,149 @@ const generateFacultyProfilePdf = async (req, res) => {
             },
             theme: 'grid'
         });
+
+        // After the first table (personal info), add educational background for Bachelors
+        doc.addPage();
+
+        // Fetch Employment Information data with Academic Rank
+        const employmentData = await Promise.all(uniqueUsers.map(async (user, index) => {
+            const employment = await EmploymentInformation.findOne({
+                where: {
+                    UserID: user.UserID
+                }
+            });
+            
+            const academicRank = await AcademicRank.findOne({
+                where: {
+                    UserID: user.UserID
+                }
+            });
+            
+            const formatCurrency = (amount) => {
+                if (!amount) return 'N/A';
+                // Remove the ± symbol if present and convert to number
+                const cleanAmount = amount.toString().replace('±', '');
+                const value = Number(cleanAmount);
+                const formattedSalary = `P ${value.toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })}`;
+                return formattedSalary;
+            };
+            
+            return [[
+                (index + 1).toString(),
+                academicRank?.Rank || 'N/A',
+                formatCurrency(employment?.AnnualSalary),
+                employment?.SalaryGradeStep || 'N/A',
+                formatCurrency(employment?.RatePerHour),
+                employment?.DateOfLastPromotion ? new Date(employment.DateOfLastPromotion).toLocaleDateString() : 'N/A',
+                employment?.InitialYearOfTeaching?.toString() || 'N/A'
+            ]];
+        }));
+
+        const flatEmploymentData = employmentData.flat();
+
+        // Add Employment Details table
+        doc.autoTable({
+            startY: 1,
+            margin: { left: 0.5, right: 0.5 },
+            headStyles: {
+                fillColor: [169, 169, 169],
+                textColor: [0, 0, 0],
+                fontStyle: 'bold',
+                lineWidth: 0.01,
+                lineColor: [0, 0, 0]
+            },
+            bodyStyles: {
+                textColor: [0, 0, 0],
+                fontStyle: 'normal'
+            },
+            head: [
+                [{ content: 'IV. EMPLOYMENT DETAILS', colSpan: 7, styles: { halign: 'left', fillColor: [211, 211, 211] } }],
+                    [
+                        { content: '#', styles: { halign: 'center' } },
+                        { content: 'RANK', styles: { halign: 'center' } },
+                        { content: 'ANNUAL SALARY', styles: { halign: 'center' } },
+                        { content: 'SALARY GRADE', styles: { halign: 'center' } },
+                        { content: 'RATE PER HOUR', styles: { halign: 'center' } },
+                        { content: 'DATE OF LAST PROMOTION', styles: { halign: 'center' } },
+                        { content: 'INITIAL YEAR OF TEACHING', styles: { halign: 'center' } }
+                    ]
+            ],
+            body: flatEmploymentData,
+            styles: {
+                fontSize: 8,
+                cellPadding: 0.05,
+                lineWidth: 0.01,
+                lineColor: [0, 0, 0]
+            },
+            columnStyles: {
+                0: { cellWidth: 0.5 },      // #
+                1: { cellWidth: 3 },        // Rank
+                2: { cellWidth: 2.5 },      // Annual Salary
+                3: { cellWidth: 2.5 },      // Salary Grade
+                4: { cellWidth: 2 },        // Rate per Hour
+                5: { cellWidth: 1.5 },      // Date of Last Promotion
+                6: { cellWidth: 1 }       // Initial Year of Teaching
+            },
+            theme: 'grid'
+        });
+
+        
+        const logoPath3 = path.join(__dirname, '../assets/stamp.jpg');
+        const logoData3 = fs.readFileSync(logoPath3);
+        const logoBase643 = logoData3.toString('base64');
+    
+        // Function to add footer
+        const addFooter = (doc) => {
+            // Set starting Y position near bottom of page
+            const footerY = doc.internal.pageSize.height - 1; // 1 inch from bottom
+
+            // Contact details in Helvetica 8pt
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            doc.text('General Santos Ave., Lower Bicutan, Taguig City, Philippines 1632', 0.5, footerY);
+            doc.text('Direct Line: (02) 8837 5858 to 60', 0.5, footerY + 0.15);
+            
+            // Website and email with hyperlink styling
+            doc.text('Website: ', 0.5, footerY + 0.3);
+            doc.setTextColor(0, 0, 255); // Blue color for links
+            doc.text('www.pup.edu.ph', 0.9, footerY + 0.3);
+            doc.setTextColor(0); // Reset to black
+            doc.text(' | Email: ', 1.8, footerY + 0.3);
+            doc.setTextColor(0, 0, 255);
+            doc.text('taguig@pup.edu.ph', 2.3, footerY + 0.3);
+            doc.setTextColor(0);
+
+            // The Country's 1st Polytechnicu in Times New Roman 15pt
+            doc.setFont('times', 'normal');
+            doc.setFontSize(15);
+            doc.text('THE COUNTRY\'S 1st POLYTECHNICU', 0.5, footerY + 0.5);
+
+
+            // Add stamp
+            doc.addImage(
+                `data:image/jpg;base64,${logoBase643}`,
+                'JPEG',
+                10,
+                footerY - 0.4,
+                2.8,
+                1.13
+            );
+        };
+
+        // After your table generation code, check if there's enough space for the footer
+        const finalY = doc.lastAutoTable.finalY || doc.internal.pageSize.height - 3;
+        const requiredSpace = 2.5; // Approximate space needed for footer in inches
+
+        if (finalY + requiredSpace > doc.internal.pageSize.height - 0.5) {
+            // Not enough space, add new page
+            doc.addPage();
+        }
+
+        // Add the footer
+        addFooter(doc);
 
         // Generate and send PDF
         const pdfBuffer = doc.output('arraybuffer');

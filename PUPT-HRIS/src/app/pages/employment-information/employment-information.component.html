@@ -13,7 +13,7 @@
           <!-- Employment Information -->
           <div class="flex flex-col pb-2 border-b border-gray-200">
             <span class="text-gray-600 font-medium text-sm">Annual Salary</span>
-            <span class="text-gray-900 font-semibold">{{ employmentInfo.AnnualSalary || 'No Information Entered' }}</span>
+            <span class="text-gray-900 font-semibold">₱{{ employmentInfo.AnnualSalary ? (employmentInfo.AnnualSalary | number:'1.2-2') : 'No Information Entered' }}</span>
           </div>
           <div class="flex flex-col pb-2 border-b border-gray-200">
             <span class="text-gray-600 font-medium text-sm">Salary Grade Step</span>
@@ -21,7 +21,7 @@
           </div>
           <div class="flex flex-col pb-2 border-b border-gray-200">
             <span class="text-gray-600 font-medium text-sm">Rate per Hour</span>
-            <span class="text-gray-900 font-semibold">{{ employmentInfo.RatePerHour || 'No Information Entered' }}</span>
+            <span class="text-gray-900 font-semibold">₱{{ employmentInfo.RatePerHour ? (employmentInfo.RatePerHour | number:'1.2-2') : 'No Information Entered' }}</span>
           </div>
           <div class="flex flex-col pb-2 border-b border-gray-200">
             <span class="text-gray-600 font-medium text-sm">Date of Last Promotion</span>
