@@ -168,53 +168,33 @@
       </div>
 
       <!-- Academic Ranks Section -->
-      <div *ngIf="section.id === 'academic-ranks' && section.visible">
-        <div class="flex w-full flex-col mt-8">
-          <div class="divider divider-neutral divider-end">Academic Ranks Distribution</div>
-        </div>
+      <div class="flex w-full flex-col mt-8">
+        <div class="divider divider-neutral divider-end">Academic Ranks Distribution</div>
+      </div>
 
-        <div class="bg-base-200 rounded-lg shadow-lg w-full mt-3">
-          <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
-            <h2 class="text-xl font-bold">Academic Ranks</h2>
-          </div>
-          
-          <div class="p-6">
-            <div class="chart-wrapper academic-ranks-chart">
-              <canvas baseChart
-                      [data]="academicRankChartData"
-                      [options]="academicRankChartOptions"
-                      [type]="'bar'">
-              </canvas>
-            </div>
+      <div class="bg-base-200 rounded-lg shadow-lg w-full mt-3">
+        <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
+          <h2 class="text-xl font-bold">Academic Ranks</h2>
+        </div>
+        
+        <div class="p-6">
+          <div class="chart-wrapper academic-ranks-chart">
+            <canvas baseChart
+                    [data]="academicRankChartData"
+                    [options]="academicRankChartOptions"
+                    [type]="'bar'">
+            </canvas>
           </div>
         </div>
       </div>
 
-      <!-- Government IDs Section -->
-      <div *ngIf="section.id === 'government-ids' && section.visible">
-        <div class="flex w-full flex-col mt-8">
-          <div class="divider divider-neutral divider-end">Government ID Distribution</div>
-        </div>
-
-        <div class="bg-base-200 rounded-lg shadow-lg w-full mt-3">
-          <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
-            <h2 class="text-xl font-bold">Government ID Distribution</h2>
-          </div>
-          
-          <div class="p-6">
-            <div class="chart-wrapper">
-              <canvas baseChart
-                [data]="governmentIdBarChart"
-                [options]="governmentIdBarChartOptions"
-                [type]="'bar'">
-              </canvas>
-            </div>
-          </div>
-        </div>
+      <!-- Add space and separate divider for Immunity section -->
+      <div class="flex w-full flex-col mt-8">
+        <div class="divider divider-neutral divider-end">Immunity Eligible Faculty</div>
       </div>
 
-      <!-- Immunity Eligible Faculty Section -->
-      <div *ngIf="section.id === 'immunity-eligible' && section.visible" class="bg-base-200 rounded-lg shadow-lg">
+      <!-- Immunity Eligible Faculty Section in its own container -->
+      <div class="bg-base-200 rounded-lg shadow-lg w-full mt-3">
         <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
           <div class="flex justify-between items-center">
             <div>
@@ -255,6 +235,29 @@
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Government IDs Section -->
+      <div *ngIf="section.id === 'government-ids' && section.visible">
+        <div class="flex w-full flex-col mt-8">
+          <div class="divider divider-neutral divider-end">Government ID Distribution</div>
+        </div>
+
+        <div class="bg-base-200 rounded-lg shadow-lg w-full mt-3">
+          <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
+            <h2 class="text-xl font-bold">Government ID Distribution</h2>
+          </div>
+          
+          <div class="p-6">
+            <div class="chart-wrapper">
+              <canvas baseChart
+                [data]="governmentIdBarChart"
+                [options]="governmentIdBarChartOptions"
+                [type]="'bar'">
+              </canvas>
             </div>
           </div>
         </div>
