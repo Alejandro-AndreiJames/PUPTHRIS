@@ -10,12 +10,29 @@ import { CommonModule } from '@angular/common';
   template: `
     <div *ngIf="showWarning" 
          class="fixed bottom-4 right-4 p-4 bg-[#FFF9E6] border-l-4 border-[#F5A623] rounded shadow-lg z-50 min-w-[400px]">
-      <div class="flex items-center justify-between">
+      <!-- Inactivity Logout Message -->
+      <div *ngIf="warningType === 'inactivity'" class="flex items-center justify-between">
         <div class="flex items-center gap-3">
           <i class="fas fa-exclamation-triangle text-[#F5A623]"></i>
           <div>
             <h4 class="font-semibold text-[#8B572A]">Session Expired</h4>
             <p class="text-[#8B572A]">You have been logged out due to inactivity.</p>
+          </div>
+        </div>
+        <button 
+          (click)="closeWarning()" 
+          class="p-2 text-gray-500 hover:text-gray-700 transition-colors">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Token Expiration Warning -->
+      <div *ngIf="warningType === 'expiration'" class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <i class="fas fa-clock text-[#F5A623]"></i>
+          <div>
+            <h4 class="font-semibold text-[#8B572A]">Session Warning</h4>
+            <p class="text-[#8B572A]">Your session will expire soon. Please login again to continue.</p>
           </div>
         </div>
         <div class="flex items-center gap-2">
@@ -36,6 +53,7 @@ import { CommonModule } from '@angular/common';
 })
 export class TokenExpirationWarningComponent implements OnInit {
   showWarning = false;
+  warningType: 'inactivity' | 'expiration' | null = null;
 
   constructor(
     private tokenService: TokenExpirationService,
@@ -46,6 +64,12 @@ export class TokenExpirationWarningComponent implements OnInit {
     this.tokenService.tokenExpiring$.subscribe(
       expiring => {
         this.showWarning = expiring;
+      }
+    );
+
+    this.tokenService.warningType$.subscribe(
+      type => {
+        this.warningType = type;
       }
     );
   }
