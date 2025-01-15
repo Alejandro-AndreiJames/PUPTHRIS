@@ -77,7 +77,7 @@ exports.forgotPassword = async (req, res) => {
       from: process.env.EMAIL_USERNAME,
       to: user.Email,
       subject: 'Password Reset Request',
-      text: `Hello ${user.FirstName},\n\nYou requested a password reset. Please use the following link to reset your password:\n\n${resetLink}\n\nIf you did not request this, please ignore this email.\n\nBest regards,\nPUP Taguig Human Resources System`,
+      text: `Hello ${user.FirstName},\n\nYou requested a password reset. Please use the following link to reset your password:\n\n${resetLink}\n\nIf you did not request this, please ignore this email.\n\nBest regards,\nPUP-FERS Team`,
     };
     console.log('Mail options prepared:', { ...mailOptions, text: 'Content hidden for privacy' });
 
@@ -125,7 +125,7 @@ const sendResetEmail = async (toEmail, resetLink, firstName) => {
       from: process.env.EMAIL_USERNAME,
       to: toEmail,
       subject: 'Password Reset Request',
-      text: `Hello ${firstName},\n\nYou requested a password reset. Please use the following link to reset your password:\n\n${resetLink}\n\nIf you did not request this, please ignore this email.\n\nBest regards,\nPUP Taguig Human Resources System`,
+      text: `Hello ${firstName},\n\nYou requested a password reset. Please use the following link to reset your password:\n\n${resetLink}\n\nIf you did not request this, please ignore this email.\n\nBest regards,\nPUP-FESR Team`,
     };
 
     await transporter.sendMail(mailOptions);
