@@ -130,10 +130,15 @@ exports.getAllUsers = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
-    const { campusId, search, departmentId, employmentType, role } = req.query;
+    const { campusId, search, departmentId, employmentType, role, isActive } = req.query;
 
     // Build where clause
     let whereClause = {};
+
+    // Add isActive filter if provided
+    if (isActive !== undefined) {
+      whereClause.isActive = isActive === 'true';
+    }
 
     if (campusId) {
       whereClause.CollegeCampusID = campusId;

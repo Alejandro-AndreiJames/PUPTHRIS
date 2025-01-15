@@ -24,6 +24,7 @@ interface GetUsersParams {
   employmentType?: string;
   search?: string;
   role?: string;
+  isActive?: string;
 }
 
 @Injectable({

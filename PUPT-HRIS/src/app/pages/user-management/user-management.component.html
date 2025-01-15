@@ -38,6 +38,15 @@
           {{ role.RoleName }}
         </option>
       </select>
+
+      <select 
+        [(ngModel)]="selectedStatus" 
+        (change)="onStatusChange()"
+        class="select select-bordered select-sm w-full max-w-xs">
+        <option value="">All Status</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
     </div>
 
     <!-- Loading State -->
