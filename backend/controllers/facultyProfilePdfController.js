@@ -26,12 +26,20 @@ const mapEmploymentStatus = (status) => {
 
 const generateFacultyProfilePdf = async (req, res) => {
     try {
-        console.log('Starting PDF generation process...');
-
-        // Fetch all users
-        console.log('Fetching data for all users...');
+        const { departmentId, employmentStatus } = req.query;
+        
+        // Build where clause with both department and employment status filters
+        let whereClause = {};
+        if (departmentId) {
+            whereClause.DepartmentID = departmentId;
+        }
+        if (employmentStatus) {
+            whereClause.EmploymentType = employmentStatus;
+        }
+        
         const users = await User.findAll({
             distinct: true,
+            where: whereClause,
             include: [{
                 model: Department,
                 as: 'Department',

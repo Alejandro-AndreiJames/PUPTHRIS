@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -11,8 +11,22 @@ export class PdfService {
 
   constructor(private http: HttpClient) { }
 
-  generateFacultyProfilePdf(): Observable<Blob> {
+  generateFacultyProfilePdf(filters?: { 
+    departmentId?: string,
+    employmentType?: string 
+  }): Observable<Blob> {
+    let params = new HttpParams();
+    
+    if (filters?.departmentId && filters.departmentId !== 'all') {
+      params = params.set('departmentId', filters.departmentId);
+    }
+
+    if (filters?.employmentType && filters.employmentType !== 'all') {
+      params = params.set('employmentStatus', filters.employmentType);
+    }
+
     return this.http.get(this.apiUrl, {
+      params,
       responseType: 'blob',
       headers: {
         'Accept': 'application/pdf',
@@ -24,5 +38,6 @@ export class PdfService {
   openPdfInNewTab(blob: Blob): void {
     const fileURL = URL.createObjectURL(blob);
     window.open(fileURL, '_blank');
+    URL.revokeObjectURL(fileURL);
   }
 }

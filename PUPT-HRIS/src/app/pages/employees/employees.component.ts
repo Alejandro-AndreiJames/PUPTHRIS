@@ -78,6 +78,11 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   private readonly DEBOUNCE_TIME = 300; // 300ms delay
   sortColumn: string = 'name';
   sortDirection: 'asc' | 'desc' = 'asc';
+  showGenerateOptions = false;
+  generateScope = {
+    departmentId: 'all',
+    employmentType: 'all'
+  };
 
   constructor(
     private campusContextService: CampusContextService,
@@ -105,6 +110,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       this.currentPage = 1; // Reset to first page
       this.loadActiveUsers();
     });
+
+    this.loadDepartments();
   }
 
   ngOnInit(): void {
@@ -394,15 +401,10 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   }
 
   loadDepartments(): void {
-    if (this.campusId === null) {
-      console.error('Cannot load departments: Campus ID is null');
-      return;
-    }
+    if (!this.campusId) return;
     
-    console.log('Loading departments for campus:', this.campusId);
     this.departmentService.getDepartments(this.campusId).subscribe({
       next: (departments) => {
-        console.log('Departments loaded successfully:', departments);
         this.departments = departments;
       },
       error: (error) => {
@@ -639,15 +641,43 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     return formats[type.toLowerCase()] || type;
   }
 
-  generatePdf(): void {
-    this.pdfService.generateFacultyProfilePdf().subscribe({
-      next: (blob: Blob) => {
-        this.pdfService.openPdfInNewTab(blob);
-      },
-      error: (error) => {
-        console.error('Error generating PDF:', error);
-        // Add error handling here
-      }
-    });
+  onGenerateClick() {
+    if (!this.departments.length) {
+      this.loadDepartments();
+    }
+    this.showGenerateOptions = true;
+  }
+
+  confirmGenerate() {
+    const filters: any = {};
+    
+    if (this.generateScope.departmentId !== 'all') {
+      filters.departmentId = this.generateScope.departmentId;
+    }
+    
+    if (this.generateScope.employmentType !== 'all') {
+      filters.employmentType = this.generateScope.employmentType;
+    }
+
+    this.pdfService.generateFacultyProfilePdf(filters)
+      .subscribe({
+        next: (blob: Blob) => {
+          this.pdfService.openPdfInNewTab(blob);
+          this.showGenerateOptions = false;
+        },
+        error: (error) => {
+          console.error('Error generating PDF:', error);
+          // Add error handling here
+        }
+      });
+  }
+
+  cancelGenerate() {
+    this.showGenerateOptions = false;
+    // Reset filters
+    this.generateScope = {
+      departmentId: 'all',
+      employmentType: 'all'
+    };
   }
 }
