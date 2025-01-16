@@ -91,20 +91,20 @@
           </div>
         </div>
 
+        <div class="form-control" *ngIf="showCollegeCampus">
+          <label class="label-text" for="CollegeCampusID">College Campus <span class="text-red-500">*</span></label>
+          <select id="CollegeCampusID" formControlName="CollegeCampusID" class="select input-bordered w-full">
+            <option value="" disabled selected>- Please Select Option -</option>
+            <option *ngFor="let campus of collegeCampuses" [value]="campus.CollegeCampusID">{{ campus.Name }}</option>
+          </select>
+        </div>
+
         <div class="form-control">
           <label class="label-text" for="DepartmentID">Department <span class="text-red-500">*</span></label>
           <select id="DepartmentID" formControlName="DepartmentID" class="select input-bordered w-full">
             <option value="" disabled selected>- Please Select Option -</option>
             <option value="na">Not Applicable</option>
             <option *ngFor="let department of departments" [value]="department.DepartmentID">{{ department.DepartmentName }}</option>
-          </select>
-        </div>
-
-        <div class="form-control" *ngIf="showCollegeCampus">
-          <label class="label-text" for="CollegeCampusID">College Campus <span class="text-red-500">*</span></label>
-          <select id="CollegeCampusID" formControlName="CollegeCampusID" class="select input-bordered w-full">
-            <option value="" disabled selected>- Please Select Option -</option>
-            <option *ngFor="let campus of collegeCampuses" [value]="campus.CollegeCampusID">{{ campus.Name }}</option>
           </select>
         </div>
       </div>
