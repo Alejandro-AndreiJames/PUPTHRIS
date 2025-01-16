@@ -26,19 +26,29 @@ const mapEmploymentStatus = (status) => {
 
 const generateFacultyProfilePdf = async (req, res) => {
     try {
-        const { departmentId, employmentStatus } = req.query;
+        const { departmentId, employmentStatus, campusId } = req.query;
         
-        // Build where clause with both department and employment status filters
-        let whereClause = {};
-        if (departmentId) {
+        console.log('Received query params:', { departmentId, employmentStatus, campusId }); // Debug log
+
+        // Build where clause with department, employment status, and campus filters
+        let whereClause = { isActive: true }; // Add isActive filter
+        
+        // Always include campus filter if provided, ensure it's a number
+        if (campusId) {
+            whereClause.CollegeCampusID = Number(campusId);
+        }
+        
+        if (departmentId && departmentId !== 'all') {
             whereClause.DepartmentID = departmentId;
         }
-        if (employmentStatus) {
+        
+        if (employmentStatus && employmentStatus !== 'all') {
             whereClause.EmploymentType = employmentStatus;
         }
+
+        console.log('Where clause:', whereClause); // Debug log
         
         const users = await User.findAll({
-            distinct: true,
             where: whereClause,
             include: [{
                 model: Department,
@@ -59,22 +69,18 @@ const generateFacultyProfilePdf = async (req, res) => {
             ]
         });
 
+        console.log('Found users:', users.length); // Debug log
+
         // Filter out duplicates based on UserID
         const uniqueUsers = Array.from(new Map(users.map(user => [user.UserID, user])).values());
-        
-        console.log(`Found ${uniqueUsers.length} unique users after filtering`);
 
-        // Log each unique user
-        uniqueUsers.forEach(user => {
-            console.log(`Processing UserID: ${user.UserID} - Name: ${user.BasicDetail?.LastName}, ${user.BasicDetail?.FirstName}`);
-        });
-
-        if (!uniqueUsers.length) {
-            throw new Error('No faculty members found');
+        if (!uniqueUsers || uniqueUsers.length === 0) {
+            return res.status(404).json({
+                message: 'No faculty members found for the specified criteria',
+                filters: { departmentId, employmentStatus, campusId }
+            });
         }
 
-        // Format the data with null handling using uniqueUsers
-        console.log('Formatting users data...');
         const facultyData = uniqueUsers.map((user, index) => {
             return [
                 (index + 1).toString(),
@@ -667,11 +673,11 @@ const generateFacultyProfilePdf = async (req, res) => {
         console.log('PDF generation completed successfully');
 
     } catch (error) {
-        console.error('Error in generateFacultyProfilePdf:', error);
+        console.error('Error details:', error);
         res.status(500).json({ 
-            message: 'Error generating PDF',
+            message: 'Error generating faculty profile PDF', 
             error: error.message,
-            stack: error.stack 
+            stack: error.stack // Include stack trace for debugging
         });
     }
 };

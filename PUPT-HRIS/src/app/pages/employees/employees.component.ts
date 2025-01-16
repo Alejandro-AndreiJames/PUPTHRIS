@@ -658,7 +658,12 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   }
 
   confirmGenerate() {
-    const filters: any = {};
+    const campusId = this.campusContextService.getCurrentCampusId();
+    if (!campusId) return;
+
+    const filters: any = {
+      campusId: Number(campusId) // Ensure campusId is a number
+    };
     
     if (this.generateScope.departmentId !== 'all') {
       filters.departmentId = this.generateScope.departmentId;
@@ -676,7 +681,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error generating PDF:', error);
-          // Add error handling here
         }
       });
   }
