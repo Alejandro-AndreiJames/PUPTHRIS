@@ -36,33 +36,24 @@
   <div class="divider"></div>
 
   <ng-container *ngIf="(userRole === 'admin' || userRole === 'superadmin') && isAdminView; else personalView">
-    <!-- Admin Dashboard Content -->
+    <!-- Single row of cards -->
     <div class="cards-container grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
-      <div class="card bg-gradient-to-r from-pink-400 to-pink-600 text-white p-6 rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition-all" 
-           (click)="showUserList('female')">
-        <h3 class="text-2xl font-bold">Female</h3>
-        <p class="text-6xl font-extrabold">{{ totalFemale }}</p>
-      </div>
-      <div class="card bg-gradient-to-r from-blue-400 to-blue-600 text-white p-6 rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition-all" 
-           (click)="showUserList('male')">
-        <h3 class="text-2xl font-bold">Male</h3>
-        <p class="text-6xl font-extrabold">{{ totalMale }}</p>
-      </div>
+      <!-- Faculty Card -->
       <div class="card bg-gradient-to-r from-purple-400 to-purple-600 text-white p-6 rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition-all" 
            (click)="showUserList('faculty')">
-        <h3 class="text-2xl font-bold">Faculty</h3>
+        <h3 class="text-2xl font-bold">Department</h3>
         <p class="text-6xl font-extrabold">{{ faculty }}</p>
       </div>
-    </div>
 
-    <!-- Add these cards after the existing cards in the cards-container -->
-    <div class="cards-container grid grid-cols-1 md:grid-cols-2 gap-4 mb-2 cursor-pointer">
-      <div class="card bg-gradient-to-r from-orange-400 to-red-600 text-white p-6 rounded-lg shadow-lg"
+      <!-- Doctorate Card -->
+      <div class="card bg-gradient-to-r from-orange-400 to-red-600 text-white p-6 rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition-all"
            (click)="showUserList('doctorate')">
         <h3 class="text-2xl font-bold">Doctorate</h3>
         <p class="text-6xl font-extrabold">{{ doctorate || 0 }}</p>
       </div>
-      <div class="card bg-gradient-to-r from-orange-400 to-red-600 text-white p-6 rounded-lg shadow-lg cursor-pointer"
+
+      <!-- Masters Card -->
+      <div class="card bg-gradient-to-r from-orange-400 to-red-600 text-white p-6 rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition-all"
            (click)="showUserList('masters')">
         <h3 class="text-2xl font-bold">Masters</h3>
         <p class="text-6xl font-extrabold">{{ masters || 0 }}</p>
@@ -112,12 +103,12 @@
       <!-- Faculty Evaluation Section -->
       <div *ngIf="section.id === 'faculty-evaluation' && section.visible">
         <div class="flex w-full flex-col mt-8">
-          <div class="divider divider-neutral divider-end">Faculty Evaluation Overview</div>
+          <div class="divider divider-neutral divider-end">Classroom Evaluation Overview</div>
         </div>
 
         <div class="bg-base-200 rounded-lg shadow-lg w-full mt-3">
           <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
-            <h2 class="text-xl font-bold">Faculty Evaluation Ratings</h2>
+            <h2 class="text-xl font-bold">Classroom Evaluation Ratings</h2>
           </div>
           
           <div class="p-6">
@@ -223,45 +214,51 @@
       </div>
 
       <!-- Immunity Eligible Faculty Section -->
-      <div *ngIf="section.id === 'immunity-eligible' && section.visible" class="bg-base-200 rounded-lg shadow-lg">
-        <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
-          <div class="flex justify-between items-center">
-            <div>
-              <h2 class="text-xl font-bold">Immunity Eligible Faculty</h2>
-              <p class="text-sm">Faculty members eligible for classroom observation immunity</p>
-            </div>
-            <button *ngIf="immunityEligibleFaculty.length > 3" 
-                    class="btn btn-sm bg-white text-black hover:bg-black"
-                    (click)="viewAllImmunityFaculty()">
-              View All Faculty
-            </button>
-          </div>
+      <div *ngIf="section.id === 'immunity-eligible' && section.visible" class="mt-8">
+        <div class="flex w-full flex-col">
+          <div class="divider divider-neutral divider-end">Immunity Eligible Faculty</div>
         </div>
         
-        <!-- Faculty Cards Grid -->
-        <div class="p-6">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div *ngFor="let faculty of immunityEligibleFaculty.slice(0, 3)" 
-                 class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
-              <div class="p-4">
-                <!-- Faculty Info -->
-                <h3 class="text-lg font-semibold mb-2">{{ faculty.Name }}</h3>
-                <p class="text-gray-600 text-sm mb-3">{{ faculty.Department }}</p>
-                
-                <!-- Status Badge -->
-                <div class="flex items-center justify-between">
-                  <span class="px-3 py-1 rounded-full text-sm"
-                        [ngClass]="faculty.outstandingCount >= 4 ? 
-                                  'bg-green-100 text-green-800' : 
-                                  'bg-yellow-100 text-yellow-800'">
-                    {{ faculty.outstandingCount >= 4 ? 'Immune' : 'Pending' }}
-                  </span>
+        <div class="bg-base-200 rounded-lg shadow-lg">
+          <div class="bg-maroon text-white p-4 rounded-t-lg w-full">
+            <div class="flex justify-between items-center">
+              <div>
+                <h2 class="text-xl font-bold">Immunity Eligible Faculty</h2>
+                <p class="text-sm">Faculty members eligible for classroom observation immunity</p>
+              </div>
+              <button *ngIf="immunityEligibleFaculty.length > 3" 
+                      class="btn btn-sm bg-black text-white hover:bg-gray-800"
+                      (click)="viewAllImmunityFaculty()">
+                View All Faculty
+              </button>
+            </div>
+          </div>
+          
+          <!-- Faculty Cards Grid -->
+          <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div *ngFor="let faculty of immunityEligibleFaculty.slice(0, 3)" 
+                   class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200">
+                <div class="p-4">
+                  <!-- Faculty Info -->
+                  <h3 class="text-lg font-semibold mb-2">{{ faculty.Name }}</h3>
+                  <p class="text-gray-600 text-sm mb-3">{{ faculty.Department }}</p>
                   
-                  <!-- View Analysis Button -->
-                  <button class="btn btn-sm bg-maroon text-white hover:bg-black"
-                          (click)="viewImmunityDetails(faculty)">
-                    View Analysis
-                  </button>
+                  <!-- Status Badge -->
+                  <div class="flex items-center justify-between">
+                    <span class="px-3 py-1 rounded-full text-sm"
+                          [ngClass]="faculty.outstandingCount >= 4 ? 
+                                    'bg-green-100 text-green-800' : 
+                                    'bg-yellow-100 text-yellow-800'">
+                      {{ faculty.outstandingCount >= 4 ? 'Immune' : 'Pending' }}
+                    </span>
+                    
+                    <!-- View Analysis Button -->
+                    <button class="btn btn-sm bg-maroon text-white hover:bg-black"
+                            (click)="viewImmunityDetails(faculty)">
+                      View Analysis
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -270,7 +267,7 @@
       </div>
 
       <!-- Immunity Details Modal -->
-      <div *ngIf="showImmunityDetailsModal && selectedFaculty" class="modal modal-open" style="z-index: 110;">
+      <div *ngIf="showImmunityDetailsModal && selectedFaculty" class="modal modal-open immunity-details-modal">
         <div class="modal-box w-11/12 max-w-5xl">
           <h3 class="text-xl font-bold">
             {{ selectedFaculty.Name }}
@@ -314,8 +311,8 @@
           </div>
 
           <!-- Immunity Analysis -->
-          <div class="bg-white rounded-lg shadow-md p-4 mt-4">
-            <h4 class="font-semibold mb-4">Immunity Analysis</h4>
+          <div class="mb-4">
+            <h4 class="font-bold mb-2">Immunity Analysis</h4>
             <ul class="space-y-2">
               <li class="flex items-center gap-2">
                 <i class="fas fa-check-circle text-green-600"></i>
@@ -337,40 +334,48 @@
           </div>
 
           <!-- Evaluation History -->
-          <div class="bg-white rounded-lg shadow-md p-4">
-            <h4 class="font-semibold mb-4">Evaluation History</h4>
-            <div class="overflow-x-auto">
-              <table class="table w-full">
-                <thead class="bg-maroon text-white">
-                  <tr>
-                    <th>Academic Year</th>
-                    <th>Semester</th>
-                    <th>Rating</th>
-                    <th>Score</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let eval of selectedFaculty.FacultyEvaluations; let i = index"
-                      [class.bg-gray-50]="i % 2 === 0">
-                    <td>{{ eval.AcademicYear }}</td>
-                    <td>{{ eval.Semester }}</td>
-                    <td>{{ eval.QualitativeRating }}</td>
-                    <td>{{ eval.TotalScore | number:'1.2-2' }}</td>
-                    <td>
-                      <span class="px-2 py-1 rounded-full text-xs"
-                            [ngClass]="{
-                              'bg-green-100 text-green-800': eval.QualitativeRating === 'Outstanding',
-                              'bg-blue-100 text-blue-800': eval.QualitativeRating === 'Very Satisfactory',
-                              'bg-yellow-100 text-yellow-800': eval.QualitativeRating === 'Satisfactory',
-                              'bg-red-100 text-red-800': eval.QualitativeRating === 'Fair' || eval.QualitativeRating === 'Poor'
-                            }">
+          <div class="evaluation-history mt-4">
+            <h4 class="font-bold mb-4">Evaluation History</h4>
+
+            <!-- Show table with header when there's data -->
+            <table *ngIf="selectedFaculty?.FacultyEvaluations?.length" class="table w-full">
+              <thead class="bg-maroon text-white">
+                <tr>
+                  <th>Academic Year</th>
+                  <th>Semester</th>
+                  <th>Rating</th>
+                  <th>Score</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let eval of selectedFaculty?.FacultyEvaluations; let i = index"
+                    [class.bg-gray-50]="i % 2 === 0">
+                  <td>{{ eval.AcademicYear }}</td>
+                  <td>{{ eval.Semester }}</td>
+                  <td>{{ eval.QualitativeRating }}</td>
+                  <td>{{ eval.TotalScore | number:'1.2-2' }}</td>
+                  <td>
+                    <span class="px-2 py-1 rounded-full text-xs"
+                          [ngClass]="{
+                            'bg-green-100 text-green-800': eval.QualitativeRating === 'Outstanding',
+                            'bg-blue-100 text-blue-800': eval.QualitativeRating === 'Very Satisfactory',
+                            'bg-yellow-100 text-yellow-800': eval.QualitativeRating === 'Satisfactory',
+                            'bg-red-100 text-red-800': eval.QualitativeRating === 'Fair' || eval.QualitativeRating === 'Poor'
+                          }">
                         {{ eval.QualitativeRating }}
                       </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Show no data message when there's no evaluation history -->
+            <div *ngIf="!selectedFaculty?.FacultyEvaluations?.length" 
+                 class="flex flex-col items-center justify-center py-8 text-gray-500 bg-gray-50 rounded-lg">
+              <i class="fas fa-history text-4xl mb-3"></i>
+              <p class="text-lg font-medium">No Evaluation History Available</p>
+              <p class="text-sm">This faculty member has no recorded evaluations yet.</p>
             </div>
           </div>
 
@@ -906,20 +911,28 @@
 
       <!-- Pagination -->
       <div class="flex justify-center gap-2 mt-4">
-        <button class="btn btn-sm" 
+        <button class="btn btn-sm text-white"
+                [ngClass]="immunityCurrentPage === 1 ? 
+                           'bg-gray-400 cursor-not-allowed' : 
+                           'bg-maroon hover:bg-black'"
                 [disabled]="immunityCurrentPage === 1"
                 (click)="changeImmunityPage(immunityCurrentPage - 1)">
           Previous
         </button>
         
         <button *ngFor="let page of immunityPageNumbers" 
-                class="btn btn-sm"
-                [class.btn-active]="page === immunityCurrentPage"
+                class="btn btn-sm text-white"
+                [ngClass]="page === immunityCurrentPage ? 
+                           'bg-black hover:bg-black' : 
+                           'bg-maroon hover:bg-black'"
                 (click)="changeImmunityPage(page)">
           {{ page }}
         </button>
         
-        <button class="btn btn-sm" 
+        <button class="btn btn-sm text-white"
+                [ngClass]="immunityCurrentPage === immunityTotalPages ? 
+                           'bg-gray-400 cursor-not-allowed' : 
+                           'bg-maroon hover:bg-black'"
                 [disabled]="immunityCurrentPage === immunityTotalPages"
                 (click)="changeImmunityPage(immunityCurrentPage + 1)">
           Next

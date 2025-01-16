@@ -10,7 +10,7 @@
 
 <!-- Research Papers Table -->
 <div class="overflow-x-auto w-full">
-  <!-- Add search bar -->
+  <!-- Search bar always visible -->
   <div class="mb-4">
     <input 
       type="text"
@@ -20,70 +20,99 @@
     >
   </div>
 
-  <table class="table w-full" [class.opacity-50]="isLoading">
-    <thead>
-      <tr>
-        <th class="p-4">Title</th>
-        <th class="p-4">Authors</th>
-        <th class="p-4">Publication Date</th>
-        <th class="p-4" *ngIf="viewMode === 'all'">Uploaded By</th>
-        <th class="p-4">Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let paper of researchPapers">
-        <td class="p-4">{{paper.Title}}</td>
-        <td class="p-4">{{paper.Authors}}</td>
-        <td class="p-4">{{paper.PublicationDate | date}}</td>
-        <td class="p-4" *ngIf="viewMode === 'all'">
-          {{paper.User?.Surname}}, {{paper.User?.FirstName}} 
-          {{paper.User?.NameExtension ? ' ' + paper.User?.NameExtension : ''}}
-        </td>
-        <td class="p-4">
-          <button class="btn btn-sm btn-info mr-2" (click)="onViewPaper(paper)">View</button>
-          <ng-container *ngIf="viewMode === 'personal'">
-            <button class="btn btn-sm btn-warning mr-2" (click)="editPaper(paper)">Edit</button>
-            <button class="btn btn-sm btn-error" (click)="deletePaper(paper)">Delete</button>
-          </ng-container>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <!-- Only show table and pagination if there are research papers -->
+  <ng-container *ngIf="researchPapers.length > 0">
+    <table class="table w-full" [class.opacity-50]="isLoading">
+      <thead>
+        <tr>
+          <th class="p-4">Title</th>
+          <th class="p-4">Authors</th>
+          <th class="p-4">Publication Date</th>
+          <th class="p-4" *ngIf="viewMode === 'all'">Uploaded By</th>
+          <th class="p-4">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let paper of researchPapers">
+          <td class="p-4">{{paper.Title}}</td>
+          <td class="p-4">{{paper.Authors}}</td>
+          <td class="p-4">{{paper.PublicationDate | date}}</td>
+          <td class="p-4" *ngIf="viewMode === 'all'">
+            {{paper.User?.Surname}}, {{paper.User?.FirstName}} 
+            {{paper.User?.NameExtension ? ' ' + paper.User?.NameExtension : ''}}
+          </td>
+          <td class="p-4 flex justify-center space-x-2">
+            <button 
+              class="btn-sm btn-view text-white" 
+              (click)="onViewPaper(paper)"
+              [disabled]="!paper.DocumentPath"
+              [class.opacity-50]="!paper.DocumentPath"
+              [class.cursor-not-allowed]="!paper.DocumentPath"
+            >
+              View
+            </button>
+            <ng-container *ngIf="viewMode === 'personal'">
+              <button class="btn btn-sm btn-warning mr-2" (click)="editPaper(paper)">Edit</button>
+              <button class="btn btn-sm btn-error" (click)="deletePaper(paper)">Delete</button>
+            </ng-container>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
-  <!-- Add pagination -->
-  <div class="flex justify-center mt-4 space-x-2">
-    <button 
-      class="btn bg-maroon text-white hover:bg-maroon-dark"
-      [disabled]="currentPage === 1"
-      (click)="previousPage()"
-    >
-      Previous
-    </button>
-    
-    <ng-container *ngFor="let page of [].constructor(totalPages); let i = index">
+    <!-- Pagination -->
+    <div class="flex justify-center mt-4 space-x-2">
       <button 
-        (click)="setPage(i + 1)" 
-        class="btn text-white" 
-        [class.bg-black]="i + 1 === currentPage"
-        [class.bg-maroon]="i + 1 !== currentPage"
-        [class.hover:bg-maroon-dark]="true"
+        class="btn bg-maroon text-white hover:bg-maroon-dark"
+        [disabled]="currentPage === 1"
+        (click)="previousPage()"
       >
-        {{ i + 1 }}
+        Previous
       </button>
-    </ng-container>
-    
-    <button 
-      class="btn bg-maroon text-white hover:bg-maroon-dark"
-      [disabled]="currentPage === totalPages"
-      (click)="nextPage()"
-    >
-      Next
-    </button>
-  </div>
+      
+      <ng-container *ngFor="let page of [].constructor(totalPages); let i = index">
+        <button 
+          (click)="setPage(i + 1)" 
+          class="btn text-white" 
+          [class.bg-black]="i + 1 === currentPage"
+          [class.bg-maroon]="i + 1 !== currentPage"
+          [class.hover:bg-maroon-dark]="true"
+        >
+          {{ i + 1 }}
+        </button>
+      </ng-container>
+      
+      <button 
+        class="btn bg-maroon text-white hover:bg-maroon-dark"
+        [disabled]="currentPage === totalPages"
+        (click)="nextPage()"
+      >
+        Next
+      </button>
+    </div>
 
-  <!-- Show total items -->
-  <div class="text-center text-sm text-gray-600 mt-2">
-    Total items: {{totalItems}}
+    <!-- Total items -->
+    <div class="text-center text-sm text-gray-600 mt-2">
+      Total items: {{totalItems}}
+    </div>
+  </ng-container>
+
+  <!-- Show this when no research papers -->
+  <div *ngIf="researchPapers.length === 0" class="text-center py-8">
+    <div class="flex flex-col items-center justify-center text-gray-500">
+      <svg xmlns="http://www.w3.org/2000/svg" 
+           class="h-16 w-16 mb-4" 
+           fill="none" 
+           viewBox="0 0 24 24" 
+           stroke="currentColor">
+        <path stroke-linecap="round" 
+              stroke-linejoin="round" 
+              stroke-width="2" 
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      <p class="text-lg font-semibold">No Research Papers Found</p>
+      <p class="text-sm">{{searchTerm ? 'Try adjusting your search terms' : 'No research papers have been added yet'}}</p>
+    </div>
   </div>
 </div>
 

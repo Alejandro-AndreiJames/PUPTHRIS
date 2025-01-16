@@ -46,6 +46,10 @@ export class ObservationScheduleComponent implements OnInit {
     { value: 'time', label: 'Sort by Time' },
     { value: 'status', label: 'Sort by Status' }
   ];
+  currentPage: number = 1;
+  itemsPerPage: number = 10;
+  totalPages: number = 0;
+  paginatedSchedules: any[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -158,6 +162,8 @@ export class ObservationScheduleComponent implements OnInit {
       ).subscribe({
         next: (response) => {
           this.schedules = response.data || [];
+          this.totalPages = Math.ceil(this.schedules.length / this.itemsPerPage);
+          this.updatePaginatedData();
           this.isLoading = false;
         },
         error: (error) => {
@@ -171,6 +177,8 @@ export class ObservationScheduleComponent implements OnInit {
       this.scheduleService.getFacultySchedules(this.userId).subscribe({
         next: (response) => {
           this.schedules = response.data;
+          this.totalPages = Math.ceil(this.schedules.length / this.itemsPerPage);
+          this.updatePaginatedData();
           this.isLoading = false;
         },
         error: (error) => {
@@ -279,6 +287,37 @@ export class ObservationScheduleComponent implements OnInit {
 
   onSortChange(): void {
     this.loadSchedules();
+  }
+
+  get totalPagesArray(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  updatePaginatedData(): void {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedSchedules = this.schedules.slice(startIndex, endIndex);
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updatePaginatedData();
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.updatePaginatedData();
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePaginatedData();
+    }
   }
 
   ngOnInit(): void {

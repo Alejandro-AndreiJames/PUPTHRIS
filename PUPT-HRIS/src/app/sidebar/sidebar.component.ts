@@ -30,6 +30,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   showLogoutModal: boolean = false;
   isLoggingOut: boolean = false;
   showSuccessMessage: boolean = false;
+  isSidebarOpen = false;
 
   constructor(
     private router: Router,
@@ -275,5 +276,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   get canAccessResources(): boolean {
     return this.hasRole('faculty') || this.hasRole('admin') || this.hasRole('superadmin');
+  }
+
+  toggleSidebar() {
+    const drawer = document.getElementById('my-drawer-2') as HTMLInputElement;
+    if (drawer) {
+      drawer.checked = !drawer.checked;
+      this.isSidebarOpen = drawer.checked;
+    }
   }
 }

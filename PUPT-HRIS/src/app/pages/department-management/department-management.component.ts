@@ -32,6 +32,16 @@ export class DepartmentManagementComponent implements OnInit, OnDestroy {
   showDeletePrompt: boolean = false;
   pendingDeleteId: number | null = null;
 
+  // Add pagination properties
+  currentPage: number = 1;
+  itemsPerPage: number = 10;
+  totalPages: number = 0;
+  paginatedDepartments: Department[] = [];
+
+  get totalPagesArray(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
   constructor(
     private departmentService: DepartmentService,
     private campusContextService: CampusContextService,
@@ -71,12 +81,41 @@ export class DepartmentManagementComponent implements OnInit, OnDestroy {
     this.departmentService.getDepartments(this.currentCampusId).subscribe(
       (data) => {
         this.departments = data;
+        this.totalPages = Math.ceil(this.departments.length / this.itemsPerPage);
+        this.updatePaginatedData();
       },
       (error) => {
         this.showToastNotification('Error fetching departments', 'error');
         console.error('Error fetching departments', error);
       }
     );
+  }
+
+  updatePaginatedData(): void {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedDepartments = this.departments.slice(startIndex, endIndex);
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updatePaginatedData();
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.updatePaginatedData();
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePaginatedData();
+    }
   }
 
   onSubmit(): void {

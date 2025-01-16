@@ -10,9 +10,7 @@
 
   <!-- Material List section -->
   <div class="mt-8 overflow-x-auto">
-    <h3 class="text-xl font-bold mb-2">Material List</h3>
-    
-    <!-- Search bar aligned with table -->
+    <!-- Search bar - always visible -->
     <div class="mb-4">
       <input 
         type="text"
@@ -22,62 +20,113 @@
       >
     </div>
 
-    <table class="table w-full">
-      <thead>
-        <tr class="bg-maroon text-white">
-          <th class="p-4">Title</th>
-          <th class="p-4">Description</th>
-          <th class="p-4">Reference Link</th>
-          <th class="p-4">File</th>
-          <th class="p-4" *ngIf="viewMode === 'all'">Uploaded By</th>
-          <th class="p-4 w-36">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let material of materials" class="hover:bg-gray-100">
-          <td class="p-4">{{ material.Title }}</td>
-          <td class="p-4">{{ material.Description || 'No description available' }}</td>
-          <td class="p-4">
-            <a *ngIf="material.ReferenceLink" 
-               [href]="material.ReferenceLink" 
-               target="_blank" 
-               class="text-blue-600 hover:text-blue-800">
-              View Reference
-            </a>
-            <span *ngIf="!material.ReferenceLink" class="text-gray-500">
-              No reference link available
-            </span>
-          </td>
-          <td class="p-4">
-            <a *ngIf="material.FilePath" 
-               (click)="downloadFile(material.FilePath)" 
-               class="text-blue-600 hover:text-blue-800 cursor-pointer">
-              Download File
-            </a>
-            <span *ngIf="!material.FilePath" class="text-gray-500">No file available</span>
-          </td>
-          <td class="p-4" *ngIf="viewMode === 'all'">
-            {{material.User?.Surname}}, {{material.User?.FirstName}} 
-            {{material.User?.NameExtension ? ' ' + material.User?.NameExtension : ''}}
-          </td>
-          <td class="p-4 flex justify-center space-x-2">
-            <button 
-              class="btn-sm btn-view" 
-              (click)="downloadFile(material.FilePath)"
-              [disabled]="!material.FilePath"
-              [class.opacity-50]="!material.FilePath"
-              [class.cursor-not-allowed]="!material.FilePath"
-            >
-              View
-            </button>
-            <ng-container *ngIf="viewMode === 'personal'">
-              <button class="btn-sm btn-edit" (click)="editMaterial(material)">Edit</button>
-              <button class="btn-sm btn-delete" (click)="deleteMaterial(material.LectureID!)">Delete</button>
-            </ng-container>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <!-- Show table and pagination only if there are materials -->
+    <ng-container *ngIf="materials.length > 0">
+      <table class="table w-full">
+        <thead>
+          <tr class="bg-maroon text-white">
+            <th class="p-4">Title</th>
+            <th class="p-4">Description</th>
+            <th class="p-4">Reference Link</th>
+            <th class="p-4">File</th>
+            <th class="p-4" *ngIf="viewMode === 'all'">Uploaded By</th>
+            <th class="p-4 w-36">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let material of materials" class="hover:bg-gray-100">
+            <td class="p-4">{{ material.Title }}</td>
+            <td class="p-4">{{ material.Description || 'No description available' }}</td>
+            <td class="p-4">
+              <a *ngIf="material.ReferenceLink" 
+                 [href]="material.ReferenceLink" 
+                 target="_blank" 
+                 class="text-blue-600 hover:text-blue-800">
+                View Reference
+              </a>
+              <span *ngIf="!material.ReferenceLink" class="text-gray-500">
+                No reference link available
+              </span>
+            </td>
+            <td class="p-4">
+              <a *ngIf="material.FilePath" 
+                 (click)="downloadFile(material.FilePath)" 
+                 class="text-blue-600 hover:text-blue-800 cursor-pointer">
+                Download File
+              </a>
+              <span *ngIf="!material.FilePath" class="text-gray-500">No file available</span>
+            </td>
+            <td class="p-4" *ngIf="viewMode === 'all'">
+              {{material.User?.Surname}}, {{material.User?.FirstName}} 
+              {{material.User?.NameExtension ? ' ' + material.User?.NameExtension : ''}}
+            </td>
+            <td class="p-4 flex justify-center space-x-2">
+              <button 
+                class="btn-sm btn-view" 
+                (click)="downloadFile(material.FilePath)"
+                [disabled]="!material.FilePath"
+                [class.opacity-50]="!material.FilePath"
+                [class.cursor-not-allowed]="!material.FilePath"
+              >
+                View
+              </button>
+              <ng-container *ngIf="viewMode === 'personal'">
+                <button class="btn-sm btn-edit" (click)="editMaterial(material)">Edit</button>
+                <button class="btn-sm btn-delete" (click)="deleteMaterial(material.LectureID!)">Delete</button>
+              </ng-container>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div class="flex justify-center mt-4 space-x-2">
+        <button 
+          class="btn bg-maroon text-white hover:bg-maroon-dark"
+          [disabled]="currentPage === 1"
+          (click)="onPageChange(currentPage - 1)"
+        >
+          Previous
+        </button>
+        
+        <button 
+          class="btn text-white bg-black"
+        >
+          1
+        </button>
+        
+        <button 
+          class="btn bg-maroon text-white hover:bg-maroon-dark"
+          [disabled]="currentPage === totalPages"
+          (click)="onPageChange(currentPage + 1)"
+        >
+          Next
+        </button>
+      </div>
+
+      <!-- Total items -->
+      <div class="text-center text-sm text-gray-600 mt-2">
+        Total items: {{totalItems}}
+      </div>
+    </ng-container>
+
+    <!-- Show this when no materials found -->
+    <div *ngIf="materials.length === 0" class="text-center py-8">
+      <div class="flex flex-col items-center justify-center text-gray-500">
+        <svg xmlns="http://www.w3.org/2000/svg" 
+             class="h-16 w-16 mb-4" 
+             fill="none" 
+             viewBox="0 0 24 24" 
+             stroke="currentColor">
+          <path stroke-linecap="round" 
+                stroke-linejoin="round" 
+                stroke-width="2" 
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+        <p class="text-lg font-semibold">No Lecture Materials Found</p>
+        <p class="text-sm">{{searchTerm ? 'Try adjusting your search terms' : 'No lecture materials have been added yet'}}</p>
+      </div>
+    </div>
   </div>
 
   <!-- Loading indicator -->
@@ -240,35 +289,5 @@
     <div *ngIf="toastType === 'warning'" class="alert alert-warning">
       <span>{{ toastMessage }}</span>
     </div>
-  </div>
-
-  <!-- Add pagination -->
-  <div class="flex justify-center mt-4 space-x-2">
-    <button 
-      class="btn bg-maroon text-white hover:bg-maroon-dark"
-      [disabled]="currentPage === 1"
-      (click)="onPageChange(currentPage - 1)"
-    >
-      Previous
-    </button>
-    
-    <button 
-      class="btn text-white bg-black"
-    >
-      1
-    </button>
-    
-    <button 
-      class="btn bg-maroon text-white hover:bg-maroon-dark"
-      [disabled]="currentPage === totalPages"
-      (click)="onPageChange(currentPage + 1)"
-    >
-      Next
-    </button>
-  </div>
-
-  <!-- Total items text -->
-  <div class="text-center text-sm text-gray-600 mt-2">
-    Total items: {{totalItems}}
   </div>
 </div>

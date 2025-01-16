@@ -169,23 +169,23 @@
   .pagination-controls button {
     margin: 0 0.125rem;
     padding: 0.25rem 0.5rem;
-    background-color: #f3f4f6;
-    border: 1px solid #d1d5db;
+    background-color: #800000;
+    border: none;
     font-size: 0.875rem;
     line-height: 1.25rem;
-    color: #374151;
+    color: white;
     cursor: pointer;
     transition: background-color 0.2s, color 0.2s;
+    min-width: 32px;
   }
 
   .pagination-controls button:hover:not(:disabled) {
-    background-color: #000000;
-    color: white;
+    background-color: #600000;
   }
 
-  .pagination-controls button.active {
-    background-color: #800000;
-    color: white;
+  .pagination-controls button.active,
+  .pagination-controls button.btn-active {
+    background-color: #000000;
   }
 
   .pagination-controls button:disabled {
@@ -194,11 +194,15 @@
     cursor: not-allowed;
   }
 
+  .pagination-controls button:first-child,
+  .pagination-controls button:last-child {
+    background-color: #800000;
+  }
+
   .pagination-wrapper {
     background-color: #f3f4f6;
     padding: 0.5rem 0.5rem 1rem 0.5rem;
     border-top: 1px solid #e5e7eb;
-    margin-top: -1rem;
   }
 
   .bg-gray-200 {
@@ -220,27 +224,36 @@
   }
 
   .pagination-btn {
-    padding: 0.25rem 0.75rem;
+    margin: 0 0.125rem;
+    padding: 0.25rem 0.5rem;
+    background-color: #800000;
+    border: none;
     font-size: 0.875rem;
     line-height: 1.25rem;
-    border-radius: 0.25rem;
-    background-color: #800000;
     color: white;
-    border: none;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease;
+    min-width: 32px;
+    border-radius: 0.375rem;
   }
 
-  .pagination-btn:hover:not(.disabled) {
-    background-color: #600000; 
+  .pagination-btn:hover:not(:disabled) {
+    background-color: #600000;
   }
 
   .pagination-btn.active {
-    background-color: #000000; 
+    background-color: #000000;
   }
 
-  .pagination-btn.active:hover {
-    background-color: #600000; 
+  .pagination-btn:disabled {
+    background-color: #e5e7eb !important;
+    color: #9ca3af;
+    cursor: not-allowed;
+  }
+
+  .pagination-btn:first-child:disabled,
+  .pagination-btn:last-child:disabled {
+    background-color: #e5e7eb !important;
   }
 
   .pagination-btn.disabled {

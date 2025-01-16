@@ -43,6 +43,7 @@ export class CoordinatorManagementComponent implements OnInit, OnDestroy {
   totalItems: number = 0;
   totalPages: number = 0;
   paginatedFacultyUsers: User[] = [];
+  paginatedDepartments: Department[] = [];
 
   constructor(
     private coordinatorService: CoordinatorService,
@@ -93,12 +94,12 @@ export class CoordinatorManagementComponent implements OnInit, OnDestroy {
       console.error('Campus ID is null');
       return;
     }
-    console.log('Loading departments for campus ID:', this.campusId);
     this.coordinatorService.getAllDepartmentsWithCoordinators(this.campusId).subscribe({
       next: (departments) => {
-        console.log('Received departments:', JSON.stringify(departments, null, 2));
         this.departments = departments;
         this.filteredDepartments = [...departments];
+        this.totalPages = Math.ceil(this.filteredDepartments.length / this.itemsPerPage);
+        this.updatePaginatedData();
       },
       error: (error) => {
         console.error('Error fetching departments:', error);
@@ -106,7 +107,13 @@ export class CoordinatorManagementComponent implements OnInit, OnDestroy {
       }
     });
   }
-  
+
+  updatePaginatedData(): void {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedDepartments = this.filteredDepartments.slice(startIndex, endIndex);
+  }
+
   loadActiveFacultyUsers(): void {
     if (this.campusId === null) {
       console.error('Campus ID is null');
@@ -225,18 +232,20 @@ export class CoordinatorManagementComponent implements OnInit, OnDestroy {
   private filterDepartments(): void {
     if (!this.searchTerm.trim()) {
       this.filteredDepartments = [...this.departments];
-      return;
+    } else {
+      const searchTermLower = this.searchTerm.toLowerCase();
+      this.filteredDepartments = this.departments.filter(dept => 
+        dept.DepartmentName.toLowerCase().includes(searchTermLower) ||
+        (dept.Coordinator && 
+          (`${dept.Coordinator.FirstName} ${dept.Coordinator.Surname}`
+            .toLowerCase()
+            .includes(searchTermLower))
+        )
+      );
     }
-
-    const searchTermLower = this.searchTerm.toLowerCase();
-    this.filteredDepartments = this.departments.filter(dept => 
-      dept.DepartmentName.toLowerCase().includes(searchTermLower) ||
-      (dept.Coordinator && 
-        (`${dept.Coordinator.FirstName} ${dept.Coordinator.Surname}`
-          .toLowerCase()
-          .includes(searchTermLower))
-      )
-    );
+    this.totalPages = Math.ceil(this.filteredDepartments.length / this.itemsPerPage);
+    this.currentPage = 1;
+    this.updatePaginatedData();
   }
 
   private filterFacultyUsers(): void {
@@ -254,25 +263,37 @@ export class CoordinatorManagementComponent implements OnInit, OnDestroy {
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
-      this.loadActiveFacultyUsers();
+      this.updatePaginatedData();
     }
   }
 
   previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
-      this.loadActiveFacultyUsers();
+      this.updatePaginatedData();
     }
   }
 
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
-      this.loadActiveFacultyUsers();
+      this.updatePaginatedData();
     }
   }
 
-  get pageNumbers(): number[] {
+  get totalPagesArray(): number[] {
     return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
+
+  get pageNumbers(): number[] {
+    const visiblePages = 5; // Show 5 page numbers at a time
+    let start = Math.max(this.currentPage - Math.floor(visiblePages / 2), 1);
+    let end = Math.min(start + visiblePages - 1, this.totalPages);
+
+    if (end - start + 1 < visiblePages) {
+      start = Math.max(end - visiblePages + 1, 1);
+    }
+
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   }
 }
