@@ -4,7 +4,7 @@ import { EmploymentInformationService } from '../../services/employment-informat
 import { AuthService } from '../../services/auth.service';
 import { EmploymentInformation } from '../../model/employment-information.model';
 import { jwtDecode } from 'jwt-decode';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 
 @Component({
   selector: 'app-employment-information',
@@ -14,7 +14,8 @@ import { CommonModule, DatePipe } from '@angular/common';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    DatePipe
+    DatePipe,
+    DecimalPipe
   ]
 })
 export class EmploymentInformationComponent implements OnInit {
@@ -56,8 +57,13 @@ export class EmploymentInformationComponent implements OnInit {
 
   loadEmploymentInfo(): void {
     this.employmentService.getEmploymentInfo(this.userId).subscribe({
-      next: (data) => {
-        this.employmentInfo = data;
+      next: (data: any) => {
+        this.employmentInfo = {
+          ...data,
+          AnnualSalary: this.cleanCurrencyValue(data?.AnnualSalary ?? undefined),
+          RatePerHour: this.cleanCurrencyValue(data?.RatePerHour ?? undefined)
+        };
+        
         if (this.employmentInfo) {
           this.employmentForm.patchValue(this.employmentInfo);
         }
@@ -135,5 +141,11 @@ export class EmploymentInformationComponent implements OnInit {
     setTimeout(() => {
       this.showToast = false;
     }, 3000);
+  }
+
+  private cleanCurrencyValue(value: string | number | null | undefined): number | null {
+    if (!value) return null;
+    const cleanValue = value.toString().replace(/[^\d.-]/g, '');
+    return parseFloat(cleanValue);
   }
 }

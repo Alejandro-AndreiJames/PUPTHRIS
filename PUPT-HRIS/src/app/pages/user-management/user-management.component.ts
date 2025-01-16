@@ -55,9 +55,13 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   selectedEmploymentType: string = '';
   selectedRole: string = '';
+  selectedStatus: string = 'active';
 
   private searchSubject = new Subject<string>();
   private readonly DEBOUNCE_TIME = 300; // 300ms delay
+
+  sortColumn: string = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
 
   constructor(
     private userManagementService: UserManagementService,
@@ -80,6 +84,7 @@ export class UserManagementComponent implements OnInit, OnDestroy {
         console.log('Received campus ID in UserManagementComponent:', id);
         if (id !== null) {
           this.campusId = id;
+          this.selectedStatus = 'active';
           this.fetchUsers();
         } else {
           console.log('Campus ID is null, not fetching users');
@@ -120,7 +125,10 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       campusId: this.campusId,
       search: this.searchTerm || '',
       employmentType: this.selectedEmploymentType || '',
-      role: this.selectedRole || ''
+      role: this.selectedRole || '',
+      isActive: this.selectedStatus === 'active' ? 'true' : 
+               this.selectedStatus === 'inactive' ? 'false' : 
+               undefined  // Convert status to boolean string for backend
     };
 
     this.userManagementService.getAllUsers(params).subscribe({
@@ -293,6 +301,26 @@ export class UserManagementComponent implements OnInit, OnDestroy {
       next: (response) => {
         console.log('User status updated successfully:', response);
         user.isActive = !user.isActive;
+        
+        if (this.selectedStatus === 'active' && !user.isActive) {
+          this.paginatedUsers = this.paginatedUsers.filter(u => u.UserID !== user.UserID);
+          this.totalItems--;
+          
+          if (this.paginatedUsers.length === 0 && this.currentPage > 1) {
+            this.currentPage--;
+            this.fetchUsers();
+          }
+        }
+        else if (this.selectedStatus === 'inactive' && user.isActive) {
+          this.paginatedUsers = this.paginatedUsers.filter(u => u.UserID !== user.UserID);
+          this.totalItems--;
+          
+          if (this.paginatedUsers.length === 0 && this.currentPage > 1) {
+            this.currentPage--;
+            this.fetchUsers();
+          }
+        }
+        
         this.showToastNotification(`User ${user.isActive ? 'activated' : 'deactivated'} successfully`, 'success');
       },
       error: (error) => {
@@ -409,5 +437,33 @@ export class UserManagementComponent implements OnInit, OnDestroy {
     }
     
     this.checkForChanges(user);
+  }
+
+  sortData(column: string): void {
+    if (this.sortColumn === column) {
+      // If clicking the same column, toggle direction
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // If clicking a new column, set it with ascending direction
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+
+    // Sort the users array
+    this.paginatedUsers.sort((a, b) => {
+      let comparison = 0;
+      if (column === 'name') {
+        const nameA = `${a.Surname}, ${a.FirstName}`.toLowerCase();
+        const nameB = `${b.Surname}, ${b.FirstName}`.toLowerCase();
+        comparison = nameA.localeCompare(nameB);
+      }
+      
+      return this.sortDirection === 'asc' ? comparison : -comparison;
+    });
+  }
+
+  onStatusChange(): void {
+    this.currentPage = 1;
+    this.fetchUsers();
   }
 }

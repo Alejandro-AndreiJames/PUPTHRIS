@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -6,15 +6,21 @@ import { jwtDecode } from 'jwt-decode';
 import { ObservationScheduleService, ObservationSchedule } from '../../services/observation-schedule.service';
 import { AuthService } from '../../services/auth.service';
 import { CampusContextService } from '../../services/campus-context.service';
+import { CalendarViewComponent } from '../../calendar-view/calendar-view.component';
 
 @Component({
   selector: 'app-observation-schedule',
   templateUrl: './observation-schedule.component.html',
   styleUrls: ['./observation-schedule.component.css'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule]
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule, 
+    FormsModule,
+    CalendarViewComponent
+  ]
 })
-export class ObservationScheduleComponent implements OnInit {
+export class ObservationScheduleComponent implements OnInit, OnDestroy {
   scheduleForm: FormGroup = this.initializeForm();
   schedules: ObservationSchedule[] = [];
   userId: number = 0;
@@ -50,6 +56,19 @@ export class ObservationScheduleComponent implements OnInit {
   itemsPerPage: number = 10;
   totalPages: number = 0;
   paginatedSchedules: any[] = [];
+  selectedAcademicYear: string = '';
+  selectedSemester: string = '';
+  searchName: string = '';
+  private searchDebounce: any;
+  isEditing: boolean = false;
+  editingSchedule: ObservationSchedule | null = null;
+  viewMode: 'table' | 'calendar' = 'table';
+  totalPagesArray: number[] = [];
+  semesterOptions = [
+    { value: '', label: 'All Semesters' },
+    { value: 'First Semester', label: 'First Semester' },
+    { value: 'Second Semester', label: 'Second Semester' }
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -118,7 +137,7 @@ export class ObservationScheduleComponent implements OnInit {
       StartTime: ['', Validators.required],
       EndTime: ['', Validators.required],
       AcademicYear: [this.currentAcademicYear, Validators.required],
-      Semester: ['1st', Validators.required],
+      Semester: ['First Semester', Validators.required],
       FacultyID: [this.userId],
       CollegeCampusID: [this.campusId]
     });
@@ -132,38 +151,60 @@ export class ObservationScheduleComponent implements OnInit {
         CollegeCampusID: this.campusId
       };
 
-      this.scheduleService.createSchedule(formData).subscribe({
-        next: (response) => {
-          this.loadSchedules();
-          this.scheduleForm.reset({
-            Semester: '1st',
-            AcademicYear: '2023-2024',
-            FacultyID: this.userId
+      if (this.isEditing && this.editingSchedule?.ScheduleID) {
+        // Update existing schedule
+        this.scheduleService.updateSchedule(this.editingSchedule.ScheduleID, formData)
+          .subscribe({
+            next: (response) => {
+              this.closeScheduleModal();
+              this.loadSchedules();
+              this.showToastNotification('Schedule updated successfully', 'success');
+            },
+            error: (error) => {
+              console.error('Error updating schedule:', error);
+              this.showToastNotification('Error updating schedule', 'error');
+            }
           });
-          this.showToastNotification('Schedule created successfully', 'success');
-        },
-        error: (error) => {
-          console.error('Error creating schedule:', error);
-          this.showToastNotification('Error creating schedule', 'error');
-        }
-      });
-    } else {
-      this.showToastNotification('Please fill in all required fields', 'warning');
+      } else {
+        // Create new schedule
+        this.scheduleService.createSchedule(formData)
+          .subscribe({
+            next: (response) => {
+              this.closeScheduleModal();
+              this.loadSchedules();
+              this.showToastNotification('Schedule created successfully', 'success');
+            },
+            error: (error) => {
+              console.error('Error creating schedule:', error);
+              this.showToastNotification('Error creating schedule', 'error');
+            }
+          });
+      }
     }
   }
 
   private loadSchedules(): void {
     this.isLoading = true;
+    
     if (this.isAdmin) {
       this.scheduleService.getAllSchedules(
-        this.selectedStatus, 
-        this.sortBy, 
-        this.sortOrder
+        this.selectedStatus,
+        this.sortBy,
+        this.sortOrder,
+        this.selectedAcademicYear,
+        this.selectedSemester,
+        this.searchName
       ).subscribe({
-        next: (response) => {
-          this.schedules = response.data || [];
-          this.totalPages = Math.ceil(this.schedules.length / this.itemsPerPage);
-          this.updatePaginatedData();
+        next: (response: any) => {
+          if (response.success && response.data) {
+            this.schedules = response.data;
+            this.totalPages = Math.ceil(this.schedules.length / this.itemsPerPage);
+            this.totalPagesArray = Array.from({length: this.totalPages}, (_, i) => i + 1);
+          } else {
+            this.schedules = [];
+            this.totalPages = 0;
+            this.totalPagesArray = [];
+          }
           this.isLoading = false;
         },
         error: (error) => {
@@ -174,16 +215,26 @@ export class ObservationScheduleComponent implements OnInit {
         }
       });
     } else if (this.isFaculty) {
-      this.scheduleService.getFacultySchedules(this.userId).subscribe({
-        next: (response) => {
-          this.schedules = response.data;
-          this.totalPages = Math.ceil(this.schedules.length / this.itemsPerPage);
-          this.updatePaginatedData();
+      this.scheduleService.getFacultySchedules(
+        this.userId,
+        this.selectedAcademicYear,
+        this.selectedSemester
+      ).subscribe({
+        next: (response: any) => {
+          if (response.success && response.data) {
+            this.schedules = response.data;
+            this.totalPages = Math.ceil(this.schedules.length / this.itemsPerPage);
+            this.totalPagesArray = Array.from({length: this.totalPages}, (_, i) => i + 1);
+          } else {
+            this.schedules = [];
+            this.totalPages = 0;
+            this.totalPagesArray = [];
+          }
           this.isLoading = false;
         },
         error: (error) => {
-          console.error('Error loading faculty schedules:', error);
-          this.showToastNotification('Error loading your schedules', 'error');
+          console.error('Error loading schedules:', error);
+          this.showToastNotification('Error loading schedules', 'error');
           this.schedules = [];
           this.isLoading = false;
         }
@@ -280,44 +331,13 @@ export class ObservationScheduleComponent implements OnInit {
     });
   }
 
-  onStatusChange(status: string): void {
-    this.selectedStatus = status;
+  onStatusChange(): void {
+    this.currentPage = 1; // Reset to first page when status changes
     this.loadSchedules();
   }
 
   onSortChange(): void {
     this.loadSchedules();
-  }
-
-  get totalPagesArray(): number[] {
-    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
-  }
-
-  updatePaginatedData(): void {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedSchedules = this.schedules.slice(startIndex, endIndex);
-  }
-
-  previousPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.updatePaginatedData();
-    }
-  }
-
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.updatePaginatedData();
-    }
-  }
-
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.updatePaginatedData();
-    }
   }
 
   ngOnInit(): void {
@@ -328,5 +348,107 @@ export class ObservationScheduleComponent implements OnInit {
       this.campusId = campusId;
       this.loadSchedules();
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.searchDebounce) {
+      clearTimeout(this.searchDebounce);
+    }
+  }
+
+  editSchedule(schedule: any): void {
+    this.isEditing = true;
+    this.editingSchedule = { ...schedule };
+    
+    // Format the date properly
+    const formattedDate = schedule.Date ? new Date(schedule.Date).toISOString().split('T')[0] : '';
+
+    // Handle the time range
+    let startTime = '';
+    let endTime = '';
+    if (schedule.Time) {
+      [startTime, endTime] = schedule.Time.split(' - ');
+    }
+
+    // Populate the form with existing data
+    this.scheduleForm.patchValue({
+      Topic: schedule.Topic,
+      Subject: schedule.Subject,
+      RoomNumber: schedule.Room,
+      ScheduledDate: formattedDate,
+      StartTime: startTime.trim(),
+      EndTime: endTime.trim(),
+      AcademicYear: schedule.AcademicYear,
+      Semester: schedule.Semester
+    });
+
+    // Open the modal
+    (document.getElementById('schedule-modal') as HTMLDialogElement).showModal();
+  }
+
+  private resetForm(): void {
+    this.scheduleForm.reset({
+      Semester: '1st',
+      AcademicYear: this.currentAcademicYear
+    });
+    this.isEditing = false;
+    this.editingSchedule = null;
+    this.showScheduleForm = false;
+  }
+
+  get formTitle(): string {
+    return this.isEditing ? 'Edit Observation Schedule' : 'Create New Schedule';
+  }
+
+  changeView(view: 'table' | 'calendar'): void {
+    this.viewMode = view;
+  }
+
+  openScheduleModal() {
+    (document.getElementById('schedule-modal') as HTMLDialogElement).showModal();
+  }
+
+  closeScheduleModal() {
+    (document.getElementById('schedule-modal') as HTMLDialogElement).close();
+    this.resetForm();
+  }
+
+  onSearchChange(): void {
+    // Clear any existing timeout
+    if (this.searchDebounce) {
+      clearTimeout(this.searchDebounce);
+    }
+
+    // Set a new timeout to delay the search
+    this.searchDebounce = setTimeout(() => {
+      this.currentPage = 1; // Reset to first page when search changes
+      this.loadSchedules();
+    }, 300); // 300ms delay
+  }
+
+  onFilterChange(): void {
+    this.currentPage = 1; // Reset to first page when filters change
+    this.loadSchedules();
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.loadSchedules();
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.loadSchedules();
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.loadSchedules();
+    }
   }
 }

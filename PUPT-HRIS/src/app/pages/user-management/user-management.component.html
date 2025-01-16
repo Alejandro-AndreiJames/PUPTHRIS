@@ -38,6 +38,15 @@
           {{ role.RoleName }}
         </option>
       </select>
+
+      <select 
+        [(ngModel)]="selectedStatus" 
+        (change)="onStatusChange()"
+        class="select select-bordered select-sm w-full max-w-xs">
+        <option value="">All Status</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
     </div>
 
     <!-- Loading State -->
@@ -51,7 +60,16 @@
         <thead>
           <tr class="bg-maroon text-white">
             <th class="p-4">#</th>
-            <th class="p-4">Name</th>
+            <th class="p-4 cursor-pointer" (click)="sortData('name')">
+              Name
+              <i class="fas" 
+                 [ngClass]="{
+                   'fa-sort-alpha-down': sortColumn === 'name' && sortDirection === 'asc',
+                   'fa-sort-alpha-up': sortColumn === 'name' && sortDirection === 'desc',
+                   'fa-sort': sortColumn !== 'name'
+                 }">
+              </i>
+            </th>
             <th class="p-4">Status</th>
             <th class="p-4">Employment Type</th>
             <th class="p-4">Roles</th>
@@ -61,7 +79,7 @@
         <tbody>
           <tr *ngFor="let user of paginatedUsers; let i = index">
             <td class="p-4">{{ (currentPage - 1) * itemsPerPage + i + 1 }}</td>
-            <td class="p-4">{{ user.FirstName }} {{ user.Surname }}</td>
+            <td class="p-4">{{ user.Surname }}, {{ user.FirstName }}</td>
             <td class="p-4 text-center">
               <span [class]="user.isActive ? 'text-green-600' : 'text-red-600'">
                 {{ user.isActive ? 'Active' : 'Inactive' }}

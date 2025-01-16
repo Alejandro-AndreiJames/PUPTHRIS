@@ -23,6 +23,7 @@
     "mysql": "^2.18.1",
     "mysql2": "^2.3.3",
     "nodemailer": "^6.9.14",
+    "numeral": "^2.0.6",
     "pdf-lib": "^1.17.1",
     "pdfkit": "^0.15.0",
     "puppeteer": "^23.3.1",

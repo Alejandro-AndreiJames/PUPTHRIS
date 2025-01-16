@@ -10,6 +10,8 @@ import { OfficershipMembershipService } from '../../services/officership-members
 import { ProfessionalLicenseService } from '../../services/professional-license.service';
 import { EmploymentInformationService } from '../../services/employment-information.service';
 import { CertificationService } from '../../services/certification.service';
+import { PdfService } from '../../services/pdf.service';
+import { ActivatedRoute } from '@angular/router';
 
 import { User } from '../../model/user.model';
 import { BasicDetails } from '../../model/basic-details.model';
@@ -59,7 +61,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   private campusSubscription: Subscription | undefined;
   searchTerm: string = '';
   filteredUsers: User[] = [];
-  selectedRole: string = '';
   selectedEmploymentType: string = '';
   departments: any[] = [];
   selectedDepartment: string = '';
@@ -78,6 +79,11 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   private readonly DEBOUNCE_TIME = 300; // 300ms delay
   sortColumn: string = 'name';
   sortDirection: 'asc' | 'desc' = 'asc';
+  showGenerateOptions = false;
+  generateScope = {
+    departmentId: 'all',
+    employmentType: 'all'
+  };
 
   constructor(
     private campusContextService: CampusContextService,
@@ -93,7 +99,9 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     private officershipMembershipService: OfficershipMembershipService,
     private professionalLicenseService: ProfessionalLicenseService,
     private employmentInformationService: EmploymentInformationService,
-    private certificationService: CertificationService
+    private certificationService: CertificationService,
+    private pdfService: PdfService,
+    private route: ActivatedRoute
   ) {
     // Setup search debouncing in constructor
     this.searchSubject.pipe(
@@ -104,9 +112,18 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       this.currentPage = 1; // Reset to first page
       this.loadActiveUsers();
     });
+
+    this.loadDepartments();
   }
 
   ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      if (params['department']) {
+        this.selectedDepartment = params['department'];
+        this.applyFilters(); // This should trigger the filtering
+      }
+    });
+
     this.campusSubscription = this.campusContextService.getCampusId().subscribe(
       id => {
         console.log('Received campus ID:', id);
@@ -139,17 +156,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       limit: this.itemsPerPage,
       campusId: this.campusId
     };
-
-    // Modified role filter logic
-    if (this.selectedRole && this.selectedRole !== 'All Roles') {
-      // Make sure we're using the exact role name as stored in the database
-      params.role = this.selectedRole === 'Staff' ? 'staff' : 
-                    this.selectedRole === 'Faculty' ? 'faculty' : 
-                    this.selectedRole === 'Admin' ? 'admin' : 
-                    this.selectedRole.toLowerCase();
-      
-      console.log('Filtering by role:', params.role); // Debug log
-    }
 
     if (this.selectedDepartment) {
       params.departmentId = this.selectedDepartment;
@@ -404,15 +410,10 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   }
 
   loadDepartments(): void {
-    if (this.campusId === null) {
-      console.error('Cannot load departments: Campus ID is null');
-      return;
-    }
+    if (!this.campusId) return;
     
-    console.log('Loading departments for campus:', this.campusId);
     this.departmentService.getDepartments(this.campusId).subscribe({
       next: (departments) => {
-        console.log('Departments loaded successfully:', departments);
         this.departments = departments;
       },
       error: (error) => {
@@ -588,13 +589,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Add this method to handle role selection changes
-  onRoleChange(): void {
-    console.log('Selected role:', this.selectedRole); // Debug log
-    this.currentPage = 1; // Reset to first page
-    this.loadActiveUsers();
-  }
-
   formatFullName(details: any): string {
     if (!details) return '';
 
@@ -641,5 +635,58 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         return nameA.localeCompare(nameB);
       });
     }
+  }
+
+  formatEmploymentType(type: string | null): string {
+    if (!type) return 'No information entered';
+    
+    const formats: { [key: string]: string } = {
+      'fulltime': 'Full-Time',
+      'parttime': 'Part-Time',
+      'temporary': 'Temporary',
+      'designee': 'Designee'
+    };
+
+    return formats[type.toLowerCase()] || type;
+  }
+
+  onGenerateClick() {
+    if (!this.departments.length) {
+      this.loadDepartments();
+    }
+    this.showGenerateOptions = true;
+  }
+
+  confirmGenerate() {
+    const filters: any = {};
+    
+    if (this.generateScope.departmentId !== 'all') {
+      filters.departmentId = this.generateScope.departmentId;
+    }
+    
+    if (this.generateScope.employmentType !== 'all') {
+      filters.employmentType = this.generateScope.employmentType;
+    }
+
+    this.pdfService.generateFacultyProfilePdf(filters)
+      .subscribe({
+        next: (blob: Blob) => {
+          this.pdfService.openPdfInNewTab(blob);
+          this.showGenerateOptions = false;
+        },
+        error: (error) => {
+          console.error('Error generating PDF:', error);
+          // Add error handling here
+        }
+      });
+  }
+
+  cancelGenerate() {
+    this.showGenerateOptions = false;
+    // Reset filters
+    this.generateScope = {
+      departmentId: 'all',
+      employmentType: 'all'
+    };
   }
 }

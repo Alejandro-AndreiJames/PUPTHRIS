@@ -243,7 +243,7 @@ const sendEmail = async (toEmail, password, firstName) => {
       from: process.env.EMAIL_USERNAME,
       to: toEmail,
       subject: 'Your Account Details',
-      text: `Hello ${firstName},\n\nYour account has been created successfully!\n\nHere are your account details:\n\nEmail: ${toEmail}\nPassword: ${password}\n\nYou can log in using the following link:\n${siteLink}\n\nPlease change your password after your first login.\n\nBest regards,\nPUP Taguig Human Resources System`,
+      text: `Hello ${firstName},\n\nYour account has been created successfully!\n\nHere are your account details:\n\nEmail: ${toEmail}\nPassword: ${password}\n\nYou can log in using the following link:\n${siteLink}\n\nPlease change your password after your first login.\n\nBest regards,\nPUP-FESR Team`,
     };
 
     await transporter.sendMail(mailOptions);

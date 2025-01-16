@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { CampusContextService } from './campus-context.service';
@@ -47,17 +47,27 @@ export class ObservationScheduleService {
   }
 
   // Get all schedules
-  getAllSchedules(status?: string, sortBy: string = 'date', sortOrder: string = 'asc'): Observable<any> {
-    const campusId = this.campusContextService.getCampusId();
-    let url = `${this.apiUrl}?campusId=${campusId}`;
+  getAllSchedules(
+    status?: string,
+    sortBy?: string,
+    sortOrder?: string,
+    academicYear?: string,
+    semester?: string,
+    searchName?: string
+  ): Observable<any> {
+    let params = new HttpParams();
     
-    if (status) {
-      url += `&status=${status}`;
-    }
-    
-    url += `&sortBy=${sortBy}&sortOrder=${sortOrder}`;
-    
-    return this.http.get(url, { headers: this.getHeaders() });
+    if (status) params = params.set('status', status);
+    if (sortBy) params = params.set('sortBy', sortBy);
+    if (sortOrder) params = params.set('sortOrder', sortOrder);
+    if (academicYear) params = params.set('academicYear', academicYear);
+    if (semester) params = params.set('semester', semester);
+    if (searchName) params = params.set('searchName', searchName);
+
+    return this.http.get(this.apiUrl, { 
+      params,
+      headers: this.getHeaders()
+    });
   }
 
   // Get schedule by ID
@@ -94,8 +104,23 @@ export class ObservationScheduleService {
   }
 
   // Add this new method
-  getFacultySchedules(facultyId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/faculty/${facultyId}`, { headers: this.getHeaders() });
+  getFacultySchedules(
+    facultyId: number,
+    academicYear?: string,
+    semester?: string
+  ): Observable<any> {
+    let params = new HttpParams();
+    
+    if (academicYear) params = params.set('academicYear', academicYear);
+    if (semester) params = params.set('semester', semester);
+
+    return this.http.get(
+      `${this.apiUrl}/faculty/${facultyId}/schedules`, 
+      { 
+        headers: this.getHeaders(),
+        params 
+      }
+    );
   }
 
   // Add this method to the ObservationScheduleService class

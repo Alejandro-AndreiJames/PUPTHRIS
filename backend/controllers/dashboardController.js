@@ -30,6 +30,11 @@ exports.getDashboardData = async (req, res) => {
       userWhereClause.CollegeCampusID = campusId;
     }
 
+    // Count total departments
+    const totalDepartments = await Department.count({
+      where: campusId ? { CollegeCampusID: campusId } : {}
+    });
+
     // Count total females and males from BasicDetails
     const totalFemale = await BasicDetails.count({
       where: { Sex: 'Female' },
@@ -132,6 +137,7 @@ exports.getDashboardData = async (req, res) => {
     });
 
     res.status(200).json({
+      totalDepartments,
       totalFemale,
       totalMale,
       partTime,

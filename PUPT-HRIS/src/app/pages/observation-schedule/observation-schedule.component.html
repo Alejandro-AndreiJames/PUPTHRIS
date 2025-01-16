@@ -19,12 +19,10 @@
         </button>
 
         <button 
-          *ngIf="isFaculty"
-          (click)="toggleScheduleForm()" 
-          class="px-6 py-2.5 rounded-md transition-colors duration-200 flex items-center gap-2"
-          [ngClass]="showScheduleForm ? 'bg-black text-white' : 'bg-[#800000] text-white hover:bg-[#600000]'">
-          <i class="fas {{ showScheduleForm ? 'fa-minus' : 'fa-plus' }}"></i>
-          {{ showScheduleForm ? 'Hide' : 'Create New' }} Schedule
+          (click)="openScheduleModal()"
+          class="btn bg-[#800000] hover:bg-[#600000] text-white">
+          <i class="fas fa-plus mr-2"></i>
+          Create New Schedule
         </button>
       </div>
 
@@ -141,35 +139,35 @@
         </div>
       </div>
 
-      <!-- Schedule Form -->
-      <div *ngIf="isFaculty && showScheduleForm" class="bg-white rounded-lg shadow-md mb-8">
-        <div class="p-6 bg-[#800000] rounded-t-lg">
-          <h2 class="text-2xl font-bold text-white">Create Observation Schedule</h2>
-        </div>
-        
-        <form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()" class="p-8">
+      <!-- Schedule Creation Modal -->
+      <dialog id="schedule-modal" class="modal">
+        <div class="modal-box max-w-2xl bg-white rounded-lg shadow-xl">
+          <!-- Modal Header -->
+          <div class="bg-[#800000] text-white p-4 -m-6 mb-6 rounded-t-lg">
+            <h3 class="font-bold text-xl">{{ isEditing ? 'Edit Schedule' : 'Create New Schedule' }}</h3>
+          </div>
+
+          <!-- Modal Content -->
+          <form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()" class="space-y-6 mt-8">
           <!-- Required fields note -->
           <div class="mb-6 text-gray-500 text-sm italic">
             Note: Fields marked with an asterisk (*) are required.
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Topic -->
-            <div class="form-group space-y-2">
-              <label class="block text-sm font-semibold text-gray-700">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Topic -->
+              <div class="form-group">
+                <label class="block text-sm font-semibold text-gray-700">
                 Topic <span class="text-red-500">*</span>
               </label>
-              <input type="text" 
-                     formControlName="Topic" 
-                     class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#800000] focus:ring-1 focus:ring-[#800000] outline-none transition-all duration-200"
-                     placeholder="Enter topic">
-            </div>
+                <input type="text" 
+                       formControlName="Topic"
+                       class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#800000] focus:ring-1 focus:ring-[#800000] outline-none">
+              </div>
 
             <!-- Subject -->
             <div class="form-group space-y-2">
-              <label class="block text-sm font-semibold text-gray-700">
-                Subject <span class="text-red-500">*</span>
-              </label>
+              <label class="block text-sm font-semibold text-gray-700">Subject</label>
               <input type="text" 
                      formControlName="Subject" 
                      class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#800000] focus:ring-1 focus:ring-[#800000] outline-none transition-all duration-200"
@@ -178,9 +176,7 @@
 
             <!-- Room Number -->
             <div class="form-group space-y-2">
-              <label class="block text-sm font-semibold text-gray-700">
-                Room Number <span class="text-red-500">*</span>
-              </label>
+              <label class="block text-sm font-semibold text-gray-700">Room Number</label>
               <input type="text" 
                      formControlName="RoomNumber" 
                      class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#800000] focus:ring-1 focus:ring-[#800000] outline-none transition-all duration-200"
@@ -189,9 +185,7 @@
 
             <!-- Date -->
             <div class="form-group space-y-2">
-              <label class="block text-sm font-semibold text-gray-700">
-                Date <span class="text-red-500">*</span>
-              </label>
+              <label class="block text-sm font-semibold text-gray-700">Date</label>
               <input type="date" 
                      formControlName="ScheduledDate" 
                      class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#800000] focus:ring-1 focus:ring-[#800000] outline-none transition-all duration-200">
@@ -199,9 +193,7 @@
 
             <!-- Start Time -->
             <div class="form-group space-y-2">
-              <label class="block text-sm font-semibold text-gray-700">
-                Start Time <span class="text-red-500">*</span>
-              </label>
+              <label class="block text-sm font-semibold text-gray-700">Start Time</label>
               <input type="time" 
                      formControlName="StartTime" 
                      class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#800000] focus:ring-1 focus:ring-[#800000] outline-none transition-all duration-200">
@@ -209,202 +201,283 @@
 
             <!-- End Time -->
             <div class="form-group space-y-2">
-              <label class="block text-sm font-semibold text-gray-700">
-                End Time <span class="text-red-500">*</span>
-              </label>
+              <label class="block text-sm font-semibold text-gray-700">End Time</label>
               <input type="time" 
                      formControlName="EndTime" 
                      class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#800000] focus:ring-1 focus:ring-[#800000] outline-none transition-all duration-200">
             </div>
 
-            <!-- Academic Year with dropdown indicator -->
+            <!-- Academic Year -->
             <div class="form-group space-y-2">
-              <label class="block text-sm font-semibold text-gray-700">
-                Academic Year <span class="text-red-500">*</span>
-              </label>
+              <label class="block text-sm font-semibold text-gray-700">Academic Year</label>
+              <select formControlName="AcademicYear" 
+                      class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#800000] focus:ring-1 focus:ring-[#800000] outline-none transition-all duration-200 bg-white appearance-none cursor-pointer">
+                <option *ngFor="let year of academicYears" [value]="year">
+                  {{ year }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Semester -->
+            <div class="form-group space-y-2">
+              <label class="block text-sm font-semibold text-gray-700">Semester</label>
+              <select 
+                [(ngModel)]="selectedSemester"
+                (ngModelChange)="onFilterChange()"
+                class="w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#800000] focus:border-[#800000]"
+              >
+                <option *ngFor="let option of semesterOptions" [value]="option.value">
+                  {{option.label}}
+                </option>
+              </select>
+            </div>
+          </div>
+
+            <!-- Modal Actions -->
+            <div class="modal-action mt-8 border-t pt-4">
+              <button 
+                type="button"
+                class="btn btn-ghost"
+                (click)="closeScheduleModal()">
+                Cancel
+              </button>
+              <button 
+                type="submit"
+                class="btn bg-[#800000] hover:bg-[#600000] text-white"
+                [disabled]="!scheduleForm.valid">
+                {{ isEditing ? 'Update' : 'Create' }} Schedule
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Click outside to close -->
+        <form method="dialog" class="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
+
+      <!-- Schedules List -->
+      <div class="max-w-[97%] mx-auto mb-8">
+        <!-- Title and Search Row -->
+        <div class="mb-4 flex justify-between items-center">
+          <h2 class="text-2xl font-bold text-[#800000]">All Faculty Observation Schedules</h2>
+          
+          <!-- View Toggle Buttons -->
+          <div class="flex gap-2">
+            <!-- Search Input (if admin) -->
+            <div *ngIf="isAdmin" class="w-72 mr-4">
               <div class="relative">
-                <select formControlName="AcademicYear" 
-                        class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#800000] focus:ring-1 focus:ring-[#800000] outline-none transition-all duration-200 bg-white appearance-none cursor-pointer"
-                        placeholder="Select academic year">
-                  <option value="" disabled selected>Select academic year</option>
+                <input
+                  type="text"
+                  [(ngModel)]="searchName"
+                  (ngModelChange)="onSearchChange()"
+                  placeholder="Search faculty name..."
+                  class="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#800000] focus:border-[#800000]"
+                >
+                <span class="absolute left-3 top-2.5 text-gray-400">
+                  <i class="fas fa-search"></i>
+                </span>
+              </div>
+            </div>
+
+            <!-- View Toggle -->
+            <button 
+              (click)="changeView('table')"
+              [class.bg-[#800000]]="viewMode === 'table'"
+              [class.text-white]="viewMode === 'table'"
+              class="px-4 py-2 rounded-md border border-[#800000] hover:bg-[#800000] hover:text-white transition-colors duration-200">
+              <i class="fas fa-table mr-2"></i>Table
+            </button>
+            <button 
+              (click)="changeView('calendar')"
+              [class.bg-[#800000]]="viewMode === 'calendar'"
+              [class.text-white]="viewMode === 'calendar'"
+              class="px-4 py-2 rounded-md border border-[#800000] hover:bg-[#800000] hover:text-white transition-colors duration-200">
+              <i class="fas fa-calendar-alt mr-2"></i>Calendar
+            </button>
+          </div>
+        </div>
+
+        <!-- View Container -->
+        <div [ngSwitch]="viewMode">
+          <!-- Table View -->
+          <div *ngSwitchCase="'table'">
+            <!-- Filters Row -->
+            <div class="mb-6 flex flex-wrap gap-4">
+              <!-- Academic Year Filter -->
+              <div class="flex-1 min-w-[200px]">
+                <select 
+                  [(ngModel)]="selectedAcademicYear"
+                  (ngModelChange)="onFilterChange()"
+                  class="w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#800000] focus:border-[#800000]"
+                >
+                  <option value="">All Academic Years</option>
                   <option *ngFor="let year of academicYears" [value]="year">
                     {{ year }}
                   </option>
                 </select>
-                <!-- Dropdown arrow icon -->
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                  <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                    <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                  </svg>
-                </div>
               </div>
-            </div>
 
-            <!-- Semester with dropdown indicator -->
-            <div class="form-group space-y-2">
-              <label class="block text-sm font-semibold text-gray-700">
-                Semester <span class="text-red-500">*</span>
-              </label>
-              <div class="relative">
-                <select formControlName="Semester" 
-                        class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:border-[#800000] focus:ring-1 focus:ring-[#800000] outline-none transition-all duration-200 bg-white appearance-none cursor-pointer"
-                        placeholder="Select semester">
-                  <option value="" disabled selected>Select semester</option>
-                  <option value="First Semester">First Semester</option>
-                  <option value="Second Semester">Second Semester</option>
+              <!-- Semester Filter -->
+              <div class="flex-1 min-w-[200px]">
+                <select 
+                  [(ngModel)]="selectedSemester"
+                  (ngModelChange)="onFilterChange()"
+                  class="w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#800000] focus:border-[#800000]"
+                >
+                  <option *ngFor="let option of semesterOptions" [value]="option.value">
+                    {{option.label}}
+                  </option>
                 </select>
-                <!-- Dropdown arrow icon -->
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                  <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                    <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                  </svg>
+              </div>
+
+              <!-- Status Filter -->
+              <div class="flex-1 min-w-[200px]">
+                <select 
+                  [(ngModel)]="selectedStatus"
+                  (ngModelChange)="onFilterChange()"
+                  class="w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#800000] focus:border-[#800000]"
+                >
+                  <option value="">All Status</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
+
+              <!-- Sort By Filter -->
+              <div class="flex-1 min-w-[200px]">
+                <select 
+                  [(ngModel)]="sortBy"
+                  (ngModelChange)="onFilterChange()"
+                  class="w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#800000] focus:border-[#800000]"
+                >
+                  <option value="date">Sort by Date</option>
+                  <option value="time">Sort by Time</option>
+                  <option value="status">Sort by Status</option>
+                </select>
+              </div>
+
+              <!-- Sort Order -->
+              <div class="flex-1 min-w-[200px]">
+                <select 
+                  [(ngModel)]="sortOrder"
+                  (ngModelChange)="onFilterChange()"
+                  class="w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#800000] focus:border-[#800000]"
+                >
+                  <option value="asc">Ascending</option>
+                  <option value="desc">Descending</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="bg-white rounded-lg shadow-md">
+              <!-- Loading state -->
+              <div *ngIf="isLoading" class="flex justify-center py-8">
+                <!-- Loading spinner if needed -->
+              </div>
+
+              <!-- No data state -->
+              <div *ngIf="!isLoading && (!schedules || schedules.length === 0)" class="flex flex-col items-center justify-center py-12">
+                <i class="fas fa-calendar-times text-gray-400 text-5xl mb-3"></i>
+                <p class="text-gray-600">No schedules available</p>
+              </div>
+
+              <!-- Data table -->
+              <div *ngIf="!isLoading && schedules && schedules.length > 0">
+                <div class="overflow-x-auto">
+                  <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                      <tr class="bg-[#800000]">
+                        <th *ngIf="isAdmin" class="px-6 py-4 text-left text-sm font-semibold text-white">Faculty Name</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-white">Topic</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-white">Subject</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-white">Room</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-white">Date</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-white">Time</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-white">Status</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-white">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                      <tr *ngFor="let schedule of schedules" class="hover:bg-gray-100 transition-colors duration-150">
+                        <td *ngIf="isAdmin" class="px-6 py-4 text-sm text-gray-900">{{schedule.Faculty?.LastName}}, {{schedule.Faculty?.FirstName}}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">{{schedule.Topic}}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">{{schedule.Subject}}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">{{schedule.RoomNumber}}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">{{schedule.ScheduledDate | date}}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">{{schedule.StartTime}} - {{schedule.EndTime}}</td>
+                        <td class="px-6 py-4 text-sm">
+                          <div *ngIf="isAdmin; else statusDisplay">
+                            <select 
+                              [(ngModel)]="schedule.Status"
+                              (change)="updateStatus(schedule.ScheduleID!, schedule.Status)"
+                              class="block w-full rounded-md border border-gray-300 py-1 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#800000] focus:border-[#800000]"
+                              [ngClass]="{
+                                'text-yellow-600': schedule.Status === 'Pending',
+                                'text-green-600': schedule.Status === 'Completed',
+                                'text-red-600': schedule.Status === 'Cancelled'
+                              }">
+                              <option value="Pending">Pending</option>
+                              <option value="Completed">Completed</option>
+                              <option value="Cancelled">Cancelled</option>
+                            </select>
+                          </div>
+                          <ng-template #statusDisplay>
+                            <span [ngClass]="{
+                              'text-yellow-600': schedule.Status === 'Pending',
+                              'text-green-600': schedule.Status === 'Completed',
+                              'text-red-600': schedule.Status === 'Cancelled'
+                            }">
+                              {{schedule.Status}}
+                            </span>
+                          </ng-template>
+                        </td>
+                        <td class="px-6 py-4 text-sm space-x-2 flex">
+                          <button 
+                            *ngIf="schedule.Status === 'Pending'"
+                            (click)="editSchedule({
+                              ScheduleID: schedule.ScheduleID,
+                              Topic: schedule.Topic,
+                              Subject: schedule.Subject,
+                              Room: schedule.RoomNumber,
+                              Date: schedule.ScheduledDate,
+                              Time: schedule.StartTime + ' - ' + schedule.EndTime,
+                              AcademicYear: schedule.AcademicYear,
+                              Semester: schedule.Semester,
+                              Status: schedule.Status
+                            })"
+                            class="btn btn-primary btn-sm">
+                            <i class="fas fa-edit"></i> Edit
+                          </button>
+                          
+                          <button 
+                            *ngIf="schedule.Status === 'Completed' && schedule.EvaluationID"
+                            (click)="downloadPdf(schedule)"
+                            class="px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-medium mr-2">
+                            <i class="fas fa-download mr-1"></i>
+                            PDF
+                          </button>
+                          
+                          <button 
+                            (click)="deleteSchedule(schedule.ScheduleID!)" 
+                            class="px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200 text-sm font-medium">
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- Submit Button -->
-          <div class="flex justify-end mt-8">
-            <button type="submit" 
-                    class="px-8 py-3 bg-[#800000] text-white rounded-lg hover:bg-[#600000] transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
-                    [disabled]="!scheduleForm.valid">
-              <i class="fas fa-calendar-plus"></i>
-              Create Schedule
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <!-- Schedules List -->
-      <div class="max-w-[97%] mx-auto mb-8">
-        <!-- Title and Filters Row -->
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-2xl font-bold text-[#800000]">
-            {{ isAdmin ? 'All Faculty Observation Schedules' : 'My Observation Schedules' }}
-          </h2>
-          
-          <!-- Filter Controls -->
-          <div class="flex gap-4">
-            <!-- Status Filter -->
-            <div class="w-48">
-              <select 
-                [(ngModel)]="selectedStatus"
-                (ngModelChange)="onStatusChange($event)"
-                class="block w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#800000] focus:border-[#800000]">
-                <option *ngFor="let option of statusOptions" [value]="option.value">
-                  {{ option.label }}
-                </option>
-              </select>
-            </div>
-
-            <!-- Sort By -->
-            <div class="w-48">
-              <select 
-                [(ngModel)]="sortBy"
-                (ngModelChange)="onSortChange()"
-                class="block w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#800000] focus:border-[#800000]">
-                <option *ngFor="let option of sortOptions" [value]="option.value">
-                  {{ option.label }}
-                </option>
-              </select>
-            </div>
-
-            <!-- Sort Order -->
-            <div class="w-48">
-              <select 
-                [(ngModel)]="sortOrder"
-                (ngModelChange)="onSortChange()"
-                class="block w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#800000] focus:border-[#800000]">
-                <option value="asc">Ascending</option>
-                <option value="desc">Descending</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Table Container -->
-        <div class="bg-white rounded-lg shadow-md">
-          <!-- Loading state -->
-          <div *ngIf="isLoading" class="flex justify-center py-8">
-            <!-- Loading spinner if needed -->
-          </div>
-
-          <!-- No data state -->
-          <div *ngIf="!isLoading && (!schedules || schedules.length === 0)" class="flex flex-col items-center justify-center py-12">
-            <i class="fas fa-calendar-times text-gray-400 text-5xl mb-3"></i>
-            <p class="text-gray-600">No schedules available</p>
-          </div>
-
-          <!-- Data table -->
-          <div *ngIf="!isLoading && schedules && schedules.length > 0">
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200">
-                <thead>
-                  <tr class="bg-[#800000]">
-                    <th *ngIf="isAdmin" class="px-6 py-4 text-left text-sm font-semibold text-white">Faculty Name</th>
-                    <th class="px-6 py-4 text-left text-sm font-semibold text-white">Topic</th>
-                    <th class="px-6 py-4 text-left text-sm font-semibold text-white">Subject</th>
-                    <th class="px-6 py-4 text-left text-sm font-semibold text-white">Room</th>
-                    <th class="px-6 py-4 text-left text-sm font-semibold text-white">Date</th>
-                    <th class="px-6 py-4 text-left text-sm font-semibold text-white">Time</th>
-                    <th class="px-6 py-4 text-left text-sm font-semibold text-white">Status</th>
-                    <th class="px-6 py-4 text-left text-sm font-semibold text-white">Actions</th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                  <tr *ngFor="let schedule of schedules" class="hover:bg-gray-100 transition-colors duration-150">
-                    <td *ngIf="isAdmin" class="px-6 py-4 text-sm text-gray-900">{{schedule.Faculty?.LastName}}, {{schedule.Faculty?.FirstName}}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">{{schedule.Topic}}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">{{schedule.Subject}}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">{{schedule.RoomNumber}}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">{{schedule.ScheduledDate | date}}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">{{schedule.StartTime}} - {{schedule.EndTime}}</td>
-                    <td class="px-6 py-4 text-sm">
-                      <div *ngIf="isAdmin; else statusDisplay">
-                        <select 
-                          [(ngModel)]="schedule.Status"
-                          (change)="updateStatus(schedule.ScheduleID!, schedule.Status)"
-                          class="block w-full rounded-md border border-gray-300 py-1 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#800000] focus:border-[#800000]"
-                          [ngClass]="{
-                            'text-yellow-600': schedule.Status === 'Pending',
-                            'text-green-600': schedule.Status === 'Completed',
-                            'text-red-600': schedule.Status === 'Cancelled'
-                          }">
-                          <option value="Pending">Pending</option>
-                          <option value="Completed">Completed</option>
-                          <option value="Cancelled">Cancelled</option>
-                        </select>
-                      </div>
-                      <ng-template #statusDisplay>
-                        <span [ngClass]="{
-                          'text-yellow-600': schedule.Status === 'Pending',
-                          'text-green-600': schedule.Status === 'Completed',
-                          'text-red-600': schedule.Status === 'Cancelled'
-                        }">
-                          {{schedule.Status}}
-                        </span>
-                      </ng-template>
-                    </td>
-                    <td class="px-6 py-4 text-sm space-x-2">
-                      <!-- Delete button - only show for admin/superadmin -->
-                      <button *ngIf="isAdmin" 
-                              (click)="deleteSchedule(schedule.ScheduleID!)" 
-                              class="px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200 text-sm font-medium">
-                        Delete
-                      </button>
-
-                      <!-- Download PDF button - show for both admin and faculty -->
-                      <button *ngIf="schedule.Status === 'Completed' && schedule.EvaluationID"
-                              (click)="downloadPdf(schedule)" 
-                              class="px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-medium flex items-center gap-1">
-                        <i class="fas fa-download"></i>
-                        PDF
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+          <!-- Calendar View -->
+          <div *ngSwitchCase="'calendar'">
+            <app-calendar-view></app-calendar-view>
           </div>
         </div>
       </div>
@@ -439,30 +512,34 @@
 
 <!-- Delete Confirmation Modal -->
 <div *ngIf="showDeletePrompt" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
-  <div class="relative p-6 w-full max-w-md bg-white rounded-lg shadow-lg">
+  <div class="relative bg-white rounded-lg shadow-lg w-[450px]">
     <!-- Header -->
-    <div class="bg-red-900 text-white p-4 -m-6 mb-6 rounded-t-lg">
+    <div class="bg-red-900 text-white p-4 rounded-t-lg">
       <h3 class="font-bold text-xl">Confirm Deletion</h3>
     </div>
     
     <!-- Content -->
-    <div class="py-4">
-      <div class="mb-4 text-red-600">
-        <p class="font-medium">Are you sure you want to delete this record?</p>
+    <div class="p-6">
+      <div class="mb-4">
+        <p class="font-medium text-red-600">Are you sure you want to delete this record?</p>
+        <p class="text-gray-600 mt-2">This action cannot be undone.</p>
       </div>
-      <p class="text-gray-600">This action cannot be undone.</p>
-    </div>
 
-    <!-- Actions -->
-    <div class="flex justify-end space-x-4 mt-6 pt-4 border-t border-gray-200">
-      <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-              (click)="cancelDelete()">
-        Cancel
-      </button>
-      <button class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-              (click)="confirmDelete()">
-        Delete
-      </button>
+      <!-- Actions -->
+      <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
+        <button 
+          (click)="cancelDelete()"
+          class="px-4 py-2 text-sm font-medium text-white bg-black border border-gray-300 rounded-md shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2"
+        >
+          Cancel
+        </button>
+        <button 
+          (click)="confirmDelete()"
+          class="px-4 py-2 text-sm font-medium text-white bg-red-900 border border-transparent rounded-md shadow-sm hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-900 focus:border-red-900"
+        >
+          Delete
+        </button>
+      </div>
     </div>
   </div>
 </div>

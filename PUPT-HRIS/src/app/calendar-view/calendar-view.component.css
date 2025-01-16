@@ -1,0 +1,40 @@
+::ng-deep .fc {
+  font-family: inherit;
+}
+
+::ng-deep .fc-toolbar-title {
+  color: #800000;
+}
+
+::ng-deep .fc-button-primary {
+  background-color: #800000 !important;
+  border-color: #800000 !important;
+}
+
+::ng-deep .fc-button-primary:hover {
+  background-color: #600000 !important;
+  border-color: #600000 !important;
+}
+
+::ng-deep .fc-event {
+  cursor: pointer;
+}
+
+::ng-deep .fc-event:hover {
+  opacity: 0.9;
+}
+
+::ng-deep .fc-header-toolbar {
+  position: relative;
+  z-index: 1;
+}
+
+::ng-deep .fc-button {
+  position: relative;
+  z-index: 2;
+}
+
+::ng-deep .fc-view-harness {
+  position: relative;
+  z-index: 1;
+}

@@ -23,43 +23,42 @@
   </div>
 
   <!-- Add this after the search bar, before the table -->
-  <div class="filters-container">
-    <!-- Role Filter -->
-    <select 
-      [(ngModel)]="selectedRole" 
-      (change)="applyFilters()"
-      class="filter-select"
-    >
-      <option value="">All Roles</option>
-      <option value="faculty">Faculty</option>
-      <option value="admin">Admin</option>
-    </select>
+  <div class="filters-container flex justify-between items-center mb-4">
+    <!-- Left side: Filters -->
+    <div class="flex gap-4">
+      <select 
+        [(ngModel)]="selectedEmploymentType" 
+        (change)="applyFilters()"
+        class="filter-select"
+      >
+        <option value="">All Employment Types</option>
+        <option value="fulltime">Full-Time</option>
+        <option value="parttime">Part-Time</option>
+        <option value="temporary">Temporary</option>
+        <option value="designee">Designee</option>
+      </select>
 
-    <!-- Employment Type Filter -->
-    <select 
-      [(ngModel)]="selectedEmploymentType" 
-      (change)="applyFilters()"
-      class="filter-select"
-    >
-      <option value="">All Employment Types</option>
-      <option value="fulltime">Full Time</option>
-      <option value="parttime">Part Time</option>
-      <option value="temporary">Temporary</option>
-      <option value="designee">Designee</option>
-    </select>
+      <select 
+        [(ngModel)]="selectedDepartment" 
+        (change)="applyFilters()"
+        class="filter-select"
+      >
+        <option value="">All Departments</option>
+        <option value="na">Not Applicable</option>
+        <option *ngFor="let dept of departments" [value]="dept.DepartmentID">
+          {{ dept.DepartmentName }}
+        </option>
+      </select>
+    </div>
 
-    <!-- Department Filter -->
-    <select 
-      [(ngModel)]="selectedDepartment" 
-      (change)="applyFilters()"
-      class="filter-select"
+    <!-- Right side: Generate PDF button -->
+    <button 
+      (click)="onGenerateClick()" 
+      class="btn btn-primary btn-sm btn-maroon"
     >
-      <option value="">All Departments</option>
-      <option value="na">Not Applicable</option>
-      <option *ngFor="let dept of departments" [value]="dept.DepartmentID">
-        {{ dept.DepartmentName }}
-      </option>
-    </select>
+      <i class="fas fa-file-pdf mr-2"></i>
+      Generate Faculty Profile
+    </button>
   </div>
 
   <div class="table-container">
@@ -78,7 +77,6 @@
                }">
             </i>
           </th>
-          <th class="p-4">Instructor Status</th>
           <th class="p-4">Department</th>
           <th class="p-4">Employment Type</th>
           <th class="p-4 w-36">Actions</th>
@@ -89,9 +87,8 @@
           <th class="p-4">{{ (currentPage - 1) * itemsPerPage + i + 1 }}</th>
           <td class="p-4">{{ user.Fcode || 'No information entered' }}</td>
           <td class="p-4">{{ formatUserName(user) }}</td>
-          <td class="p-4">{{ getRoleName(user.Roles) || 'No information entered' }}</td>
           <td class="p-4">{{ user.Department?.DepartmentName || 'No information entered' }}</td>
-          <td class="p-4">{{ user.EmploymentType || 'No information entered' }}</td>
+          <td class="p-4">{{ formatEmploymentType(user.EmploymentType) }}</td>
           <td class="p-4">
             <button class="btn btn-primary btn-sm btn-maroon" (click)="openModal(user)">View Info</button>
           </td>
@@ -550,6 +547,68 @@
     </div>
     <div class="modal-action">
       <button class="btn" (click)="closeProofModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add this modal/dialog somewhere in your template -->
+<div *ngIf="showGenerateOptions" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg shadow-xl w-[450px] transform transition-all">
+    <!-- Header -->
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h3 class="text-xl font-semibold text-gray-900">
+        <i class="fas fa-file-pdf mr-2 text-red-900"></i>
+        Generate Faculty Profile
+      </h3>
+    </div>
+
+    <!-- Body -->
+    <div class="px-6 py-4 space-y-4">
+      <!-- Department Filter -->
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700">Select Department:</label>
+        <select 
+          [(ngModel)]="generateScope.departmentId" 
+          class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-900 focus:border-red-900"
+        >
+          <option value="all">All Departments</option>
+          <option *ngFor="let dept of departments" [value]="dept.DepartmentID">
+            {{ dept.DepartmentName }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Employment Type Filter -->
+      <div class="space-y-2">
+        <label class="block text-sm font-medium text-gray-700">Select Employment Type:</label>
+        <select 
+          [(ngModel)]="generateScope.employmentType" 
+          class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-red-900 focus:border-red-900"
+        >
+          <option value="all">All Employment Types</option>
+          <option value="fulltime">Full-Time</option>
+          <option value="parttime">Part-Time</option>
+          <option value="temporary">Temporary</option>
+          <option value="designee">Designee</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-6 py-4 bg-gray-50 rounded-b-lg border-t border-gray-200 flex justify-end space-x-3">
+      <button 
+        (click)="cancelGenerate()" 
+        class="px-4 py-2 text-sm font-medium text-white bg-black border border-gray-300 rounded-md shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2"
+      >
+        Cancel
+      </button>
+      <button 
+        (click)="confirmGenerate()" 
+        class="px-4 py-2 text-sm font-medium text-white bg-red-900 border border-transparent rounded-md shadow-sm hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-900 focus:border-red-900"
+      >
+        <i class="fas fa-file-pdf mr-2"></i>
+        Generate
+      </button>
     </div>
   </div>
 </div>

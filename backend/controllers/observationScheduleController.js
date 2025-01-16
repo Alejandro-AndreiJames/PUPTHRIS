@@ -1,5 +1,6 @@
 const ObservationSchedule = require('../models/observationScheduleModel');
 const User = require('../models/userModel');
+const { Op } = require('sequelize');
 
 // Create a new observation schedule
 exports.createSchedule = async (req, res) => {
@@ -16,6 +17,26 @@ exports.createSchedule = async (req, res) => {
       FacultyID
     } = req.body;
 
+    // Check for existing active schedule
+    const existingSchedule = await ObservationSchedule.findOne({
+      where: {
+        FacultyID,
+        AcademicYear,
+        Semester,
+        Status: {
+          [Op.notIn]: ['Cancelled'] // Allow new schedule only if previous one is cancelled
+        }
+      }
+    });
+
+    if (existingSchedule) {
+      return res.status(400).json({
+        success: false,
+        message: 'You already have an active schedule for this semester. Please wait for the current schedule to be completed or cancelled.'
+      });
+    }
+
+    // If no existing active schedule, create new one
     const schedule = await ObservationSchedule.create({
       Topic,
       Subject,
@@ -47,28 +68,48 @@ exports.createSchedule = async (req, res) => {
 // Get all schedules
 exports.getAllSchedules = async (req, res) => {
   try {
-    const { campusId, status, sortBy = 'date', sortOrder = 'asc' } = req.query;
-    console.log('Raw campusId from query:', campusId);
-    console.log('Status filter:', status);
-    console.log('Sort by:', sortBy);
-    console.log('Sort order:', sortOrder);
+    const { 
+      campusId, 
+      status, 
+      sortBy = 'date', 
+      sortOrder = 'asc',
+      academicYear,
+      semester,
+      searchName
+    } = req.query;
     
     // Base where clauses
     let scheduleWhereClause = {};
     let userWhereClause = { isActive: true };
     
-    // Add campus filter if campusId is valid
-    if (campusId && typeof campusId === 'string') {
-      const parsedCampusId = parseInt(campusId, 10);
-      if (!isNaN(parsedCampusId)) {
-        userWhereClause.CollegeCampusID = parsedCampusId;
-        scheduleWhereClause.CollegeCampusID = parsedCampusId;
-      }
-    }
-
-    // Add status filter if provided
+    // Add filters
     if (status && ['Pending', 'Completed', 'Cancelled'].includes(status)) {
       scheduleWhereClause.Status = status;
+    }
+    if (academicYear) {
+      scheduleWhereClause.AcademicYear = academicYear;
+    }
+    if (semester) {
+      scheduleWhereClause.Semester = semester;
+    }
+    if (campusId) {
+      userWhereClause.CollegeCampusID = parseInt(campusId);
+    }
+
+    // Add name search if provided
+    if (searchName) {
+      userWhereClause[Op.or] = [
+        {
+          FirstName: {
+            [Op.like]: `%${searchName}%`
+          }
+        },
+        {
+          Surname: {
+            [Op.like]: `%${searchName}%`
+          }
+        }
+      ];
     }
 
     // Define sorting options
@@ -88,10 +129,6 @@ exports.getAllSchedules = async (req, res) => {
         order.push(['ScheduledDate', 'ASC']); // Default sorting
         order.push(['StartTime', 'ASC']);
     }
-
-    console.log('Schedule where clause:', scheduleWhereClause);
-    console.log('User where clause:', userWhereClause);
-    console.log('Order:', order);
 
     const schedules = await ObservationSchedule.findAll({
       where: scheduleWhereClause,
@@ -141,7 +178,7 @@ exports.getScheduleById = async (req, res) => {
       include: [{
         model: User,
         as: 'ObservedFaculty',
-        attributes: ['firstname', 'lastname', 'email']
+        attributes: ['UserID', 'FirstName', 'Surname', 'Email']
       }]
     });
 
@@ -155,9 +192,9 @@ exports.getScheduleById = async (req, res) => {
     const transformedSchedule = {
       ...schedule.toJSON(),
       Faculty: {
-        FirstName: schedule.ObservedFaculty?.firstname,
-        LastName: schedule.ObservedFaculty?.lastname,
-        Email: schedule.ObservedFaculty?.email
+        FirstName: schedule.ObservedFaculty?.FirstName || '',
+        LastName: schedule.ObservedFaculty?.Surname || '',
+        Email: schedule.ObservedFaculty?.Email || ''
       }
     };
 
@@ -336,15 +373,18 @@ exports.getFacultySchedules = async (req, res) => {
         as: 'ObservedFaculty',
         attributes: ['UserID', 'FirstName', 'Surname', 'Email']
       }],
-      order: [['createdAt', 'DESC']]
+      order: [
+        ['ScheduledDate', 'ASC'],
+        ['StartTime', 'ASC']
+      ]
     });
 
     const transformedSchedules = schedules.map(schedule => ({
       ...schedule.toJSON(),
       Faculty: {
-        FirstName: schedule.ObservedFaculty?.FirstName,
-        LastName: schedule.ObservedFaculty?.Surname,
-        Email: schedule.ObservedFaculty?.Email
+        FirstName: schedule.ObservedFaculty?.FirstName || '',
+        LastName: schedule.ObservedFaculty?.Surname || '',
+        Email: schedule.ObservedFaculty?.Email || ''
       }
     }));
 
