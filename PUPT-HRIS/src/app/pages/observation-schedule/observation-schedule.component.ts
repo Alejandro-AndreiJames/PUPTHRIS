@@ -50,6 +50,8 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
   selectedSemester: string = '';
   searchName: string = '';
   private searchDebounce: any;
+  isEditing: boolean = false;
+  editingSchedule: ObservationSchedule | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -132,29 +134,35 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
         CollegeCampusID: this.campusId
       };
 
-      this.scheduleService.createSchedule(formData).subscribe({
-        next: (response) => {
-          this.loadSchedules();
-          this.scheduleForm.reset({
-            Semester: '1st',
-            AcademicYear: this.currentAcademicYear,
-            FacultyID: this.userId
+      if (this.isEditing && this.editingSchedule) {
+        // Update existing schedule
+        this.scheduleService.updateSchedule(this.editingSchedule.ScheduleID!, formData)
+          .subscribe({
+            next: (response) => {
+              this.loadSchedules();
+              this.resetForm();
+              this.showToastNotification('Schedule updated successfully', 'success');
+            },
+            error: (error) => {
+              console.error('Error updating schedule:', error);
+              this.showToastNotification('Error updating schedule', 'error');
+            }
           });
-          this.showToastNotification('Schedule created successfully', 'success');
-          this.showScheduleForm = false; // Hide the form after successful creation
-        },
-        error: (error) => {
-          console.error('Error creating schedule:', error);
-          // Show specific error message if it's a duplicate schedule
-          if (error.status === 400) {
-            this.showToastNotification(error.error.message || 'Cannot create duplicate schedule', 'warning');
-          } else {
-            this.showToastNotification('Error creating schedule', 'error');
-          }
-        }
-      });
-    } else {
-      this.showToastNotification('Please fill in all required fields', 'warning');
+      } else {
+        // Create new schedule
+        this.scheduleService.createSchedule(formData)
+          .subscribe({
+            next: (response) => {
+              this.loadSchedules();
+              this.resetForm();
+              this.showToastNotification('Schedule created successfully', 'success');
+            },
+            error: (error) => {
+              console.error('Error creating schedule:', error);
+              this.showToastNotification('Error creating schedule', 'error');
+            }
+          });
+      }
     }
   }
 
@@ -325,5 +333,37 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
     if (this.searchDebounce) {
       clearTimeout(this.searchDebounce);
     }
+  }
+
+  editSchedule(schedule: ObservationSchedule): void {
+    this.isEditing = true;
+    this.editingSchedule = { ...schedule };
+    this.showScheduleForm = true;
+    
+    // Populate the form with existing data
+    this.scheduleForm.patchValue({
+      Topic: schedule.Topic,
+      Subject: schedule.Subject,
+      RoomNumber: schedule.RoomNumber,
+      ScheduledDate: schedule.ScheduledDate,
+      StartTime: schedule.StartTime,
+      EndTime: schedule.EndTime,
+      AcademicYear: schedule.AcademicYear,
+      Semester: schedule.Semester
+    });
+  }
+
+  private resetForm(): void {
+    this.scheduleForm.reset({
+      Semester: '1st',
+      AcademicYear: this.currentAcademicYear
+    });
+    this.isEditing = false;
+    this.editingSchedule = null;
+    this.showScheduleForm = false;
+  }
+
+  get formTitle(): string {
+    return this.isEditing ? 'Edit Observation Schedule' : 'Create New Schedule';
   }
 }

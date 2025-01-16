@@ -144,7 +144,7 @@
       <!-- Schedule Form -->
       <div *ngIf="isFaculty && showScheduleForm" class="bg-white rounded-lg shadow-md mb-8">
         <div class="p-6 bg-[#800000] rounded-t-lg">
-          <h2 class="text-2xl font-bold text-white">Create Observation Schedule</h2>
+          <h2 class="text-2xl font-bold text-white">{{ formTitle }}</h2>
         </div>
         
         <form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()" class="p-8">
@@ -227,8 +227,8 @@
             <button type="submit" 
                     class="px-8 py-3 bg-[#800000] text-white rounded-lg hover:bg-[#600000] transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
                     [disabled]="!scheduleForm.valid">
-              <i class="fas fa-calendar-plus"></i>
-              Create Schedule
+              <i class="fas" [ngClass]="isEditing ? 'fa-save' : 'fa-calendar-plus'"></i>
+              {{ isEditing ? 'Update' : 'Create' }} Schedule
             </button>
           </div>
         </form>
@@ -390,6 +390,16 @@
                       </ng-template>
                     </td>
                     <td class="px-6 py-4 text-sm space-x-2 flex">
+                      <!-- Edit button - only show for faculty's own schedules -->
+                      <button 
+                        *ngIf="isFaculty && schedule.FacultyID === userId && schedule.Status === 'Pending'"
+                        (click)="editSchedule(schedule)" 
+                        class="px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-medium flex items-center gap-1">
+                        <i class="fas fa-edit"></i>
+                        Edit
+                      </button>
+
+                      <!-- Existing buttons -->
                       <button 
                         (click)="deleteSchedule(schedule.ScheduleID!)" 
                         class="px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200 text-sm font-medium">
