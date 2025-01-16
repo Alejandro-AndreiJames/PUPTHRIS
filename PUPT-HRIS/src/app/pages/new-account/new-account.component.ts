@@ -69,7 +69,6 @@ export class NewAccountComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log('NewAccountComponent initialized');
     this.loadRoles();
     this.loadCollegeCampuses();
   
@@ -82,7 +81,6 @@ export class NewAccountComponent implements OnInit {
   
     // Subscribe to future campus changes
     this.campusContextService.getCampusId().subscribe(campusId => {
-      console.log('Campus changed in NewAccountComponent:', campusId);
       if (campusId !== null && campusId !== this.currentUserCollegeCampusID) {
         this.currentUserCollegeCampusID = campusId;
         this.loadDepartments();
@@ -112,16 +110,12 @@ export class NewAccountComponent implements OnInit {
   }
 
   loadDepartments(): void {
-    console.log('Loading departments. Current user college campus ID:', this.currentUserCollegeCampusID);
     if (this.currentUserCollegeCampusID) {
       this.departmentService.getDepartments(this.currentUserCollegeCampusID).subscribe({
         next: departments => {
-          console.log('Fetched departments:', departments);
           this.departments = departments;
           this.newAccountForm.get('DepartmentID')?.setValue('');
           if (departments.length === 0) {
-            console.log('No departments found for this campus');
-            // Remove the toast notification from here
           }
         },
         error: error => {
@@ -130,7 +124,6 @@ export class NewAccountComponent implements OnInit {
         }
       });
     } else {
-      console.log('No college campus ID available, skipping department load');
       this.departments = [];
     }
   }
@@ -321,18 +314,14 @@ export class NewAccountComponent implements OnInit {
   getCurrentUserCollegeCampus(): void {
     this.campusContextService.getCampusId().subscribe(campusId => {
       if (campusId !== null) {
-        console.log('Using campus ID from context:', campusId);
         this.currentUserCollegeCampusID = campusId;
         this.loadDepartments();
       } else {
-        console.log('No campus ID in context, fetching from user details');
         const decodedToken = this.authService.getDecodedToken();
         if (decodedToken && decodedToken.userId) {
           this.userService.getUserById(decodedToken.userId).subscribe({
             next: (user) => {
-              console.log('Current user:', user);
               this.currentUserCollegeCampusID = user.CollegeCampusID;
-              console.log('Set currentUserCollegeCampusID:', this.currentUserCollegeCampusID);
               this.campusContextService.updateCampus(this.currentUserCollegeCampusID);
               this.loadDepartments();
             },
@@ -348,14 +337,11 @@ export class NewAccountComponent implements OnInit {
   }
 
   loadDepartmentsForCampus(campusId: number): void {
-    console.log('Loading departments for campus ID:', campusId);
     this.departmentService.getDepartments(campusId).subscribe({
       next: departments => {
-        console.log('Fetched departments:', departments);
         this.departments = departments;
         this.newAccountForm.get('DepartmentID')?.setValue('');
         if (departments.length === 0) {
-          console.log('No departments found for this campus');
         }
       },
       error: error => {

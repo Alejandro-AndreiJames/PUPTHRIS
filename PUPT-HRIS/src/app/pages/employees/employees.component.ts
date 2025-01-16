@@ -120,13 +120,12 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     this.route.queryParams.subscribe(params => {
       if (params['department']) {
         this.selectedDepartment = params['department'];
-        this.applyFilters(); // This should trigger the filtering
+        this.applyFilters();
       }
     });
 
     this.campusSubscription = this.campusContextService.getCampusId().subscribe(
       id => {
-        console.log('Received campus ID:', id);
         if (id !== null) {
           this.campusId = id;
           this.loadActiveUsers();
@@ -147,7 +146,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
 
   loadActiveUsers(): void {
     if (this.campusId === null) {
-      console.error('Campus ID is null');
       return;
     }
     
@@ -167,11 +165,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       params.search = this.searchTerm;
     }
 
-    console.log('Request params:', params); // Debug log
-
     this.userService.getUsers(params).subscribe({
       next: (response) => {
-        console.log('Response:', response);
         this.users = response.data;
         this.filteredUsers = [...this.users];
         this.totalPages = response.metadata.totalPages;
@@ -179,7 +174,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         this.sortUsersByName();
       },
       error: (error) => {
-        console.error('Error loading users:', error);
       }
     });
   }
@@ -190,7 +184,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       if (roles.some(role => role.RoleName.toLowerCase() === 'staff')) return 'Staff';
       if (roles.some(role => role.RoleName.toLowerCase() === 'admin')) return 'Admin';
       if (roles.some(role => role.RoleName.toLowerCase() === 'superadmin')) return 'Super Admin';
-      return roles[0].RoleName; // Return the first role if none of the above match
+      return roles[0].RoleName;
     }
     return 'Unknown';
   }
@@ -238,7 +232,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         }
       },
       error: (error) => {
-        console.error('Error loading profile image:', error);
         if (this.selectedUser) {
           this.selectedUser.profileImageUrl = 'assets/images/default-avatar.png';
         }
@@ -260,14 +253,11 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   }
 
   fetchBasicDetails(userId: number): void {
-    console.log('Fetching basic details for user ID:', userId);
     this.basicDetailsService.getBasicDetails(userId).subscribe(
       (details) => {
-        console.log('Received basic details:', details);
         this.basicDetails = details;
       },
       (error) => {
-        console.error('Error fetching basic details', error);
         this.basicDetails = null;
       }
     );
@@ -277,10 +267,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     this.educationService.getEducationByUser(userId).subscribe({
       next: (details) => {
         this.educationDetails = details;
-        console.log('Education details loaded:', details);
       },
       error: (error) => {
-        console.error('Error fetching education details', error);
         this.educationDetails = null;
       }
     });
@@ -289,11 +277,9 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   fetchPersonalDetails(userId: number): void {
     this.personalDetailsService.getPersonalDetails(userId).subscribe(
       (details) => {
-        console.log('Fetched personal details:', details); // Log to check if details are fetched
         this.personalDetails = details;
       },
       (error) => {
-        console.error('Error fetching personal details', error);
         this.personalDetails = null;
       }
     );
@@ -303,7 +289,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     this.voluntaryWorkService.getVoluntaryWorks(userId).subscribe(
       (details) => (this.voluntaryWorks = details),
       (error) => {
-        console.error('Error fetching voluntary works', error);
         this.voluntaryWorks = null;
       }
     );
@@ -315,7 +300,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         this.trainingSeminars = trainings;
       },
       (error) => {
-        console.error('Error fetching training seminars', error);
         this.trainingSeminars = null;
       }
     );
@@ -347,9 +331,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   }
 
   setActiveTab(tab: string): void {
-    console.log('Setting active tab to:', tab);
     this.activeTab = tab;
-    console.log('Current tab data:', (this as any)[tab + 'Details']);
     if (tab === 'achievements' && this.selectedUser) {
       this.loadAchievements(this.selectedUser.UserID);
     }
@@ -417,7 +399,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         this.departments = departments;
       },
       error: (error) => {
-        console.error('Error loading departments:', error);
       }
     });
   }
@@ -430,7 +411,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         }
       },
       error: (error) => {
-        console.error('Error loading profile image for user:', user.UserID, error);
         user.profileImageUrl = 'assets/images/default-avatar.png';
       }
     });
@@ -438,7 +418,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
 
   loadUsers(): void {
     if (this.campusId === null) {
-      console.error('Cannot load users: Campus ID is null');
       return;
     }
 
@@ -455,7 +434,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         this.applyFilters();
       },
       error: (error) => {
-        console.error('Error loading users:', error);
       }
     });
   }
@@ -515,8 +493,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   }
 
   onProofImageError(): void {
-    console.error('Error loading proof image');
-    // You can add error handling here if needed
   }
 
   loadAchievements(userId: number): void {
@@ -526,7 +502,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         if (error.status !== 404) {
-          console.error('Error loading achievements:', error);
         }
         this.achievements = [];
       }
@@ -540,7 +515,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         if (error.status !== 404) {
-          console.error('Error loading memberships:', error);
         }
         this.memberships = [];
       }
@@ -554,7 +528,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         if (error.status !== 404) {
-          console.error('Error loading professional licenses:', error);
         }
         this.professionalLicenses = [];
       }
@@ -568,7 +541,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         if (error.status !== 404) {
-          console.error('Error loading employment information:', error);
         }
         this.employmentInfo = null;
       }
@@ -582,7 +554,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         if (error.status !== 404) {
-          console.error('Error loading certifications:', error);
         }
         this.certifications = [];
       }
@@ -680,7 +651,6 @@ export class EmployeeComponent implements OnInit, OnDestroy {
           this.showGenerateOptions = false;
         },
         error: (error) => {
-          console.error('Error generating PDF:', error);
         }
       });
   }
