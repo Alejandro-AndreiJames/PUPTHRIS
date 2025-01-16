@@ -123,7 +123,7 @@ exports.getUsers = async (req, res) => {
       ];
     }
 
-    // Get users with role filtering
+    // Get users with role filtering and proper sorting
     const users = await User.findAll({
       where: whereClause,
       include: [
@@ -143,9 +143,12 @@ exports.getUsers = async (req, res) => {
           })
         }
       ],
+      order: [
+        ['Surname', 'ASC'],  // Primary sort by Surname
+        ['FirstName', 'ASC'] // Secondary sort by FirstName
+      ],
       offset: offset,
       limit: limit,
-      order: [['UserID', 'ASC']],
       distinct: true
     });
 
@@ -186,6 +189,19 @@ exports.getUserById = async (req, res) => {
   try {
     const userId = req.params.id;
     const user = await User.findByPk(userId, {
+      attributes: [
+        'UserID',
+        'Fcode',
+        'Email',
+        'EmploymentType',
+        'DepartmentID',
+        'Surname',
+        'FirstName',
+        'MiddleName',
+        'NameExtension',
+        'isActive',
+        'CollegeCampusID'
+      ],
       include: [
         {
           model: Department,
@@ -193,10 +209,10 @@ exports.getUserById = async (req, res) => {
           attributes: ['DepartmentName']
         },
         {
-          model: Role, // Include the roles in the response
-          as: 'Roles', 
-          through: { attributes: [] }, // Exclude the join table attributes
-          attributes: ['RoleName'], // Only fetch the role names
+          model: Role,
+          as: 'Roles',
+          through: { attributes: [] },
+          attributes: ['RoleName']
         },
       ],
     });

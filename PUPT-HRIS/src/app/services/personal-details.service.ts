@@ -19,7 +19,6 @@ export class PersonalDetailsService {
   }
 
   getPersonalDetails(userId: number): Observable<PersonalDetails> {
-    console.log(`Fetching personal details for user ${userId}`); // Add this to log when it's called
     return this.http.get<PersonalDetails>(`${this.apiUrl}/user/${userId}`, { headers: this.getHeaders() })
       .pipe(catchError(this.handleError));
   }
@@ -36,7 +35,6 @@ export class PersonalDetailsService {
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
-    console.error('An error occurred:', error);
     return throwError(error.message || 'Server error');
   }
 }

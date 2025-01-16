@@ -122,6 +122,9 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
 
+  sortColumn: string = 'name';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
   constructor(
     private campusContextService: CampusContextService,
     private userService: UserService,
@@ -166,7 +169,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
 
   loadFaculties(): void {
     if (this.campusId === null) {
-      console.error('Campus ID is null');
       return;
     }
     
@@ -174,31 +176,25 @@ export class EvaluationComponent implements OnInit, OnDestroy {
       page: this.currentPage,
       limit: this.itemsPerPage,
       campusId: this.campusId,
-      role: 'faculty',
       departmentId: this.selectedDepartment || undefined,
       employmentType: this.selectedEmploymentType || undefined,
       search: this.searchTerm || undefined
     };
 
-    console.log('Requesting faculties with params:', params);
-
     this.userService.getUsers(params).subscribe({
       next: (response) => {
-        console.log('Faculty response:', response);
         this.users = response.data;
         this.filteredUsers = [...this.users];
         this.totalPages = response.metadata.totalPages;
         this.paginateUsers();
       },
       error: (error) => {
-        console.error('Error loading faculties:', error);
       }
     });
   }
 
   loadDepartments(): void {
     if (this.campusId === null) {
-      console.error('Campus ID is null');
       return;
     }
     this.departmentService.getDepartments(this.campusId).subscribe(
@@ -206,7 +202,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
         this.departments = departments;
       },
       (error) => {
-        console.error('Error loading departments:', error);
       }
     );
   }
@@ -315,7 +310,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
 
       this.evaluationService.updateEvaluation(this.currentEvaluationId, evaluationData).subscribe({
         next: (response) => {
-          console.log('Update successful:', response);
           this.showToast('Evaluation updated successfully', 'success');
           this.closeEvaluationModal();
           if (this.showEvaluationHistory && this.selectedUser) {
@@ -323,7 +317,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
           }
         },
         error: (error) => {
-          console.error('Update failed:', error);
           this.showToast('Failed to update evaluation. Please try again.', 'error');
         }
       });
@@ -334,7 +327,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
           this.closeEvaluationModal();
         },
         error: (error) => {
-          console.error('Submission failed:', error);
           this.showToast('Failed to submit evaluation. Please try again.', 'error');
         }
       });
@@ -355,12 +347,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
         this.ratings[category.id] = score.Score;
       }
     });
-
-    console.log('Loaded evaluation:', {
-      comments: this.comments,
-      courseSection: this.courseYearSection,
-      scores: this.ratings
-    });
   }
 
   calculateRatingDescription(score: number): { description: QualitativeRating, scale: number } {
@@ -378,11 +364,9 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   }
 
   viewEvaluationHistory(user: User): void {
-    console.log('View history clicked for user:', user);
     this.selectedUser = user;
     this.evaluationService.getFacultyEvaluationHistory(user.UserID).subscribe({
       next: (history) => {
-        console.log('Received history:', history);
         this.evaluationHistory = history.sort((a: any, b: any) => {
           // Parse academic years into comparable numbers
           const yearA = parseInt(a.AcademicYear.split('-')[0]);
@@ -404,7 +388,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
         }, 100);
       },
       error: (error) => {
-        console.error('Error fetching evaluation history:', error);
         // Optionally show an error message to the user
         alert('Failed to load evaluation history. Please try again.');
       }
@@ -413,7 +396,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
 
   private createOrUpdateChart(): void {
     if (!this.chartCanvas) {
-      console.error('Chart canvas not found');
       return;
     }
 
@@ -434,7 +416,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
 
     const ctx = this.chartCanvas.nativeElement.getContext('2d');
     if (!ctx) {
-      console.error('Could not get chart context');
       return;
     }
 
@@ -538,7 +519,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
         this.evaluationToDelete = null;
       },
       error: (error) => {
-        console.error('Error deleting evaluation:', error);
         this.showToast('Failed to delete evaluation. Please try again.', 'error');
       }
     });
@@ -698,5 +678,52 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   onEmploymentTypeChange(): void {
     this.currentPage = 1;
     this.loadFaculties();
+  }
+
+  formatUserName(user: User): string {
+    const nameParts = [
+      user.Surname,
+      user.FirstName,
+      user.MiddleName,
+      user.NameExtension
+    ].filter(part => part && part.trim() !== '');
+    
+    return nameParts.join(', ');
+  }
+
+  sortData(column: string): void {
+    // If clicking the same column, toggle direction
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+
+    this.paginatedUsers.sort((a, b) => {
+      let comparison = 0;
+      
+      if (column === 'name') {
+        const nameA = this.formatUserName(a).toLowerCase();
+        const nameB = this.formatUserName(b).toLowerCase();
+        comparison = nameA.localeCompare(nameB);
+      }
+      
+      // Reverse if descending
+      return this.sortDirection === 'desc' ? -comparison : comparison;
+    });
+  }
+
+  formatEmploymentType(type: string | null): string {
+    if (!type) return 'No information entered';
+    
+    const formats: { [key: string]: string } = {
+      'fulltime': 'Full-Time',
+      'parttime': 'Part-Time',
+      'temporary': 'Temporary',
+      'designee': 'Designee'
+    };
+
+    return formats[type.toLowerCase()] || type;
   }
 }

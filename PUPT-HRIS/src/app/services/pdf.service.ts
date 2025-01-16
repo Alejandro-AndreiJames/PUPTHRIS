@@ -13,10 +13,15 @@ export class PdfService {
 
   generateFacultyProfilePdf(filters?: { 
     departmentId?: string,
-    employmentType?: string 
+    employmentType?: string,
+    campusId?: number
   }): Observable<Blob> {
     let params = new HttpParams();
     
+    if (filters?.campusId !== undefined && filters?.campusId !== null) {
+      params = params.set('campusId', Number(filters.campusId).toString());
+    }
+
     if (filters?.departmentId && filters.departmentId !== 'all') {
       params = params.set('departmentId', filters.departmentId);
     }

@@ -111,67 +111,45 @@ export class DashboardService {
   }
 
   getMaleUsers(campusId: number): Observable<any[]> {
-    console.log('Service calling getMaleUsers with campusId:', campusId);
     return this.http.get<any[]>(`${this.apiUrl}/male-users`, {
       params: { campusId: campusId.toString() },
       headers: this.getHeaders()
     }).pipe(
-      tap(response => console.log('Service received response:', response)),
-      catchError(error => {
-        console.error('Service error:', error);
-        return throwError(() => error);
-      })
+      catchError(this.handleError)
     );
   }
 
   getFacultyUsers(campusId: number): Observable<any[]> {
-    console.log('Requesting faculty users for campus:', campusId);
     return this.http.get<any[]>(`${this.apiUrl}/faculty-users`, {
       params: { campusId: campusId.toString() }
-    }).pipe(
-      tap(response => console.log('Faculty users response:', response))
-    );
+    });
   }
 
   getStaffUsers(campusId: number): Observable<any[]> {
-    console.log('Requesting staff users for campus:', campusId);
     return this.http.get<any[]>(`${this.apiUrl}/staff-users`, {
       params: { campusId: campusId.toString() }
-    }).pipe(
-      tap(response => console.log('Staff users response:', response))
-    );
+    });
   }
 
   getDoctorateUsers(campusId: number): Observable<any[]> {
-    console.log('Requesting doctorate users for campus:', campusId);
     return this.http.get<any[]>(`${this.apiUrl}/doctorate-users`, {
       params: { campusId: campusId.toString() },
       headers: this.getHeaders()
     }).pipe(
-      tap(response => console.log('Doctorate users response:', response)),
-      catchError(error => {
-        console.error('Service error:', error);
-        return throwError(() => error);
-      })
+      catchError(this.handleError)
     );
   }
 
   getMastersUsers(campusId: number): Observable<any[]> {
-    console.log('Requesting masters users for campus:', campusId);
     return this.http.get<any[]>(`${this.apiUrl}/masters-users`, {
       params: { campusId: campusId.toString() },
       headers: this.getHeaders()
     }).pipe(
-      tap(response => console.log('Masters users response:', response)),
-      catchError(error => {
-        console.error('Service error:', error);
-        return throwError(() => error);
-      })
+      catchError(this.handleError)
     );
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
-    console.error('An error occurred:', error);
     return throwError(() => error.message || 'Server error');
   }
 }

@@ -56,15 +56,9 @@ export class EvaluationService {
   }
 
   updateEvaluation(evaluationId: number, evaluation: EvaluationSubmission): Observable<any> {
-    console.log('Updating evaluation:', evaluationId, evaluation);
     return this.http.put(`${this.apiUrl}/evaluations/${evaluationId}`, evaluation, {
       headers: this.getHeaders()
-    }).pipe(
-      catchError(error => {
-        console.error('Update evaluation error:', error);
-        return throwError(() => error);
-      })
-    );
+    }).pipe(catchError(this.handleError));
   }
 
   deleteEvaluation(evaluationId: number): Observable<any> {
@@ -134,7 +128,6 @@ export class EvaluationService {
   }
 
   private handleError(error: any): Observable<never> {
-    console.error('An error occurred:', error);
     return throwError(() => error);
   }
 }
