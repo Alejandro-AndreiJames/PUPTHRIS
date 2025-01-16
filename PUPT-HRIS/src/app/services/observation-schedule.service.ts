@@ -114,7 +114,13 @@ export class ObservationScheduleService {
     if (academicYear) params = params.set('academicYear', academicYear);
     if (semester) params = params.set('semester', semester);
 
-    return this.http.get(`${this.apiUrl}/faculty/${facultyId}/schedules`, { params });
+    return this.http.get(
+      `${this.apiUrl}/faculty/${facultyId}/schedules`, 
+      { 
+        headers: this.getHeaders(),
+        params 
+      }
+    );
   }
 
   // Add this method to the ObservationScheduleService class

@@ -1,0 +1,101 @@
+<div class="calendar-container p-4">
+  <div class="bg-white rounded-lg shadow-md">
+    <div class="p-4">
+      <!-- Calendar Header -->
+      <div class="mb-4">
+        <h2 class="text-2xl font-bold text-[#800000]">Observation Schedule Calendar</h2>
+      </div>
+
+      <!-- Legend -->
+      <div class="flex gap-4 mb-4">
+        <div class="flex items-center">
+          <div class="w-4 h-4 rounded bg-[#FFA500] mr-2"></div>
+          <span>Pending</span>
+        </div>
+        <div class="flex items-center">
+          <div class="w-4 h-4 rounded bg-[#4CAF50] mr-2"></div>
+          <span>Completed</span>
+        </div>
+        <div class="flex items-center">
+          <div class="w-4 h-4 rounded bg-[#F44336] mr-2"></div>
+          <span>Cancelled</span>
+        </div>
+      </div>
+
+      <!-- Calendar -->
+      <div>
+        <full-calendar [options]="calendarOptions"></full-calendar>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Replace the ng-template modal with this DaisyUI modal -->
+<dialog id="schedule-modal" class="modal">
+  <div class="modal-box max-w-md bg-white rounded-lg shadow-xl">
+    <!-- Header -->
+    <div class="bg-[#800000] text-white p-4 -m-6 mb-6 rounded-t-lg">
+      <h3 class="font-bold text-xl">Schedule Details</h3>
+    </div>
+
+    <!-- Content -->
+    <div *ngIf="selectedEvent" class="space-y-4 mt-8">
+      <!-- Topic -->
+      <div class="flex flex-col">
+        <label class="text-sm text-gray-600 font-medium">Topic</label>
+        <p class="text-gray-900 font-semibold">{{selectedEvent.title}}</p>
+      </div>
+
+      <!-- Faculty -->
+      <div class="flex flex-col">
+        <label class="text-sm text-gray-600 font-medium">Faculty</label>
+        <p class="text-gray-900 font-semibold">{{selectedEvent.faculty}}</p>
+      </div>
+
+      <!-- Subject -->
+      <div class="flex flex-col">
+        <label class="text-sm text-gray-600 font-medium">Subject</label>
+        <p class="text-gray-900 font-semibold">{{selectedEvent.subject}}</p>
+      </div>
+
+      <!-- Room -->
+      <div class="flex flex-col">
+        <label class="text-sm text-gray-600 font-medium">Room</label>
+        <p class="text-gray-900 font-semibold">{{selectedEvent.room}}</p>
+      </div>
+
+      <!-- Time -->
+      <div class="flex flex-col">
+        <label class="text-sm text-gray-600 font-medium">Time</label>
+        <p class="text-gray-900 font-semibold">{{selectedEvent.startTime}} - {{selectedEvent.endTime}}</p>
+      </div>
+
+      <!-- Status -->
+      <div class="flex flex-col">
+        <label class="text-sm text-gray-600 font-medium">Status</label>
+        <span class="font-semibold"
+              [ngClass]="{
+                'text-yellow-600': selectedEvent.status === 'Pending',
+                'text-green-600': selectedEvent.status === 'Completed',
+                'text-red-600': selectedEvent.status === 'Cancelled'
+              }">
+          {{selectedEvent.status}}
+        </span>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-action mt-8 border-t pt-4">
+      <form method="dialog">
+        <button class="btn bg-[#800000] hover:bg-[#600000] text-white border-none">
+          Close
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Click outside to close -->
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>

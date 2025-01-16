@@ -371,17 +371,20 @@ exports.getFacultySchedules = async (req, res) => {
       include: [{
         model: User,
         as: 'ObservedFaculty',
-        attributes: ['UserID', 'firstname', 'lastname', 'email']
+        attributes: ['UserID', 'FirstName', 'Surname', 'Email']
       }],
-      order: [['createdAt', 'DESC']]
+      order: [
+        ['ScheduledDate', 'ASC'],
+        ['StartTime', 'ASC']
+      ]
     });
 
     const transformedSchedules = schedules.map(schedule => ({
       ...schedule.toJSON(),
       Faculty: {
-        FirstName: schedule.ObservedFaculty?.FirstName,
-        LastName: schedule.ObservedFaculty?.Lastname,
-        Email: schedule.ObservedFaculty?.Email
+        FirstName: schedule.ObservedFaculty?.FirstName || '',
+        LastName: schedule.ObservedFaculty?.Surname || '',
+        Email: schedule.ObservedFaculty?.Email || ''
       }
     }));
 

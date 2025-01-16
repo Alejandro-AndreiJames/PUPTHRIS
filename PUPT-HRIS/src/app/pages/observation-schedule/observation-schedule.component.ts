@@ -6,13 +6,19 @@ import { jwtDecode } from 'jwt-decode';
 import { ObservationScheduleService, ObservationSchedule } from '../../services/observation-schedule.service';
 import { AuthService } from '../../services/auth.service';
 import { CampusContextService } from '../../services/campus-context.service';
+import { CalendarViewComponent } from '../../calendar-view/calendar-view.component';
 
 @Component({
   selector: 'app-observation-schedule',
   templateUrl: './observation-schedule.component.html',
   styleUrls: ['./observation-schedule.component.css'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule]
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule, 
+    FormsModule,
+    CalendarViewComponent
+  ]
 })
 export class ObservationScheduleComponent implements OnInit, OnDestroy {
   scheduleForm: FormGroup = this.initializeForm();
@@ -52,6 +58,7 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
   private searchDebounce: any;
   isEditing: boolean = false;
   editingSchedule: ObservationSchedule | null = null;
+  viewMode: 'table' | 'calendar' = 'table';
 
   constructor(
     private fb: FormBuilder,
@@ -365,5 +372,9 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
 
   get formTitle(): string {
     return this.isEditing ? 'Edit Observation Schedule' : 'Create New Schedule';
+  }
+
+  changeView(view: 'table' | 'calendar'): void {
+    this.viewMode = view;
   }
 }
