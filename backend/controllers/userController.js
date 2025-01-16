@@ -189,6 +189,19 @@ exports.getUserById = async (req, res) => {
   try {
     const userId = req.params.id;
     const user = await User.findByPk(userId, {
+      attributes: [
+        'UserID',
+        'Fcode',
+        'Email',
+        'EmploymentType',
+        'DepartmentID',
+        'Surname',
+        'FirstName',
+        'MiddleName',
+        'NameExtension',
+        'isActive',
+        'CollegeCampusID'
+      ],
       include: [
         {
           model: Department,
@@ -196,10 +209,10 @@ exports.getUserById = async (req, res) => {
           attributes: ['DepartmentName']
         },
         {
-          model: Role, // Include the roles in the response
-          as: 'Roles', 
-          through: { attributes: [] }, // Exclude the join table attributes
-          attributes: ['RoleName'], // Only fetch the role names
+          model: Role,
+          as: 'Roles',
+          through: { attributes: [] },
+          attributes: ['RoleName']
         },
       ],
     });
