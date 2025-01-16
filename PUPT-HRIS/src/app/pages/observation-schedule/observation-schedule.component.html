@@ -236,48 +236,77 @@
 
       <!-- Schedules List -->
       <div class="max-w-[97%] mx-auto mb-8">
-        <!-- Title and Filters Row -->
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-2xl font-bold text-[#800000]">
-            {{ isAdmin ? 'All Faculty Observation Schedules' : 'My Observation Schedules' }}
-          </h2>
-          
-          <!-- Filter Controls -->
-          <div class="flex gap-4">
-            <!-- Status Filter -->
-            <div class="w-48">
-              <select 
-                [(ngModel)]="selectedStatus"
-                (ngModelChange)="onStatusChange($event)"
-                class="block w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#800000] focus:border-[#800000]">
-                <option *ngFor="let option of statusOptions" [value]="option.value">
-                  {{ option.label }}
-                </option>
-              </select>
-            </div>
+        <!-- Title -->
+        <div class="mb-4">
+          <h2 class="text-2xl font-bold text-[#800000]">All Faculty Observation Schedules</h2>
+        </div>
 
-            <!-- Sort By -->
-            <div class="w-48">
-              <select 
-                [(ngModel)]="sortBy"
-                (ngModelChange)="onSortChange()"
-                class="block w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#800000] focus:border-[#800000]">
-                <option *ngFor="let option of sortOptions" [value]="option.value">
-                  {{ option.label }}
-                </option>
-              </select>
-            </div>
+        <!-- Filters Row -->
+        <div class="mb-6 flex flex-wrap gap-4">
+          <!-- Academic Year Filter -->
+          <div class="flex-1 min-w-[200px]">
+            <select 
+              [(ngModel)]="selectedAcademicYear"
+              (ngModelChange)="onFilterChange()"
+              class="w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#800000] focus:border-[#800000]"
+            >
+              <option value="">All Academic Years</option>
+              <option *ngFor="let year of academicYears" [value]="year">
+                {{ year }}
+              </option>
+            </select>
+          </div>
 
-            <!-- Sort Order -->
-            <div class="w-48">
-              <select 
-                [(ngModel)]="sortOrder"
-                (ngModelChange)="onSortChange()"
-                class="block w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#800000] focus:border-[#800000]">
-                <option value="asc">Ascending</option>
-                <option value="desc">Descending</option>
-              </select>
-            </div>
+          <!-- Semester Filter -->
+          <div class="flex-1 min-w-[200px]">
+            <select 
+              [(ngModel)]="selectedSemester"
+              (ngModelChange)="onFilterChange()"
+              class="w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#800000] focus:border-[#800000]"
+            >
+              <option value="">All Semesters</option>
+              <option value="1st">1st Semester</option>
+              <option value="2nd">2nd Semester</option>
+            </select>
+          </div>
+
+          <!-- Status Filter -->
+          <div class="flex-1 min-w-[200px]">
+            <select 
+              [(ngModel)]="selectedStatus"
+              (ngModelChange)="onFilterChange()"
+              class="w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#800000] focus:border-[#800000]"
+            >
+              <option value="">All Status</option>
+              <option value="Pending">Pending</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+
+          <!-- Sort By Filter -->
+          <div class="flex-1 min-w-[200px]">
+            <select 
+              [(ngModel)]="sortBy"
+              (ngModelChange)="onFilterChange()"
+              class="w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#800000] focus:border-[#800000]"
+            >
+              <option value="date">Sort by Date</option>
+              <option value="time">Sort by Time</option>
+              <option value="status">Sort by Status</option>
+            </select>
+          </div>
+
+          <!-- Sort Order -->
+          <div class="flex-1 min-w-[200px]">
+            <select 
+              [(ngModel)]="sortOrder"
+              (ngModelChange)="onFilterChange()"
+              class="w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#800000] focus:border-[#800000]"
+            >
+              <option value="asc">Ascending</option>
+              <option value="desc">Descending</option>
+            </select>
           </div>
         </div>
 

@@ -46,6 +46,8 @@ export class ObservationScheduleComponent implements OnInit {
     { value: 'time', label: 'Sort by Time' },
     { value: 'status', label: 'Sort by Status' }
   ];
+  selectedAcademicYear: string = '';
+  selectedSemester: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -158,9 +160,11 @@ export class ObservationScheduleComponent implements OnInit {
     this.isLoading = true;
     if (this.isAdmin) {
       this.scheduleService.getAllSchedules(
-        this.selectedStatus, 
-        this.sortBy, 
-        this.sortOrder
+        this.selectedStatus,
+        this.sortBy,
+        this.sortOrder,
+        this.selectedAcademicYear,
+        this.selectedSemester
       ).subscribe({
         next: (response) => {
           this.schedules = response.data || [];
@@ -174,7 +178,11 @@ export class ObservationScheduleComponent implements OnInit {
         }
       });
     } else if (this.isFaculty) {
-      this.scheduleService.getFacultySchedules(this.userId).subscribe({
+      this.scheduleService.getFacultySchedules(
+        this.userId,
+        this.selectedAcademicYear,
+        this.selectedSemester
+      ).subscribe({
         next: (response) => {
           this.schedules = response.data;
           this.isLoading = false;
@@ -284,6 +292,10 @@ export class ObservationScheduleComponent implements OnInit {
   }
 
   onSortChange(): void {
+    this.loadSchedules();
+  }
+
+  onFilterChange(): void {
     this.loadSchedules();
   }
 
