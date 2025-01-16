@@ -503,8 +503,8 @@ canvas {
 
 /* Add these new modal styles */
 .modal {
-  background-color: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
+  background-color: rgba(248, 249, 250, 0.2);
+  backdrop-filter: blur(0.5px);
   z-index: 100;
 }
 
@@ -513,7 +513,7 @@ canvas {
 }
 
 .modal-box {
-  background: white;
+  background-color: #ffffff;
   border-radius: 1rem;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   border: 1px solid rgba(0, 0, 0, 0.1);
@@ -842,4 +842,14 @@ canvas {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
+}
+
+/* Specific styles for the immunity details modal */
+.immunity-details-modal {
+  background-color: rgba(0, 0, 0, 0.1) !important;
+  backdrop-filter: blur(0.5px) !important;
+}
+
+.immunity-details-modal .modal-box {
+  background-color: #ffffff;
 }

@@ -3,7 +3,7 @@
 }
 
 .container {
-  max-width: 95%;
+  max-width: 80%;
   margin: 0 auto 2.5rem auto;
   background-color: #f9f9f9;
   border-radius: 0.5rem;
@@ -224,7 +224,7 @@ input[type="text"] {
 /* Animations */
 @keyframes slideDown {
   from {
-    transform: translateY(-20px);
+    transform: translateY(-10px);
     opacity: 0;
   }
   to {
@@ -240,7 +240,7 @@ input[type="text"] {
 
 @keyframes slideUp {
   from {
-    transform: translateY(20px);
+    transform: translateY(10px);
     opacity: 0;
   }
   to {
@@ -252,21 +252,27 @@ input[type="text"] {
 /* Toast Notifications */
 .toast {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1000;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 50;
   animation: slideUp 0.3s ease-out;
 }
 
 .alert {
-  padding: 1rem;
+  padding: 1rem 1.5rem;
   border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.alert-success {
+  background-color: #10B981;
   color: white;
 }
 
-.alert-success { background-color: #10B981; }
-.alert-error { background-color: #EF4444; }
-.alert-warning { background-color: #F59E0B; }
+.alert-error {
+  background-color: #EF4444;
+  color: white;
+}
 
 /* Loading State */
 .loading-spinner {
@@ -281,4 +287,85 @@ input[type="text"] {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Help Option Cards */
+.help-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  border: 1px solid #eee;
+  cursor: pointer;
+}
+
+.help-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.help-card .icon-container {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.help-card:hover .icon-container {
+  transform: scale(1.1);
+}
+
+/* Form Styling */
+.modal-box {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.input-style {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.input-style:focus {
+  border-color: #800000;
+  box-shadow: 0 0 0 2px rgba(128, 0, 0, 0.1);
+  outline: none;
+}
+
+.submit-button {
+  background-color: #800000;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.submit-button:hover:not(:disabled) {
+  background-color: #660000;
+  transform: translateY(-1px);
+}
+
+.submit-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    max-width: 100%;
+    margin: 1rem;
+  }
+
+  .modal-box {
+    margin: 1rem;
+    width: calc(100% - 2rem);
+  }
 }

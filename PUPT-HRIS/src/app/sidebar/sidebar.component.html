@@ -2,154 +2,164 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <label for="my-drawer-2" aria-label="close sidebar" class="drawer-overlay"></label>
-<ul class="menu bg-red-900 text-base-content text-white text-xl space-y-6 min-h-full w-80 p-6">
-  <div class="logo-section flex items-center p-6">
-    <img src="assets/PUPLogo.svg" alt="Logo" class="logo">
-    <div class="ml-4">
-      <h1 class="text-2xl font-bold text-white">PUP - FESR</h1>
-      <p class="text-xs text-white leading-tight">Faculty Data Management and Evaluation System with Research Repository</p>
-    </div>
-  </div>  
+<div class="h-full">
+  <!-- Mobile close button - made more visible -->
+  <div class="lg:hidden flex justify-end p-4 bg-red-950">
+    <button (click)="toggleSidebar()" 
+            class="p-2 rounded-lg hover:bg-red-800 transition-colors">
+      <i class="fas fa-times text-2xl text-white"></i>
+    </button>
+  </div>
 
-  <!-- Dashboard -->
-  <li>
-    <a id="dashboard" class="sidebar-link" routerLink="/dashboard" (click)="setActive('dashboard')"
-    [class.active]="activeItem === 'dashboard'"><i class="fa fa-th-large mr-3" aria-hidden="true"></i>Dashboard</a>
-  </li>
+  <ul class="menu bg-red-900 text-base-content text-white text-xl space-y-6 min-h-full w-80 p-6">
+    <div class="logo-section flex items-center p-6">
+      <img src="assets/PUPLogo.svg" alt="Logo" class="logo">
+      <div class="ml-4">
+        <h1 class="text-2xl font-bold text-white">PUP - FESR</h1>
+        <p class="text-xs text-white leading-tight">Faculty Data Management and Evaluation System with Research Repository</p>
+      </div>
+    </div>  
 
-  <!-- New Account -->
-  <li *ngIf="canAddNewAccount">
-    <a id="new-account" class="sidebar-link" routerLink="/new-account" (click)="setActive('new-account')"
-    [class.active]="activeItem === 'new-account'"><i class="fas fa-user-plus mr-3"></i>New Account</a>
-  </li>
-
-  <!-- Employees -->
-  <li *ngIf="canManageEmployees">
-    <a id="employees" class="sidebar-link" routerLink="/employees" (click)="setActive('employees')"
-    [class.active]="activeItem === 'employees'"><i class="fas fa-users mr-3"></i>Employees</a>
-  </li>
-
-  <!-- Maintenance Dropdown -->
-  <li *ngIf="showMaintenanceMenu">
-    <a id="maintenance" class="sidebar-link" (click)="toggleMaintenanceDropdown()"
-      [class.active]="isMaintenanceActive">
-      <i class="fas fa-cogs mr-3"></i>Maintenance
-      <i [ngClass]="isMaintenanceDropdownOpen ? 'fas fa-chevron-up' : 'fas fa-chevron-down'" class="ml-auto"></i>
-    </a>
-    <ul *ngIf="isMaintenanceDropdownOpen" class="ml-6 mt-2 space-y-4 text-lg">
-      <li *ngIf="canManageCollegeCampuses">
-        <a routerLink="/college-campuses" (click)="setActive('college-campus-management')"
-          [class.active]="activeItem === 'college-campus-management'"
-          class="sidebar-link">
-          <i class="fas fa-university mr-3"></i>College Campus</a>
-      </li>
-      <li *ngIf="canManageDepartments">
-        <a routerLink="/departments" (click)="setActive('department-management')"
-          [class.active]="activeItem === 'department-management'">
-          <i class="fas fa-building mr-3"></i>Department</a>
-      </li>
-      <li *ngIf="canManageCoordinators">
-        <a routerLink="/coordinator-management" (click)="setActive('coordinator-management')"
-          [class.active]="activeItem === 'coordinator-management'">
-          <i class="fas fa-user-tie mr-3"></i>Coordinator</a>
-      </li>
-      <li *ngIf="canManageUsers">
-        <a routerLink="/user-management" (click)="setActive('user-management')"
-          [class.active]="activeItem === 'user-management'">
-          <i class="fas fa-users-cog mr-3"></i>User Management</a>
-      </li>
-    </ul>
-  </li>
-
-  <!-- Evaluation section -->
-  <li *ngIf="showEvaluationMenu">
-    <a id="evaluation-menu" class="sidebar-link" (click)="toggleReportsDropdown()"
-      [class.active]="isReportsActive">
-      <i class="fas fa-clipboard-check mr-3"></i>Evaluation
-      <i [ngClass]="isReportsDropdownOpen ? 'fas fa-chevron-up' : 'fas fa-chevron-down'" class="ml-auto"></i>
-    </a>
-    <ul *ngIf="isReportsDropdownOpen" class="ml-6 mt-2 space-y-4 text-lg">
-      <!-- Observation Schedule - Visible to faculty, admin, and superadmin -->
-      <li *ngIf="canAccessObservationSchedule">
-        <a routerLink="/observation-schedule" (click)="setActive('observation-schedule')"
-          [class.active]="activeItem === 'observation-schedule'"
-          class="sidebar-link">
-          <i class="fas fa-calendar-check mr-3"></i>Schedule Evaluation</a>
-      </li>
-      <!-- Evaluation - Only visible to admin and superadmin -->
-      <li *ngIf="canAccessEvaluation">
-        <a routerLink="/evaluation" (click)="setActive('evaluation')"
-          [class.active]="activeItem === 'evaluation'"
-          class="sidebar-link">
-          <i class="fas fa-star mr-3"></i>Evaluate Faculty</a>
-      </li>
-    </ul>
-  </li>
-
-  <!-- Profile Section for all roles -->
-  <li *ngIf="canAccessProfile">
-    <a id="my-profile" class="sidebar-link" (click)="toggleProfileDropdown()" [class.active]="isProfileActive">
-      <i class="fas fa-user mr-3"></i>My Profile
-      <i [ngClass]="isProfileDropdownOpen ? 'fas fa-chevron-up' : 'fas fa-chevron-down'" class="ml-auto"></i>
-    </a>
-    <ul *ngIf="isProfileDropdownOpen" class="ml-6 mt-2 space-y-4 text-lg">
-      <li><a routerLink="/basic-details" (click)="setActive('my-profile-basic-details')"
-        [class.active]="activeItem === 'my-profile-basic-details'">Basic Details</a></li>
-      <li><a routerLink="/personal-details" (click)="setActive('my-profile-personal-details')"
-        [class.active]="activeItem === 'my-profile-personal-details'">Personal Details</a></li>
-      <li><a routerLink="/educational-background" (click)="setActive('my-profile-educational-background')"
-        [class.active]="activeItem === 'my-profile-educational-background'">Educational Background</a></li>
-      <li><a routerLink="/trainings-and-seminars" (click)="setActive('my-profile-trainings-and-seminars')"
-        [class.active]="activeItem === 'my-profile-trainings-and-seminars'">Trainings and Seminars</a></li>
-      <li><a routerLink="/outstanding-achievement" (click)="setActive('my-profile-outstanding-achievement')"
-        [class.active]="activeItem === 'my-profile-outstanding-achievement'">Outstanding Achievement</a></li>
-      <li><a routerLink="/officer-membership" (click)="setActive('my-profile-officer-membership')"
-        [class.active]="activeItem === 'my-profile-officer-membership'">Officership and Membership</a></li>
-      <li>
-        <a routerLink="/professional-license" 
-           (click)="setActive('my-profile-professional-license')"
-           [class.active]="activeItem === 'my-profile-professional-license'">
-          Professional License
-        </a>
-      </li>
-      <li>
-        <a routerLink="/employment-information" 
-           (click)="setActive('my-profile-employment-information')"
-           [class.active]="activeItem === 'my-profile-employment-information'">
-          Employment Information
-        </a>
-      </li>
-      <li>
-        <a routerLink="/certification" 
-           (click)="setActive('my-profile-certification')"
-           [class.active]="activeItem === 'my-profile-certification'">
-          Certification
-        </a>
-      </li>
-    </ul>
-  </li>
-
-    <!-- Resources -->
+    <!-- Dashboard -->
     <li>
-      <a id="resources" class="sidebar-link" routerLink="/resources" (click)="setActive('resources')"
-        [class.active]="activeItem === 'resources'">
-        <i class="fas fa-book mr-3"></i>Resources
-      </a>
+      <a id="dashboard" class="sidebar-link" routerLink="/dashboard" (click)="setActive('dashboard')"
+      [class.active]="activeItem === 'dashboard'"><i class="fa fa-th-large mr-3" aria-hidden="true"></i>Dashboard</a>
     </li>
 
-  <div class="flex-grow"></div>
-  <!-- Settings - Visible to all roles -->
-  <li>
-    <a id="settings" class="sidebar-link" routerLink="/settings" (click)="setActive('settings')"
-    [class.active]="activeItem === 'settings'"><i class="fas fa-cog mr-3"></i>Settings</a>
-  </li>
+    <!-- New Account -->
+    <li *ngIf="canAddNewAccount">
+      <a id="new-account" class="sidebar-link" routerLink="/new-account" (click)="setActive('new-account')"
+      [class.active]="activeItem === 'new-account'"><i class="fas fa-user-plus mr-3"></i>New Account</a>
+    </li>
 
-  <!-- Logout -->
-  <li>
-    <a id="logout" class="sidebar-link" (click)="logout()">
-      <i class="fas fa-sign-out-alt mr-3"></i>Logout</a>
-  </li>
-</ul>
+    <!-- Employees -->
+    <li *ngIf="canManageEmployees">
+      <a id="employees" class="sidebar-link" routerLink="/employees" (click)="setActive('employees')"
+      [class.active]="activeItem === 'employees'"><i class="fas fa-users mr-3"></i>Employees</a>
+    </li>
+
+    <!-- Maintenance Dropdown -->
+    <li *ngIf="showMaintenanceMenu">
+      <a id="maintenance" class="sidebar-link" (click)="toggleMaintenanceDropdown()"
+        [class.active]="isMaintenanceActive">
+        <i class="fas fa-cogs mr-3"></i>Maintenance
+        <i [ngClass]="isMaintenanceDropdownOpen ? 'fas fa-chevron-up' : 'fas fa-chevron-down'" class="ml-auto"></i>
+      </a>
+      <ul *ngIf="isMaintenanceDropdownOpen" class="ml-6 mt-2 space-y-4 text-lg">
+        <li *ngIf="canManageCollegeCampuses">
+          <a routerLink="/college-campuses" (click)="setActive('college-campus-management')"
+            [class.active]="activeItem === 'college-campus-management'"
+            class="sidebar-link">
+            <i class="fas fa-university mr-3"></i>College Campus</a>
+        </li>
+        <li *ngIf="canManageDepartments">
+          <a routerLink="/departments" (click)="setActive('department-management')"
+            [class.active]="activeItem === 'department-management'">
+            <i class="fas fa-building mr-3"></i>Department</a>
+        </li>
+        <li *ngIf="canManageCoordinators">
+          <a routerLink="/coordinator-management" (click)="setActive('coordinator-management')"
+            [class.active]="activeItem === 'coordinator-management'">
+            <i class="fas fa-user-tie mr-3"></i>Coordinator</a>
+        </li>
+        <li *ngIf="canManageUsers">
+          <a routerLink="/user-management" (click)="setActive('user-management')"
+            [class.active]="activeItem === 'user-management'">
+            <i class="fas fa-users-cog mr-3"></i>User Management</a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- Evaluation section -->
+    <li *ngIf="showEvaluationMenu">
+      <a id="evaluation-menu" class="sidebar-link" (click)="toggleReportsDropdown()"
+        [class.active]="isReportsActive">
+        <i class="fas fa-clipboard-check mr-3"></i>Evaluation
+        <i [ngClass]="isReportsDropdownOpen ? 'fas fa-chevron-up' : 'fas fa-chevron-down'" class="ml-auto"></i>
+      </a>
+      <ul *ngIf="isReportsDropdownOpen" class="ml-6 mt-2 space-y-4 text-lg">
+        <!-- Observation Schedule - Visible to faculty, admin, and superadmin -->
+        <li *ngIf="canAccessObservationSchedule">
+          <a routerLink="/observation-schedule" (click)="setActive('observation-schedule')"
+            [class.active]="activeItem === 'observation-schedule'"
+            class="sidebar-link">
+            <i class="fas fa-calendar-check mr-3"></i>Schedule Evaluation</a>
+        </li>
+        <!-- Evaluation - Only visible to admin and superadmin -->
+        <li *ngIf="canAccessEvaluation">
+          <a routerLink="/evaluation" (click)="setActive('evaluation')"
+            [class.active]="activeItem === 'evaluation'"
+            class="sidebar-link">
+            <i class="fas fa-star mr-3"></i>Evaluate Faculty</a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- Profile Section for all roles -->
+    <li *ngIf="canAccessProfile">
+      <a id="my-profile" class="sidebar-link" (click)="toggleProfileDropdown()" [class.active]="isProfileActive">
+        <i class="fas fa-user mr-3"></i>My Profile
+        <i [ngClass]="isProfileDropdownOpen ? 'fas fa-chevron-up' : 'fas fa-chevron-down'" class="ml-auto"></i>
+      </a>
+      <ul *ngIf="isProfileDropdownOpen" class="ml-6 mt-2 space-y-4 text-lg">
+        <li><a routerLink="/basic-details" (click)="setActive('my-profile-basic-details')"
+          [class.active]="activeItem === 'my-profile-basic-details'">Basic Details</a></li>
+        <li><a routerLink="/personal-details" (click)="setActive('my-profile-personal-details')"
+          [class.active]="activeItem === 'my-profile-personal-details'">Personal Details</a></li>
+        <li><a routerLink="/educational-background" (click)="setActive('my-profile-educational-background')"
+          [class.active]="activeItem === 'my-profile-educational-background'">Educational Background</a></li>
+        <li><a routerLink="/trainings-and-seminars" (click)="setActive('my-profile-trainings-and-seminars')"
+          [class.active]="activeItem === 'my-profile-trainings-and-seminars'">Trainings and Seminars</a></li>
+        <li><a routerLink="/outstanding-achievement" (click)="setActive('my-profile-outstanding-achievement')"
+          [class.active]="activeItem === 'my-profile-outstanding-achievement'">Outstanding Achievement</a></li>
+        <li><a routerLink="/officer-membership" (click)="setActive('my-profile-officer-membership')"
+          [class.active]="activeItem === 'my-profile-officer-membership'">Officership and Membership</a></li>
+        <li>
+          <a routerLink="/professional-license" 
+             (click)="setActive('my-profile-professional-license')"
+             [class.active]="activeItem === 'my-profile-professional-license'">
+            Professional License
+          </a>
+        </li>
+        <li>
+          <a routerLink="/employment-information" 
+             (click)="setActive('my-profile-employment-information')"
+             [class.active]="activeItem === 'my-profile-employment-information'">
+            Employment Information
+          </a>
+        </li>
+        <li>
+          <a routerLink="/certification" 
+             (click)="setActive('my-profile-certification')"
+             [class.active]="activeItem === 'my-profile-certification'">
+            Certification
+          </a>
+        </li>
+      </ul>
+    </li>
+
+      <!-- Resources -->
+      <li>
+        <a id="resources" class="sidebar-link" routerLink="/resources" (click)="setActive('resources')"
+          [class.active]="activeItem === 'resources'">
+          <i class="fas fa-book mr-3"></i>Resources
+        </a>
+      </li>
+
+    <div class="flex-grow"></div>
+    <!-- Settings - Visible to all roles -->
+    <li>
+      <a id="settings" class="sidebar-link" routerLink="/settings" (click)="setActive('settings')"
+      [class.active]="activeItem === 'settings'"><i class="fas fa-cog mr-3"></i>Settings</a>
+    </li>
+
+    <!-- Logout -->
+    <li>
+      <a id="logout" class="sidebar-link" (click)="logout()">
+        <i class="fas fa-sign-out-alt mr-3"></i>Logout</a>
+    </li>
+  </ul>
+</div>
 
 <!-- Logout Confirmation Modal -->
 <div *ngIf="showLogoutModal" class="modal-overlay">

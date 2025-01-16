@@ -52,6 +52,10 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
     { value: 'time', label: 'Sort by Time' },
     { value: 'status', label: 'Sort by Status' }
   ];
+  currentPage: number = 1;
+  itemsPerPage: number = 10;
+  totalPages: number = 0;
+  paginatedSchedules: any[] = [];
   selectedAcademicYear: string = '';
   selectedSemester: string = '';
   searchName: string = '';
@@ -186,6 +190,8 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
       ).subscribe({
         next: (response) => {
           this.schedules = response.data || [];
+          this.totalPages = Math.ceil(this.schedules.length / this.itemsPerPage);
+          this.updatePaginatedData();
           this.isLoading = false;
         },
         error: (error) => {
@@ -203,6 +209,8 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
       ).subscribe({
         next: (response) => {
           this.schedules = response.data;
+          this.totalPages = Math.ceil(this.schedules.length / this.itemsPerPage);
+          this.updatePaginatedData();
           this.isLoading = false;
         },
         error: (error) => {
@@ -311,19 +319,6 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
 
   onSortChange(): void {
     this.loadSchedules();
-  }
-
-  onFilterChange(): void {
-    this.loadSchedules();
-  }
-
-  onSearchChange(): void {
-    if (this.searchDebounce) {
-      clearTimeout(this.searchDebounce);
-    }
-    this.searchDebounce = setTimeout(() => {
-      this.loadSchedules();
-    }, 300);
   }
 
   ngOnInit(): void {

@@ -91,6 +91,14 @@
           </div>
         </div>
 
+        <div class="form-control" *ngIf="showCollegeCampus">
+          <label class="label-text" for="CollegeCampusID">College Campus <span class="text-red-500">*</span></label>
+          <select id="CollegeCampusID" formControlName="CollegeCampusID" class="select input-bordered w-full">
+            <option value="" disabled selected>- Please Select Option -</option>
+            <option *ngFor="let campus of collegeCampuses" [value]="campus.CollegeCampusID">{{ campus.Name }}</option>
+          </select>
+        </div>
+
         <div class="form-control">
           <label class="label-text" for="DepartmentID">Department <span class="text-red-500">*</span></label>
           <select id="DepartmentID" formControlName="DepartmentID" class="select input-bordered w-full">
@@ -99,19 +107,19 @@
             <option *ngFor="let department of departments" [value]="department.DepartmentID">{{ department.DepartmentName }}</option>
           </select>
         </div>
-
-        <div class="form-control" *ngIf="showCollegeCampus">
-          <label class="label-text" for="CollegeCampusID">College Campus <span class="text-red-500">*</span></label>
-          <select id="CollegeCampusID" formControlName="CollegeCampusID" class="select input-bordered w-full">
-            <option value="" disabled selected>- Please Select Option -</option>
-            <option *ngFor="let campus of collegeCampuses" [value]="campus.CollegeCampusID">{{ campus.Name }}</option>
-          </select>
-        </div>
       </div>
     </div>
 
     <div class="flex justify-end">
-      <button type="submit" class="btn btn-save" [disabled]="newAccountForm.invalid">Create Account</button>
+      <button type="submit" 
+              class="btn btn-save relative" 
+              [disabled]="newAccountForm.invalid || isLoading">
+        <span [class.opacity-0]="isLoading">Create Account</span>
+        <div *ngIf="isLoading" 
+             class="absolute inset-0 flex items-center justify-center">
+          <div class="loading-spinner"></div>
+        </div>
+      </button>
     </div>
   </div>
 </form>
@@ -123,5 +131,28 @@
   </div>
   <div *ngIf="toastType === 'error'" class="alert alert-error">
     <span>{{ toastMessage }}</span>
+  </div>
+</div>
+
+<!-- Loading Overlay -->
+<div *ngIf="isLoading || showSuccess" 
+     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white p-8 rounded-lg shadow-xl text-center">
+    <div *ngIf="isLoading" class="loading-container">
+      <div class="loading-spinner-large"></div>
+      <p class="mt-4 text-lg">Creating Account...</p>
+    </div>
+    
+    <div *ngIf="showSuccess" class="success-container">
+      <div class="success-checkmark">
+        <div class="check-icon">
+          <span class="icon-line line-tip"></span>
+          <span class="icon-line line-long"></span>
+          <div class="icon-circle"></div>
+          <div class="icon-fix"></div>
+        </div>
+      </div>
+      <p class="mt-4 text-lg text-green-600 font-semibold">Account Successfully Created!</p>
+    </div>
   </div>
 </div>

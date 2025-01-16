@@ -157,22 +157,22 @@
       <button 
         (click)="previousPage()" 
         [disabled]="currentPage === 1" 
-        class="btn btn-sm">
+        class="pagination-btn">
         Previous
       </button>
 
       <button 
         *ngFor="let page of totalPagesArray"
         (click)="goToPage(page)" 
-        class="btn btn-sm"
-        [class.btn-active]="page === currentPage">
+        class="pagination-btn"
+        [ngClass]="{'active': page === currentPage}">
         {{ page }}
       </button>
 
       <button 
         (click)="nextPage()" 
         [disabled]="currentPage === totalPages" 
-        class="btn btn-sm">
+        class="pagination-btn">
         Next
       </button>
     </div>

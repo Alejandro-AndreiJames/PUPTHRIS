@@ -41,6 +41,8 @@ export class NewAccountComponent implements OnInit {
   showCollegeCampus: boolean = false;
   adminRoleId: string = ''; // We'll set this in ngOnInit
   currentUserCollegeCampusID: number | null = null;
+  isLoading: boolean = false;
+  showSuccess: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -254,6 +256,7 @@ export class NewAccountComponent implements OnInit {
 
   onSubmit(): void {
     if (this.newAccountForm.valid) {
+      this.isLoading = true;
       const formData = this.newAccountForm.value;
 
       // Convert role IDs to numbers if needed
@@ -271,11 +274,19 @@ export class NewAccountComponent implements OnInit {
 
       this.userService.addUser(formData).subscribe({
         next: response => {
-          this.showToast('success', 'Account created successfully');
-          this.resetForm();
+          this.isLoading = false;
+          this.showSuccess = true; // Show success state
+          
+          // Hide success message and reset form after 2 seconds
+          setTimeout(() => {
+            this.showSuccess = false;
+            this.resetForm();
+            this.showToast('success', 'Account created successfully');
+          }, 2000);
         },
         error: error => {
           console.error("Backend error details:", error);
+          this.isLoading = false;
           this.showToast('error', 'Error creating account');
         }
       });

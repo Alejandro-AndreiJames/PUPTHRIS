@@ -137,111 +137,131 @@
     </div>
   </div>
 
-  <!-- Books Table -->
+  <!-- Books Section -->
   <div class="mt-8 overflow-x-auto">
-    <h3 class="text-xl font-bold mb-2">Book List</h3>
-
-      <!-- Add search bar -->
-  <div class="mb-4">
-    <input 
-      type="text"
-      placeholder="Search books..."
-      class="input input-bordered w-full max-w-xs"
-      (input)="onSearchInput($event)"
-    >
-  </div>
-    <table class="table table-zebra w-full border-separate border-spacing-0" 
-           [class.opacity-50]="isLoading">
-      <thead>
-        <tr class="bg-maroon text-white">
-          <th class="p-4">Title</th>
-          <th class="p-4">Author</th>
-          <th class="p-4">Description</th>
-          <th class="p-4" *ngIf="viewMode === 'all'">Uploaded By</th>
-          <th class="p-4">Document</th>
-          <th class="p-4 w-36">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let book of books" class="hover:bg-gray-100">
-          <td class="p-4">{{ book.Title }}</td>
-          <td class="p-4">{{ book.Author }}</td>
-          <td class="p-4">
-            <span *ngIf="book.Description">{{book.Description}}</span>
-            <span *ngIf="!book.Description" class="text-gray-500">No description added</span>
-          </td>
-          <td class="p-4" *ngIf="viewMode === 'all'">
-            {{book.User?.Surname}}, {{book.User?.FirstName}} 
-            {{book.User?.NameExtension ? ' ' + book.User?.NameExtension : ''}}
-          </td>
-          <td class="p-4">
-            <span *ngIf="book.DocumentPath" class="text-blue-500 hover:text-blue-700 cursor-pointer">
-              Download File
-            </span>
-            <span *ngIf="!book.DocumentPath" class="text-gray-500">No document added</span>
-          </td>
-          <td class="p-4 flex justify-center space-x-2">
-            <button 
-              class="btn-sm btn-view" 
-              (click)="viewDocument(book.DocumentPath)"
-              [disabled]="!book.DocumentPath"
-            >
-              View
-            </button>
-            <button 
-              *ngIf="viewMode === 'personal'"
-              class="btn-sm btn-edit" 
-              (click)="editBook(book)"
-            >
-              Edit
-            </button>
-            <button 
-              *ngIf="viewMode === 'personal'"
-              class="btn-sm btn-delete" 
-              (click)="deleteBook(book.BookID!)"
-            >
-              Delete
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Add pagination -->
-  <div class="flex justify-center mt-4 space-x-2">
-    <button 
-      class="btn bg-maroon text-white hover:bg-maroon-dark"
-      [disabled]="currentPage === 1"
-      (click)="onPageChange(currentPage - 1)"
-    >
-      Previous
-    </button>
-    
-    <ng-container *ngFor="let page of [].constructor(totalPages); let i = index">
-      <button 
-        (click)="onPageChange(i + 1)" 
-        class="btn text-white" 
-        [class.bg-black]="i + 1 === currentPage"
-        [class.bg-maroon]="i + 1 !== currentPage"
-        [class.hover:bg-maroon-dark]="true"
+    <!-- Search bar - always visible -->
+    <div class="mb-4">
+      <input 
+        type="text"
+        placeholder="Search books..."
+        class="input input-bordered w-full max-w-xs"
+        (input)="onSearchInput($event)"
       >
-        {{ i + 1 }}
-      </button>
-    </ng-container>
-    
-    <button 
-      class="btn bg-maroon text-white hover:bg-maroon-dark"
-      [disabled]="currentPage === totalPages"
-      (click)="onPageChange(currentPage + 1)"
-    >
-      Next
-    </button>
-  </div>
+    </div>
 
-  <!-- Total items text with margin -->
-  <div class="text-center text-sm text-gray-600 mt-4">
-    Total items: {{totalItems}}
+    <!-- Show table and pagination only if there are books -->
+    <ng-container *ngIf="books.length > 0">
+      <table class="table table-zebra w-full border-separate border-spacing-0" 
+             [class.opacity-50]="isLoading">
+        <thead>
+          <tr class="bg-maroon text-white">
+            <th class="p-4">Title</th>
+            <th class="p-4">Author</th>
+            <th class="p-4">Description</th>
+            <th class="p-4" *ngIf="viewMode === 'all'">Uploaded By</th>
+            <th class="p-4">Document</th>
+            <th class="p-4 w-36">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let book of books" class="hover:bg-gray-100">
+            <td class="p-4">{{ book.Title }}</td>
+            <td class="p-4">{{ book.Author }}</td>
+            <td class="p-4">
+              <span *ngIf="book.Description">{{book.Description}}</span>
+              <span *ngIf="!book.Description" class="text-gray-500">No description added</span>
+            </td>
+            <td class="p-4" *ngIf="viewMode === 'all'">
+              {{book.User?.Surname}}, {{book.User?.FirstName}} 
+              {{book.User?.NameExtension ? ' ' + book.User?.NameExtension : ''}}
+            </td>
+            <td class="p-4">
+              <span *ngIf="book.DocumentPath" class="text-blue-500 hover:text-blue-700 cursor-pointer">
+                Download File
+              </span>
+              <span *ngIf="!book.DocumentPath" class="text-gray-500">No document added</span>
+            </td>
+            <td class="p-4 flex justify-center space-x-2">
+              <button 
+                class="btn-sm btn-view" 
+                (click)="viewDocument(book.DocumentPath)"
+                [disabled]="!book.DocumentPath"
+              >
+                View
+              </button>
+              <button 
+                *ngIf="viewMode === 'personal'"
+                class="btn-sm btn-edit" 
+                (click)="editBook(book)"
+              >
+                Edit
+              </button>
+              <button 
+                *ngIf="viewMode === 'personal'"
+                class="btn-sm btn-delete" 
+                (click)="deleteBook(book.BookID!)"
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div class="flex justify-center mt-4 space-x-2">
+        <button 
+          class="btn bg-maroon text-white hover:bg-maroon-dark"
+          [disabled]="currentPage === 1"
+          (click)="onPageChange(currentPage - 1)"
+        >
+          Previous
+        </button>
+        
+        <ng-container *ngFor="let page of [].constructor(totalPages); let i = index">
+          <button 
+            (click)="onPageChange(i + 1)" 
+            class="btn text-white" 
+            [class.bg-black]="i + 1 === currentPage"
+            [class.bg-maroon]="i + 1 !== currentPage"
+            [class.hover:bg-maroon-dark]="true"
+          >
+            {{ i + 1 }}
+          </button>
+        </ng-container>
+        
+        <button 
+          class="btn bg-maroon text-white hover:bg-maroon-dark"
+          [disabled]="currentPage === totalPages"
+          (click)="onPageChange(currentPage + 1)"
+        >
+          Next
+        </button>
+      </div>
+
+      <!-- Total items -->
+      <div class="text-center text-sm text-gray-600 mt-4">
+        Total items: {{totalItems}}
+      </div>
+    </ng-container>
+
+    <!-- Show this when no books found -->
+    <div *ngIf="books.length === 0" class="text-center py-8">
+      <div class="flex flex-col items-center justify-center text-gray-500">
+        <svg xmlns="http://www.w3.org/2000/svg" 
+             class="h-16 w-16 mb-4" 
+             fill="none" 
+             viewBox="0 0 24 24" 
+             stroke="currentColor">
+          <path stroke-linecap="round" 
+                stroke-linejoin="round" 
+                stroke-width="2" 
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        </svg>
+        <p class="text-lg font-semibold">No Books Found</p>
+        <p class="text-sm">{{searchTerm ? 'Try adjusting your search terms' : 'No books have been added yet'}}</p>
+      </div>
+    </div>
   </div>
 
   <!-- Delete Confirmation Modal -->
