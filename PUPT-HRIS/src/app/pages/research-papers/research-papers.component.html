@@ -41,8 +41,16 @@
             {{paper.User?.Surname}}, {{paper.User?.FirstName}} 
             {{paper.User?.NameExtension ? ' ' + paper.User?.NameExtension : ''}}
           </td>
-          <td class="p-4">
-            <button class="btn btn-sm btn-info mr-2" (click)="onViewPaper(paper)">View</button>
+          <td class="p-4 flex justify-center space-x-2">
+            <button 
+              class="btn-sm btn-view text-white" 
+              (click)="onViewPaper(paper)"
+              [disabled]="!paper.DocumentPath"
+              [class.opacity-50]="!paper.DocumentPath"
+              [class.cursor-not-allowed]="!paper.DocumentPath"
+            >
+              View
+            </button>
             <ng-container *ngIf="viewMode === 'personal'">
               <button class="btn btn-sm btn-warning mr-2" (click)="editPaper(paper)">Edit</button>
               <button class="btn btn-sm btn-error" (click)="deletePaper(paper)">Delete</button>
