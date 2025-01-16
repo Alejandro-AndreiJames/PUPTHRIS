@@ -19,12 +19,9 @@ export class DepartmentService {
   }
 
   getDepartments(campusId: number): Observable<Department[]> {
-    console.log('DepartmentService: Fetching departments for campus ID:', campusId);
     return this.http.get<Department[]>(`${this.apiUrl}?campusId=${campusId}`, { headers: this.getHeaders() })
       .pipe(
-        tap(departments => console.log('DepartmentService: API response for departments:', departments)),
         catchError(error => {
-          console.error('Error in getDepartments:', error);
           return throwError(() => new Error(error.message || 'Server error'));
         })
       );
@@ -51,7 +48,6 @@ export class DepartmentService {
   }
 
   private handleError(error: any): Observable<never> {
-    console.error('An error occurred:', error);
     return throwError(error.message || 'Server error');
   }
 }

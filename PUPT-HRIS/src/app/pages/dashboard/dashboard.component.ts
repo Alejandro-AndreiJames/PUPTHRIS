@@ -533,10 +533,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     const campusId = this.campusContextService.getCurrentCampusId();
     if (campusId) {
       this.dashboardService.getDashboardData(campusId).subscribe({
-        next: (data) => {
-          console.log('Dashboard Data:', data);
-          console.log('Departments from data:', data.departments);
-          
+        next: (data) => { 
           // Store departments
           this.departments = data.departments;
           this.totalDepartments = data.totalDepartments;
@@ -623,32 +620,24 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
           }]
         };
   
-        // Process academic rank data
         if (data.academicRanks && Array.isArray(data.academicRanks)) {
-          // Create a map of existing ranks and their counts
           const rankCountMap = new Map<string, number>();
           
-          // Populate the map with the incoming data
           data.academicRanks.forEach((rank: any) => {
             rankCountMap.set(rank.Rank, Number(rank.count));
           });
 
-          // Create the full list including zeros for missing ranks
           this.academicRanks = ALL_ACADEMIC_RANKS.map(rankName => ({
             Rank: rankName,
             count: rankCountMap.get(rankName) || 0
           }));
 
-          // Find the maximum count
           const maxCount = Math.max(...this.academicRanks.map(rank => rank.count));
           
-          // Calculate a reasonable maximum for the scale
           const scaleMax = Math.ceil((maxCount + 1) / 5) * 5;
 
-          // Calculate dynamic step size
           const stepSize = Math.max(1, Math.floor(scaleMax / 10));
 
-          // Update chart options with type assertion
           this.academicRankChartOptions = {
             ...this.academicRankChartOptions,
             scales: {
@@ -669,7 +658,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
                 },
                 max: scaleMax,
                 min: 0
-              } as any, // Type assertion to avoid TypeScript error
+              } as any,
               y: {
                 grid: {
                   display: false
@@ -678,7 +667,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
             }
           };
 
-          // Update the chart data
           this.academicRankChartData = {
             labels: this.academicRanks.map(rank => rank.Rank),
             datasets: [{
@@ -689,15 +677,12 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
             }]
           };
 
-          // Force chart update
           if (this.chart) {
             this.chart.update();
           }
         }
 
         this.updateCharts();
-      } else {
-        console.error('Departments data is missing or not an array');
       }
 
       this.loadEvaluationRatingsDistribution(campusId);
@@ -712,28 +697,23 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
             data.governmentIds.tin,
             data.governmentIds.agencyEmployee
           ];
-          // Trigger chart update
           if (this.charts) {
             this.charts.forEach(chart => chart.update());
           }
         },
         error: (error) => {
-          console.error('Error fetching government ID counts:', error);
         }
       });
 
-      // Add this to load immunity eligible faculty
       this.evaluationService.getImmunityEligibleFaculty({ campusId }).subscribe({
         next: (data) => {
           this.immunityEligibleFaculty = data;
-          // Process the data to determine eligibility
           this.immunityEligibleFaculty = this.immunityEligibleFaculty.map(faculty => ({
             ...faculty,
             isEligible: this.checkImmunityEligibility(faculty.FacultyEvaluations)
           }));
         },
         error: (error) => {
-          console.error('Error loading immunity eligible faculty:', error);
         }
       });
     });
@@ -746,7 +726,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         this.userAcademicRank = data.academicRank;
         this.userEmploymentType = data.employmentType;
         
-        // Update the user activity chart data
         this.userActivityChartData.datasets[0].data = [
           data.activityCounts.trainings,
           data.activityCounts.awards,
@@ -756,8 +735,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         this.updateCharts();
       },
       error: (error) => {
-        console.error('Error loading user dashboard data:', error);
-        // Handle the error, e.g., show a notification to the user
       }
     });
   }
@@ -779,15 +756,13 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         this.cdr.detectChanges();
       },
       error: (error) => {
-        console.error('Error loading upcoming birthdays:', error);
       }
     });
   }
 
-  // Update the toggle function
   toggleDashboardView(isAdmin: boolean): void {
     this.isAdminView = isAdmin;
-    this.dashboardStateService.setAdminView(isAdmin); // Save the state
+    this.dashboardStateService.setAdminView(isAdmin);
     
     if (isAdmin) {
       const campusId = this.campusContextService.getCurrentCampusId();
@@ -799,7 +774,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  // New property for user activity chart
   public userActivityChartOptions: ChartOptions<'bar'> = {
     responsive: true,
     plugins: {
@@ -842,20 +816,18 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
             ]
           }]
         };
-        this.cdr.detectChanges(); // Trigger change detection
+        this.cdr.detectChanges();
       },
       error: (error) => {
-        console.error('Error loading age group data:', error);
-        // Handle the error, maybe set default data
       }
     });
   }
 
-  public gaugeType: NgxGaugeType = 'arch'; // or 'semi', 'full'
-  public gaugeValue: number = 0; // Example value
+  public gaugeType: NgxGaugeType = 'arch';
+  public gaugeValue: number = 0;
   public gaugeAppendText: string = '%';
-  public gaugeThick: number = 20; // Thickness of the gauge
-  public gaugeSize: number = 200; // Size of the gauge
+  public gaugeThick: number = 20;
+  public gaugeSize: number = 200;
   public incompleteTasks: string[] = [];
   public showAllTasks: boolean = false;
 
@@ -869,7 +841,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         this.totalSections = data.totalSections;
       },
       error: (error) => {
-        console.error('Error loading profile completion:', error);
       }
     });
   }
@@ -914,7 +885,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  // Map task descriptions to their corresponding routes
   private taskRoutes: { [key: string]: string } = {
     'Add your basic details': '/basic-details',
     'Add your personal details': '/personal-details',
@@ -935,7 +905,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  // Add this method to the DashboardComponent class
   formatEmploymentType(type: string): string {
     switch(type.toLowerCase()) {
       case 'parttime':
@@ -947,9 +916,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       case 'temporary':
         return 'Temporary';
       case 'designee':
-        return 'Designee';  // Added this case
+        return 'Designee';
       default:
-        return type.charAt(0).toUpperCase() + type.slice(1); // Capitalize first letter for unknown types
+        return type.charAt(0).toUpperCase() + type.slice(1);
     }
   }
 
@@ -968,11 +937,11 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
           datasets: [{
             data: data.map(item => item.count),
             backgroundColor: [
-              '#4BC0C0', // Outstanding (Green)
-              '#36A2EB', // Very Satisfactory (Blue)
-              '#FFCE56', // Satisfactory (Yellow)
-              '#FF9F40', // Fair (Orange)
-              '#FF6384'  // Poor (Red)
+              '#4BC0C0',
+              '#36A2EB',
+              '#FFCE56',
+              '#FF9F40',
+              '#FF6384'
             ],
             hoverOffset: 4
           }]
@@ -980,11 +949,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         this.updateCharts();
       },
       error: (error) => {
-        console.error('Error loading evaluation ratings distribution:', error);
       }
     });
   }
-  // Add this method to handle filter changes specifically for evaluation data
+
   onEvaluationFilterChange(): void {
     const campusId = this.campusContextService.getCurrentCampusId();
     if (campusId) {
@@ -1010,7 +978,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
           this.updateModalPagination();
         },
         error: (error) => {
-          console.error('Error fetching faculties:', error);
         }
       });
     }
@@ -1231,7 +1198,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     const campusId = this.campusContextService.getCurrentCampusId();
     
     if (!campusId) {
-      console.error('No campus ID found');
       return;
     }
 
@@ -1368,14 +1334,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   applyFilters() {
-    console.log('Applying filters:', {
-      department: this.selectedDepartmentFilter,
-      rank: this.selectedRankFilter
-    });
 
     // Always start with the original list
     let filteredList = [...this.originalUserList];
-    console.log('Starting with original list:', filteredList);
 
     // Only filter if a specific value (not empty) is selected
     if (this.selectedDepartmentFilter && this.selectedDepartmentFilter !== '') {
@@ -1389,8 +1350,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         user.rank === this.selectedRankFilter
       );
     }
-
-    console.log('Filtered list:', filteredList);
 
     // Update the current list and paginate
     this.currentUserList = filteredList;

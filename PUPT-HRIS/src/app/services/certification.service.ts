@@ -39,7 +39,6 @@ export class CertificationService {
   }
 
   private handleError(error: any): Observable<never> {
-    console.error('An error occurred:', error);
     return throwError(() => error);
   }
 }

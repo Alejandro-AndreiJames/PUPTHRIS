@@ -20,18 +20,13 @@ export class CoordinatorService {
 
   assignCoordinator(departmentId: number, userId: number): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/assign`, { departmentId, userId }, { headers: this.getHeaders() })
-      .pipe(
-        tap(response => console.log('Assign coordinator response:', response)),
-        catchError(this.handleError)
-      );
+      .pipe(catchError(this.handleError));
   }
 
   removeCoordinator(departmentId: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/remove/${departmentId}`, { headers: this.getHeaders() })
       .pipe(
-        tap(response => console.log('Remove coordinator response:', response)),
         catchError(error => {
-          console.error('Error removing coordinator:', error);
           return throwError(() => new Error('Failed to remove coordinator. Please try again.'));
         })
       );
@@ -47,9 +42,7 @@ export class CoordinatorService {
     if (campusId) {
       url += `?campusId=${campusId}`;
     }
-    console.log('Requesting URL:', url);
     return this.http.get<Department[]>(url, { headers: this.getHeaders() }).pipe(
-      tap(departments => console.log('Raw response from backend:', JSON.stringify(departments, null, 2))),
       catchError(this.handleError)
     );
   }
@@ -60,7 +53,6 @@ export class CoordinatorService {
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
-    console.error('An error occurred:', error);
     return throwError(() => new Error('Something went wrong; please try again later.'));
   }
 }

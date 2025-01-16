@@ -105,7 +105,6 @@ export class LoginComponent implements OnInit, OnDestroy {
 
       this.authService.login(email, password).pipe(
         switchMap(response => {
-          console.log('Login successful, token:', response.token);
           localStorage.setItem('token', response.token);
           
           const decodedToken = this.authService.getDecodedToken();
@@ -116,7 +115,6 @@ export class LoginComponent implements OnInit, OnDestroy {
           return this.userService.getCurrentUserCampus(decodedToken.userId);
         }),
         finalize(() => {
-          console.log('Login process completed');
         })
       ).subscribe({
         next: (campus) => {
@@ -125,7 +123,6 @@ export class LoginComponent implements OnInit, OnDestroy {
             
             setTimeout(() => {
               if (campus?.CollegeCampusID) {
-                console.log('Setting default campus ID:', campus.CollegeCampusID);
                 this.campusContextService.setCampusId(campus.CollegeCampusID, true);
                 
                 setTimeout(() => {
@@ -133,7 +130,6 @@ export class LoginComponent implements OnInit, OnDestroy {
                   this.router.navigate(['/dashboard']);
                 }, 100);
               } else {
-                console.warn('No campus ID found in response');
                 this.isLoading = false;
                 this.router.navigate(['/dashboard']);
               }
@@ -142,7 +138,6 @@ export class LoginComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.isLoading = false;
-          console.error('Login process failed:', error);
           if (error.message === 'No user ID found in token') {
             this.errorMessage = 'Authentication failed. Please try again.';
           } else {

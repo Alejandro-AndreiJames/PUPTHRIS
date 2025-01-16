@@ -19,12 +19,8 @@ export class CollegeCampusService {
   }
 
   getCollegeCampuses(): Observable<CollegeCampus[]> {
-    console.log('Fetching college campuses from:', this.apiUrl);
     return this.http.get<CollegeCampus[]>(this.apiUrl, { headers: this.getHeaders() })
-      .pipe(
-        tap(campuses => console.log('College campuses fetched:', campuses)),
-        catchError(this.handleError)
-      );
+      .pipe(catchError(this.handleError));
   }
 
   getCollegeCampusById(id: number): Observable<CollegeCampus> {
@@ -48,7 +44,6 @@ export class CollegeCampusService {
   }
 
   private handleError(error: any): Observable<never> {
-    console.error('An error occurred:', error);
     return throwError(() => new Error(error.message || 'Server error'));
   }
 }

@@ -35,7 +35,6 @@ export class UserService {
 
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
-    console.log('Token for headers:', token ? 'Present' : 'Not found');
     return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
@@ -56,7 +55,6 @@ export class UserService {
     });
     
     url += `?${queryParams.toString()}`;
-    console.log('Request URL:', url);
     return this.http.get<UserResponse>(url, { headers: this.getHeaders() });
   }
 
@@ -64,18 +62,9 @@ export class UserService {
     return this.http.get<User>(`${this.apiUrl}/${userId}`, { headers: this.getHeaders() });
   }
 
-
-
   getCurrentUserCampus(userId: number): Observable<any> {
-    console.log('Fetching current campus for user:', userId);
     return this.http.get<any>(`${this.apiUrl}/${userId}/current-campus`, { headers: this.getHeaders() })
-      .pipe(
-        tap(campus => console.log('Current campus fetched:', campus)),
-        catchError(error => {
-          console.error('Error fetching current campus:', error);
-          throw error;
-        })
-      );
+      .pipe(catchError(this.handleError));
   }
 
   updateUserCampus(userId: number, campusId: number): Observable<any> {
@@ -83,7 +72,6 @@ export class UserService {
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {
-    console.error('An error occurred:', error);
     return throwError(error.message || 'Server error');
   }
 }

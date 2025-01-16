@@ -17,47 +17,31 @@ export class CampusGuard implements CanActivate {
   ) {}
 
   canActivate() {
-    console.log('CampusGuard - Starting guard check');
-    
-    // First check if we already have a stored campus ID
     const currentCampusId = this.campusContextService.getCurrentCampusId();
     const isDefault = localStorage.getItem('isDefaultCampus');
     
     if (currentCampusId && isDefault !== 'true') {
-      console.log('CampusGuard - Using existing manual campus ID:', currentCampusId);
       return true;
     }
 
     const decodedToken = this.authService.getDecodedToken();
-    console.log('CampusGuard - Decoded token:', decodedToken);
 
     if (!decodedToken?.userId) {
-      console.error('CampusGuard - No userId found in token');
       return false;
     }
 
     return this.userService.getCurrentUserCampus(decodedToken.userId).pipe(
       tap(campus => {
-        console.log('CampusGuard - Received campus data:', campus);
         if (campus?.CollegeCampusID) {
-          // Only set if we don't have a stored campus or if it's marked as default
           if (!currentCampusId || isDefault === 'true') {
-            console.log('CampusGuard - Setting default campus ID:', campus.CollegeCampusID);
             this.campusContextService.setCampusId(campus.CollegeCampusID, true);
-          } else {
-            console.log('CampusGuard - Keeping existing manual campus selection:', currentCampusId);
           }
-        } else {
-          console.warn('CampusGuard - No CollegeCampusID found in response');
         }
       }),
       map(campus => {
-        const hasAccess = !!campus?.CollegeCampusID;
-        console.log('CampusGuard - Access granted:', hasAccess);
-        return hasAccess;
+        return !!campus?.CollegeCampusID;
       }),
       catchError(error => {
-        console.error('CampusGuard - Error fetching campus:', error);
         return of(false);
       })
     );

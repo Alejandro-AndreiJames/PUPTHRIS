@@ -41,7 +41,6 @@ export class AchievementAwardService {
   }
   
   private handleError(error: any): Observable<never> {
-    console.error('Server Error:', error);
     let errorMessage = 'An unexpected error occurred. Please try again later.';
     
     if (error.error instanceof ErrorEvent) {
