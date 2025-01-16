@@ -63,6 +63,12 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
   isEditing: boolean = false;
   editingSchedule: ObservationSchedule | null = null;
   viewMode: 'table' | 'calendar' = 'table';
+  totalPagesArray: number[] = [];
+  semesterOptions = [
+    { value: '', label: 'All Semesters' },
+    { value: 'First Semester', label: 'First Semester' },
+    { value: 'Second Semester', label: 'Second Semester' }
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -131,7 +137,7 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
       StartTime: ['', Validators.required],
       EndTime: ['', Validators.required],
       AcademicYear: [this.currentAcademicYear, Validators.required],
-      Semester: ['1st', Validators.required],
+      Semester: ['First Semester', Validators.required],
       FacultyID: [this.userId],
       CollegeCampusID: [this.campusId]
     });
@@ -179,6 +185,7 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
 
   private loadSchedules(): void {
     this.isLoading = true;
+    
     if (this.isAdmin) {
       this.scheduleService.getAllSchedules(
         this.selectedStatus,
@@ -188,10 +195,16 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
         this.selectedSemester,
         this.searchName
       ).subscribe({
-        next: (response) => {
-          this.schedules = response.data || [];
-          this.totalPages = Math.ceil(this.schedules.length / this.itemsPerPage);
-          this.updatePaginatedData();
+        next: (response: any) => {
+          if (response.success && response.data) {
+            this.schedules = response.data;
+            this.totalPages = Math.ceil(this.schedules.length / this.itemsPerPage);
+            this.totalPagesArray = Array.from({length: this.totalPages}, (_, i) => i + 1);
+          } else {
+            this.schedules = [];
+            this.totalPages = 0;
+            this.totalPagesArray = [];
+          }
           this.isLoading = false;
         },
         error: (error) => {
@@ -207,15 +220,21 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
         this.selectedAcademicYear,
         this.selectedSemester
       ).subscribe({
-        next: (response) => {
-          this.schedules = response.data;
-          this.totalPages = Math.ceil(this.schedules.length / this.itemsPerPage);
-          this.updatePaginatedData();
+        next: (response: any) => {
+          if (response.success && response.data) {
+            this.schedules = response.data;
+            this.totalPages = Math.ceil(this.schedules.length / this.itemsPerPage);
+            this.totalPagesArray = Array.from({length: this.totalPages}, (_, i) => i + 1);
+          } else {
+            this.schedules = [];
+            this.totalPages = 0;
+            this.totalPagesArray = [];
+          }
           this.isLoading = false;
         },
         error: (error) => {
-          console.error('Error loading faculty schedules:', error);
-          this.showToastNotification('Error loading your schedules', 'error');
+          console.error('Error loading schedules:', error);
+          this.showToastNotification('Error loading schedules', 'error');
           this.schedules = [];
           this.isLoading = false;
         }
@@ -312,8 +331,8 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
     });
   }
 
-  onStatusChange(status: string): void {
-    this.selectedStatus = status;
+  onStatusChange(): void {
+    this.currentPage = 1; // Reset to first page when status changes
     this.loadSchedules();
   }
 
@@ -394,5 +413,42 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
     this.resetForm();
   }
 
+  onSearchChange(): void {
+    // Clear any existing timeout
+    if (this.searchDebounce) {
+      clearTimeout(this.searchDebounce);
+    }
 
+    // Set a new timeout to delay the search
+    this.searchDebounce = setTimeout(() => {
+      this.currentPage = 1; // Reset to first page when search changes
+      this.loadSchedules();
+    }, 300); // 300ms delay
+  }
+
+  onFilterChange(): void {
+    this.currentPage = 1; // Reset to first page when filters change
+    this.loadSchedules();
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.loadSchedules();
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.loadSchedules();
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.loadSchedules();
+    }
+  }
 }
