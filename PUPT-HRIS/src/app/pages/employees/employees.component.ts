@@ -11,6 +11,7 @@ import { ProfessionalLicenseService } from '../../services/professional-license.
 import { EmploymentInformationService } from '../../services/employment-information.service';
 import { CertificationService } from '../../services/certification.service';
 import { PdfService } from '../../services/pdf.service';
+import { ActivatedRoute } from '@angular/router';
 
 import { User } from '../../model/user.model';
 import { BasicDetails } from '../../model/basic-details.model';
@@ -99,7 +100,8 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     private professionalLicenseService: ProfessionalLicenseService,
     private employmentInformationService: EmploymentInformationService,
     private certificationService: CertificationService,
-    private pdfService: PdfService
+    private pdfService: PdfService,
+    private route: ActivatedRoute
   ) {
     // Setup search debouncing in constructor
     this.searchSubject.pipe(
@@ -115,6 +117,13 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      if (params['department']) {
+        this.selectedDepartment = params['department'];
+        this.applyFilters(); // This should trigger the filtering
+      }
+    });
+
     this.campusSubscription = this.campusContextService.getCampusId().subscribe(
       id => {
         console.log('Received campus ID:', id);

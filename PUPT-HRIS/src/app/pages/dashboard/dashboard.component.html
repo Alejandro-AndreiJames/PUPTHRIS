@@ -40,9 +40,9 @@
     <div class="cards-container grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
       <!-- Faculty Card -->
       <div class="card bg-gradient-to-r from-purple-400 to-purple-600 text-white p-6 rounded-lg shadow-lg cursor-pointer hover:shadow-xl transition-all" 
-           (click)="showUserList('faculty')">
+           (click)="showDepartmentList()">
         <h3 class="text-2xl font-bold">Department</h3>
-        <p class="text-6xl font-extrabold">{{ faculty }}</p>
+        <p class="text-6xl font-extrabold">{{ totalDepartments }}</p>
       </div>
 
       <!-- Doctorate Card -->
@@ -944,6 +944,71 @@
                 (click)="closeImmunityModal()">
           Close
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Department List Modal -->
+  <div *ngIf="showDepartmentModal" class="modal modal-open">
+    <div class="modal-box w-11/12 max-w-5xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-bold text-lg">Department List</h3>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="table w-full">
+          <thead>
+            <tr>
+              <th class="w-1/12">#</th>
+              <th class="w-4/12">Department Name</th>
+              <th class="w-3/12">Total Faculty</th>
+              <th class="w-2/12">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let dept of paginatedDepartmentsList; let i = index">
+              <td>{{ (departmentModalCurrentPage - 1) * departmentModalItemsPerPage + i + 1 }}</td>
+              <td>{{ dept.DepartmentName }}</td>
+              <td>{{ dept.count }}</td>
+              <td>
+                <button 
+                  class="btn btn-sm bg-maroon text-white hover:bg-black"
+                  (click)="viewDepartmentDetails(dept.DepartmentID)">
+                  View Details
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Controls -->
+      <div class="flex justify-center space-x-2 mt-4">
+        <button 
+          class="btn btn-sm" 
+          [disabled]="departmentModalCurrentPage === 1"
+          (click)="previousDepartmentModalPage()">
+          Previous
+        </button>
+
+        <button 
+          *ngFor="let page of getDepartmentModalPageArray()"
+          class="btn btn-sm" 
+          [class.btn-active]="page === departmentModalCurrentPage"
+          (click)="setDepartmentModalPage(page)">
+          {{ page }}
+        </button>
+
+        <button 
+          class="btn btn-sm" 
+          [disabled]="departmentModalCurrentPage === departmentModalTotalPages"
+          (click)="nextDepartmentModalPage()">
+          Next
+        </button>
+      </div>
+
+      <div class="modal-action">
+        <button class="btn" (click)="closeDepartmentModal()">Close</button>
       </div>
     </div>
   </div>

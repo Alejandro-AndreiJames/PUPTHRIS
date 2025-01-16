@@ -456,6 +456,16 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   public completedSections: number = 0;
   public totalSections: number = 0;
 
+  public totalDepartments: number = 0;
+
+  showDepartmentModal: boolean = false;
+  departmentsList: any[] = [];
+  
+  // Add pagination properties for department modal
+  departmentModalCurrentPage: number = 1;
+  departmentModalItemsPerPage: number = 5;
+  paginatedDepartmentsList: any[] = [];
+
   constructor(
     private dashboardService: DashboardService,
     private cdr: ChangeDetectorRef,
@@ -529,6 +539,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
           
           // Store departments
           this.departments = data.departments;
+          this.totalDepartments = data.totalDepartments;
         },
         error: (error) => {
           console.error('Error loading dashboard data:', error);
@@ -739,7 +750,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         this.userActivityChartData.datasets[0].data = [
           data.activityCounts.trainings,
           data.activityCounts.awards,
-          data.activityCounts.voluntaryActivities,
           data.activityCounts.officershipMemberships
         ];
         
@@ -811,7 +821,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   };
   public userActivityChartData: ChartData<'bar'> = {
-    labels: ['Trainings', 'Awards', 'Voluntary Activities', 'Officership Memberships'],
+    labels: ['Trainings', 'Awards', 'Officership Memberships'],
     datasets: [
       {
         data: [0, 0, 0, 0],
@@ -1597,5 +1607,75 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   // Update the template display method
   getImmunityAnalysis(faculty: ImmunityEligibleFaculty): string {
     return this.getImmunityProgressText(faculty);
+  }
+
+  navigateToEmployees(): void {
+    this.router.navigate(['/employees']);
+  }
+
+  // Method to show department list modal
+  showDepartmentList(): void {
+    const campusId = this.campusContextService.getCurrentCampusId();
+    if (!campusId) return;
+
+    this.showDepartmentModal = true;
+    // Make sure departments have their IDs and names
+    this.departmentsList = this.departments.map(dept => ({
+      DepartmentID: dept.DepartmentID,
+      DepartmentName: dept.DepartmentName,
+      count: dept.count
+    }));
+    this.updateDepartmentModalPagination();
+  }
+
+  // Method to handle view details click in the department modal
+  viewDepartmentDetails(departmentId: string): void {
+    this.router.navigate(['/employees'], {
+      queryParams: {
+        department: departmentId
+      }
+    });
+    this.closeDepartmentModal();
+  }
+
+  // Close department modal
+  closeDepartmentModal(): void {
+    this.showDepartmentModal = false;
+    this.departmentsList = [];
+    this.departmentModalCurrentPage = 1;
+  }
+
+  // Pagination methods for department modal
+  updateDepartmentModalPagination(): void {
+    const startIndex = (this.departmentModalCurrentPage - 1) * this.departmentModalItemsPerPage;
+    const endIndex = startIndex + this.departmentModalItemsPerPage;
+    this.paginatedDepartmentsList = this.departmentsList.slice(startIndex, endIndex);
+  }
+
+  get departmentModalTotalPages(): number {
+    return Math.ceil(this.departmentsList.length / this.departmentModalItemsPerPage);
+  }
+
+  previousDepartmentModalPage(): void {
+    if (this.departmentModalCurrentPage > 1) {
+      this.departmentModalCurrentPage--;
+      this.updateDepartmentModalPagination();
+    }
+  }
+
+  nextDepartmentModalPage(): void {
+    if (this.departmentModalCurrentPage < this.departmentModalTotalPages) {
+      this.departmentModalCurrentPage++;
+      this.updateDepartmentModalPagination();
+    }
+  }
+
+  setDepartmentModalPage(page: number): void {
+    this.departmentModalCurrentPage = page;
+    this.updateDepartmentModalPagination();
+  }
+
+  getDepartmentModalPageArray(): number[] {
+    return Array(this.departmentModalTotalPages).fill(0).map((_, i) => i + 1);
   }
 }
