@@ -408,6 +408,31 @@
           </div>
         </div>
       </div>
+
+      <!-- After your table -->
+      <div class="px-10 pb-1 -mt-2">
+        <hr class="my-2 border-gray-200">
+        <div class="pagination-controls" *ngIf="schedules.length > 0">
+          <button 
+            [disabled]="currentPage === 1" 
+            (click)="previousPage()">
+            Previous
+          </button>
+
+          <button 
+            *ngFor="let page of totalPagesArray" 
+            [class.active]="page === currentPage" 
+            (click)="goToPage(page)">
+            {{ page }}
+          </button>
+
+          <button 
+            [disabled]="currentPage === totalPages" 
+            (click)="nextPage()">
+            Next
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
