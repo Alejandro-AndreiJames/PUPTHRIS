@@ -65,7 +65,6 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
   viewMode: 'table' | 'calendar' = 'table';
   totalPagesArray: number[] = [];
   semesterOptions = [
-    { value: '', label: 'All Semesters' },
     { value: 'First Semester', label: 'First Semester' },
     { value: 'Second Semester', label: 'Second Semester' }
   ];

@@ -14,7 +14,7 @@ export interface ObservationSchedule {
   StartTime: string;
   EndTime: string;
   AcademicYear: string;
-  Semester: '1st' | '2nd';
+  Semester: 'First Semester' | 'Second Semester';
   Status: 'Pending' | 'Completed' | 'Cancelled';
   EvaluationID?: number;
   FacultyID: number;
