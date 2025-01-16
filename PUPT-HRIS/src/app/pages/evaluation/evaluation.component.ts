@@ -169,7 +169,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
 
   loadFaculties(): void {
     if (this.campusId === null) {
-      console.error('Campus ID is null');
       return;
     }
     
@@ -190,14 +189,12 @@ export class EvaluationComponent implements OnInit, OnDestroy {
         this.paginateUsers();
       },
       error: (error) => {
-        console.error('Error loading users:', error);
       }
     });
   }
 
   loadDepartments(): void {
     if (this.campusId === null) {
-      console.error('Campus ID is null');
       return;
     }
     this.departmentService.getDepartments(this.campusId).subscribe(
@@ -205,7 +202,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
         this.departments = departments;
       },
       (error) => {
-        console.error('Error loading departments:', error);
       }
     );
   }
@@ -314,7 +310,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
 
       this.evaluationService.updateEvaluation(this.currentEvaluationId, evaluationData).subscribe({
         next: (response) => {
-          console.log('Update successful:', response);
           this.showToast('Evaluation updated successfully', 'success');
           this.closeEvaluationModal();
           if (this.showEvaluationHistory && this.selectedUser) {
@@ -322,7 +317,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
           }
         },
         error: (error) => {
-          console.error('Update failed:', error);
           this.showToast('Failed to update evaluation. Please try again.', 'error');
         }
       });
@@ -333,7 +327,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
           this.closeEvaluationModal();
         },
         error: (error) => {
-          console.error('Submission failed:', error);
           this.showToast('Failed to submit evaluation. Please try again.', 'error');
         }
       });
@@ -354,12 +347,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
         this.ratings[category.id] = score.Score;
       }
     });
-
-    console.log('Loaded evaluation:', {
-      comments: this.comments,
-      courseSection: this.courseYearSection,
-      scores: this.ratings
-    });
   }
 
   calculateRatingDescription(score: number): { description: QualitativeRating, scale: number } {
@@ -377,11 +364,9 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   }
 
   viewEvaluationHistory(user: User): void {
-    console.log('View history clicked for user:', user);
     this.selectedUser = user;
     this.evaluationService.getFacultyEvaluationHistory(user.UserID).subscribe({
       next: (history) => {
-        console.log('Received history:', history);
         this.evaluationHistory = history.sort((a: any, b: any) => {
           // Parse academic years into comparable numbers
           const yearA = parseInt(a.AcademicYear.split('-')[0]);
@@ -403,7 +388,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
         }, 100);
       },
       error: (error) => {
-        console.error('Error fetching evaluation history:', error);
         // Optionally show an error message to the user
         alert('Failed to load evaluation history. Please try again.');
       }
@@ -412,7 +396,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
 
   private createOrUpdateChart(): void {
     if (!this.chartCanvas) {
-      console.error('Chart canvas not found');
       return;
     }
 
@@ -433,7 +416,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
 
     const ctx = this.chartCanvas.nativeElement.getContext('2d');
     if (!ctx) {
-      console.error('Could not get chart context');
       return;
     }
 
@@ -537,7 +519,6 @@ export class EvaluationComponent implements OnInit, OnDestroy {
         this.evaluationToDelete = null;
       },
       error: (error) => {
-        console.error('Error deleting evaluation:', error);
         this.showToast('Failed to delete evaluation. Please try again.', 'error');
       }
     });

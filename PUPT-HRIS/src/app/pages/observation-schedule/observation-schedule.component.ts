@@ -97,10 +97,6 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
       } else {
         this.isAdmin = decoded.role === 'admin' || decoded.role === 'superadmin';
       }
-
-      console.log('User Role:', this.userRole);
-      console.log('Is Faculty:', this.isFaculty);
-      console.log('Token Decoded:', decoded);
     }
 
     // Generate academic years dynamically
@@ -161,7 +157,6 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
               this.showToastNotification('Schedule updated successfully', 'success');
             },
             error: (error) => {
-              console.error('Error updating schedule:', error);
               this.showToastNotification('Error updating schedule', 'error');
             }
           });
@@ -175,7 +170,6 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
               this.showToastNotification('Schedule created successfully', 'success');
             },
             error: (error) => {
-              console.error('Error creating schedule:', error);
               this.showToastNotification('Error creating schedule', 'error');
             }
           });
@@ -208,7 +202,6 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
           this.isLoading = false;
         },
         error: (error) => {
-          console.error('Error loading schedules:', error);
           this.showToastNotification('Error loading schedules', 'error');
           this.schedules = [];
           this.isLoading = false;
@@ -233,7 +226,6 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
           this.isLoading = false;
         },
         error: (error) => {
-          console.error('Error loading schedules:', error);
           this.showToastNotification('Error loading schedules', 'error');
           this.schedules = [];
           this.isLoading = false;
@@ -262,7 +254,6 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
           this.scheduleToDelete = null;
         },
         error: (error) => {
-          console.error('Error deleting schedule:', error);
           this.showToastNotification('Error deleting schedule', 'error');
           this.showDeletePrompt = false;
           this.scheduleToDelete = null;
@@ -287,7 +278,6 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
         this.showToastNotification(`Status updated to ${newStatus}`, 'success');
       },
       error: (error) => {
-        console.error('Error updating status:', error);
         this.showToastNotification('Error updating status', 'error');
       }
     });
@@ -325,7 +315,6 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
         this.showToastNotification('PDF downloaded successfully', 'success');
       },
       error: (error) => {
-        console.error('Error downloading PDF:', error);
         this.showToastNotification('Error downloading PDF', 'error');
       }
     });
