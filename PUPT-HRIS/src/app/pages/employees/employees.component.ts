@@ -233,7 +233,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         if (this.selectedUser) {
-          this.selectedUser.profileImageUrl = 'assets/images/default-avatar.png';
+          this.selectedUser.profileImageUrl = 'assets/default-avatar.jpg';
         }
       }
     });
@@ -411,7 +411,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
         }
       },
       error: (error) => {
-        user.profileImageUrl = 'assets/images/default-avatar.png';
+        user.profileImageUrl = 'assets/images/default-avatar.jpg';
       }
     });
   }
@@ -439,7 +439,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
   }
 
   handleImageError(event: any): void {
-    event.target.src = '../../../assets/images/default-avatar.jpeg';
+    event.target.src = '../../../assets/default-avatar.jpg';
     if (this.selectedUser) {
       this.selectedUser.profileImageUrl = undefined;
     }
