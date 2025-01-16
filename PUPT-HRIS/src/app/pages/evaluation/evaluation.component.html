@@ -54,7 +54,16 @@
         <tr class="bg-red-900 text-white">
           <th style="width: 5%">#</th>
           <th style="width: 15%">Fcode</th>
-          <th style="width: 25%">Name</th>
+          <th style="width: 25%" class="cursor-pointer" (click)="sortData('name')">
+            Name
+            <i class="fas" 
+               [ngClass]="{
+                 'fa-sort-alpha-down': sortColumn === 'name' && sortDirection === 'asc',
+                 'fa-sort-alpha-up': sortColumn === 'name' && sortDirection === 'desc',
+                 'fa-sort': sortColumn !== 'name'
+               }">
+            </i>
+          </th>
           <th style="width: 20%">Department</th>
           <th style="width: 15%">Employment Type</th>
           <th style="width: 20%">Actions</th>
@@ -64,9 +73,9 @@
         <tr *ngFor="let user of paginatedUsers; let i = index">
           <td style="width: 5%">{{ (currentPage - 1) * itemsPerPage + i + 1 }}</td>
           <td style="width: 15%">{{ user.Fcode }}</td>
-          <td style="width: 25%">{{ user.FirstName }} {{ user.MiddleName }} {{ user.Surname }}</td>
+          <td style="width: 25%">{{ formatUserName(user) }}</td>
           <td style="width: 20%">{{ user.Department?.DepartmentName }}</td>
-          <td style="width: 15%">{{ user.EmploymentType }}</td>
+          <td style="width: 15%">{{ formatEmploymentType(user.EmploymentType) }}</td>
           <td style="width: 20%">
             <div class="flex gap-2">
               <button class="px-3 py-1 bg-red-900 text-white rounded hover:bg-red-800 transition-colors" 

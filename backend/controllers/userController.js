@@ -123,7 +123,7 @@ exports.getUsers = async (req, res) => {
       ];
     }
 
-    // Get users with role filtering
+    // Get users with role filtering and proper sorting
     const users = await User.findAll({
       where: whereClause,
       include: [
@@ -143,9 +143,12 @@ exports.getUsers = async (req, res) => {
           })
         }
       ],
+      order: [
+        ['Surname', 'ASC'],  // Primary sort by Surname
+        ['FirstName', 'ASC'] // Secondary sort by FirstName
+      ],
       offset: offset,
       limit: limit,
-      order: [['UserID', 'ASC']],
       distinct: true
     });
 

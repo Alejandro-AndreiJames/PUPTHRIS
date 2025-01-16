@@ -122,6 +122,9 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
 
+  sortColumn: string = 'name';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
   constructor(
     private campusContextService: CampusContextService,
     private userService: UserService,
@@ -174,24 +177,20 @@ export class EvaluationComponent implements OnInit, OnDestroy {
       page: this.currentPage,
       limit: this.itemsPerPage,
       campusId: this.campusId,
-      role: 'faculty',
       departmentId: this.selectedDepartment || undefined,
       employmentType: this.selectedEmploymentType || undefined,
       search: this.searchTerm || undefined
     };
 
-    console.log('Requesting faculties with params:', params);
-
     this.userService.getUsers(params).subscribe({
       next: (response) => {
-        console.log('Faculty response:', response);
         this.users = response.data;
         this.filteredUsers = [...this.users];
         this.totalPages = response.metadata.totalPages;
         this.paginateUsers();
       },
       error: (error) => {
-        console.error('Error loading faculties:', error);
+        console.error('Error loading users:', error);
       }
     });
   }
@@ -698,5 +697,52 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   onEmploymentTypeChange(): void {
     this.currentPage = 1;
     this.loadFaculties();
+  }
+
+  formatUserName(user: User): string {
+    const nameParts = [
+      user.Surname,
+      user.FirstName,
+      user.MiddleName,
+      user.NameExtension
+    ].filter(part => part && part.trim() !== '');
+    
+    return nameParts.join(', ');
+  }
+
+  sortData(column: string): void {
+    // If clicking the same column, toggle direction
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+
+    this.paginatedUsers.sort((a, b) => {
+      let comparison = 0;
+      
+      if (column === 'name') {
+        const nameA = this.formatUserName(a).toLowerCase();
+        const nameB = this.formatUserName(b).toLowerCase();
+        comparison = nameA.localeCompare(nameB);
+      }
+      
+      // Reverse if descending
+      return this.sortDirection === 'desc' ? -comparison : comparison;
+    });
+  }
+
+  formatEmploymentType(type: string | null): string {
+    if (!type) return 'No information entered';
+    
+    const formats: { [key: string]: string } = {
+      'fulltime': 'Full-Time',
+      'parttime': 'Part-Time',
+      'temporary': 'Temporary',
+      'designee': 'Designee'
+    };
+
+    return formats[type.toLowerCase()] || type;
   }
 }
