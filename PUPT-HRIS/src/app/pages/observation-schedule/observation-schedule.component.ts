@@ -141,13 +141,13 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
         CollegeCampusID: this.campusId
       };
 
-      if (this.isEditing && this.editingSchedule) {
+      if (this.isEditing && this.editingSchedule?.ScheduleID) {
         // Update existing schedule
-        this.scheduleService.updateSchedule(this.editingSchedule.ScheduleID!, formData)
+        this.scheduleService.updateSchedule(this.editingSchedule.ScheduleID, formData)
           .subscribe({
             next: (response) => {
+              this.closeScheduleModal();
               this.loadSchedules();
-              this.resetForm();
               this.showToastNotification('Schedule updated successfully', 'success');
             },
             error: (error) => {
@@ -160,8 +160,8 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
         this.scheduleService.createSchedule(formData)
           .subscribe({
             next: (response) => {
+              this.closeScheduleModal();
               this.loadSchedules();
-              this.resetForm();
               this.showToastNotification('Schedule created successfully', 'success');
             },
             error: (error) => {
@@ -377,4 +377,15 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
   changeView(view: 'table' | 'calendar'): void {
     this.viewMode = view;
   }
+
+  openScheduleModal() {
+    (document.getElementById('schedule-modal') as HTMLDialogElement).showModal();
+  }
+
+  closeScheduleModal() {
+    (document.getElementById('schedule-modal') as HTMLDialogElement).close();
+    this.resetForm();
+  }
+
+
 }
