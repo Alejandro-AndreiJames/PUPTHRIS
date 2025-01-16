@@ -1,5 +1,6 @@
 const ObservationSchedule = require('../models/observationScheduleModel');
 const User = require('../models/userModel');
+const { Op } = require('sequelize');
 
 // Create a new observation schedule
 exports.createSchedule = async (req, res) => {
@@ -16,6 +17,26 @@ exports.createSchedule = async (req, res) => {
       FacultyID
     } = req.body;
 
+    // Check for existing active schedule
+    const existingSchedule = await ObservationSchedule.findOne({
+      where: {
+        FacultyID,
+        AcademicYear,
+        Semester,
+        Status: {
+          [Op.notIn]: ['Cancelled'] // Allow new schedule only if previous one is cancelled
+        }
+      }
+    });
+
+    if (existingSchedule) {
+      return res.status(400).json({
+        success: false,
+        message: 'You already have an active schedule for this semester. Please wait for the current schedule to be completed or cancelled.'
+      });
+    }
+
+    // If no existing active schedule, create new one
     const schedule = await ObservationSchedule.create({
       Topic,
       Subject,

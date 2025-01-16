@@ -133,14 +133,20 @@ export class ObservationScheduleComponent implements OnInit {
           this.loadSchedules();
           this.scheduleForm.reset({
             Semester: '1st',
-            AcademicYear: '2023-2024',
+            AcademicYear: this.currentAcademicYear,
             FacultyID: this.userId
           });
           this.showToastNotification('Schedule created successfully', 'success');
+          this.showScheduleForm = false; // Hide the form after successful creation
         },
         error: (error) => {
           console.error('Error creating schedule:', error);
-          this.showToastNotification('Error creating schedule', 'error');
+          // Show specific error message if it's a duplicate schedule
+          if (error.status === 400) {
+            this.showToastNotification(error.error.message || 'Cannot create duplicate schedule', 'warning');
+          } else {
+            this.showToastNotification('Error creating schedule', 'error');
+          }
         }
       });
     } else {
