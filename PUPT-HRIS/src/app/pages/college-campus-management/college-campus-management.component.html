@@ -28,7 +28,7 @@
           </tr>
         </tbody>
       </table>
-      <div class="mt-4 flex justify-end">
+      <div class="mt-4 flex justify-end px-10 mb-0">
         <button class="btn btn-save" (click)="openAddModal()">Add New Campus</button>
       </div>
     </div>
@@ -40,6 +40,31 @@
           <button class="btn btn-save" (click)="openAddModal()">Add New Campus</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Add padding to this div -->
+  <div class="px-10 pb-1 -mt-7">
+    <hr class="my-2 border-gray-200">
+    <div class="pagination-controls" *ngIf="campuses.length > 0">
+      <button 
+        [disabled]="currentPage === 1" 
+        (click)="previousPage()">
+        Previous
+      </button>
+
+      <button 
+        *ngFor="let page of totalPagesArray" 
+        [class.active]="page === currentPage" 
+        (click)="goToPage(page)">
+        {{ page }}
+      </button>
+
+      <button 
+        [disabled]="currentPage === totalPages" 
+        (click)="nextPage()">
+        Next
+      </button>
     </div>
   </div>
 </div>

@@ -13,6 +13,7 @@ import { CommonModule } from '@angular/common';
 })
 export class CollegeCampusManagementComponent implements OnInit {
   campuses: CollegeCampus[] = [];
+  paginatedCampuses: CollegeCampus[] = [];
   modalForm: FormGroup;
   isEditing: boolean = false;
   currentCampusId: number | null = null;
@@ -24,6 +25,14 @@ export class CollegeCampusManagementComponent implements OnInit {
 
   showDeletePrompt: boolean = false;
   pendingDeleteId: number | null = null;
+
+  currentPage: number = 1;
+  itemsPerPage: number = 10;
+  totalPages: number = 0;
+
+  get totalPagesArray(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+  }
 
   constructor(
     private collegeCampusService: CollegeCampusService,
@@ -40,15 +49,44 @@ export class CollegeCampusManagementComponent implements OnInit {
   }
 
   loadCampuses(): void {
-    this.collegeCampusService.getCollegeCampuses().subscribe(
-      (data) => {
+    this.collegeCampusService.getCollegeCampuses().subscribe({
+      next: (data) => {
         this.campuses = data;
+        this.totalPages = Math.ceil(this.campuses.length / this.itemsPerPage);
+        this.updatePaginatedData();
       },
-      (error) => {
+      error: (error) => {
         this.showToastNotification('Error fetching college campuses', 'error');
         console.error('Error fetching college campuses', error);
       }
-    );
+    });
+  }
+
+  updatePaginatedData(): void {
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    this.paginatedCampuses = this.campuses.slice(startIndex, endIndex);
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updatePaginatedData();
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.updatePaginatedData();
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePaginatedData();
+    }
   }
 
   openAddModal(): void {
