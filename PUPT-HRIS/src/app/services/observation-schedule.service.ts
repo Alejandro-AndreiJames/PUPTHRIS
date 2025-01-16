@@ -52,7 +52,8 @@ export class ObservationScheduleService {
     sortBy?: string,
     sortOrder?: string,
     academicYear?: string,
-    semester?: string
+    semester?: string,
+    searchName?: string
   ): Observable<any> {
     let params = new HttpParams();
     
@@ -61,6 +62,7 @@ export class ObservationScheduleService {
     if (sortOrder) params = params.set('sortOrder', sortOrder);
     if (academicYear) params = params.set('academicYear', academicYear);
     if (semester) params = params.set('semester', semester);
+    if (searchName) params = params.set('searchName', searchName);
 
     return this.http.get(this.apiUrl, { 
       params,

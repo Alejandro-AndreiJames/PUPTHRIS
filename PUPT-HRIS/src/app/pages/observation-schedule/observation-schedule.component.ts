@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -14,7 +14,7 @@ import { CampusContextService } from '../../services/campus-context.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, FormsModule]
 })
-export class ObservationScheduleComponent implements OnInit {
+export class ObservationScheduleComponent implements OnInit, OnDestroy {
   scheduleForm: FormGroup = this.initializeForm();
   schedules: ObservationSchedule[] = [];
   userId: number = 0;
@@ -48,6 +48,8 @@ export class ObservationScheduleComponent implements OnInit {
   ];
   selectedAcademicYear: string = '';
   selectedSemester: string = '';
+  searchName: string = '';
+  private searchDebounce: any;
 
   constructor(
     private fb: FormBuilder,
@@ -164,7 +166,8 @@ export class ObservationScheduleComponent implements OnInit {
         this.sortBy,
         this.sortOrder,
         this.selectedAcademicYear,
-        this.selectedSemester
+        this.selectedSemester,
+        this.searchName
       ).subscribe({
         next: (response) => {
           this.schedules = response.data || [];
@@ -299,6 +302,15 @@ export class ObservationScheduleComponent implements OnInit {
     this.loadSchedules();
   }
 
+  onSearchChange(): void {
+    if (this.searchDebounce) {
+      clearTimeout(this.searchDebounce);
+    }
+    this.searchDebounce = setTimeout(() => {
+      this.loadSchedules();
+    }, 300);
+  }
+
   ngOnInit(): void {
     this.loadSchedules();
 
@@ -307,5 +319,11 @@ export class ObservationScheduleComponent implements OnInit {
       this.campusId = campusId;
       this.loadSchedules();
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.searchDebounce) {
+      clearTimeout(this.searchDebounce);
+    }
   }
 }

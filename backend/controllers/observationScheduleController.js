@@ -74,7 +74,8 @@ exports.getAllSchedules = async (req, res) => {
       sortBy = 'date', 
       sortOrder = 'asc',
       academicYear,
-      semester
+      semester,
+      searchName
     } = req.query;
     
     // Base where clauses
@@ -93,6 +94,22 @@ exports.getAllSchedules = async (req, res) => {
     }
     if (campusId) {
       userWhereClause.CollegeCampusID = parseInt(campusId);
+    }
+
+    // Add name search if provided
+    if (searchName) {
+      userWhereClause[Op.or] = [
+        {
+          FirstName: {
+            [Op.like]: `%${searchName}%`
+          }
+        },
+        {
+          Surname: {
+            [Op.like]: `%${searchName}%`
+          }
+        }
+      ];
     }
 
     // Define sorting options
