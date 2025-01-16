@@ -267,7 +267,9 @@
       </div>
 
       <!-- Immunity Details Modal -->
-      <div *ngIf="showImmunityDetailsModal && selectedFaculty" class="modal modal-open immunity-details-modal">
+      <div *ngIf="showImmunityDetailsModal && selectedFaculty" 
+           class="modal modal-open" 
+           style="z-index: 1001;">
         <div class="modal-box w-11/12 max-w-5xl">
           <h3 class="text-xl font-bold">
             {{ selectedFaculty.Name }}
@@ -847,7 +849,9 @@
   </div>
 
   <!-- Immunity View All Modal -->
-  <div *ngIf="showImmunityModal" class="modal modal-open" style="z-index: 100;">
+  <div *ngIf="showImmunityModal" 
+       class="modal modal-open" 
+       style="z-index: 1000;">
     <div class="modal-box w-11/12 max-w-5xl">
       <h3 class="font-bold text-lg mb-4">Immunity Eligible Faculty Members</h3>
       
