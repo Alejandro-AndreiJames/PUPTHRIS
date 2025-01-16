@@ -30,71 +30,72 @@
   </div>
 </div>
 
-<!-- Replace the ng-template modal with this DaisyUI modal -->
-<dialog id="schedule-modal" class="modal">
+<!-- View Schedule Details Modal -->
+<dialog id="view-schedule-modal" class="modal">
   <div class="modal-box max-w-md bg-white rounded-lg shadow-xl">
     <!-- Header -->
-    <div class="bg-[#800000] text-white p-4 -m-6 mb-6 rounded-t-lg">
+    <div class="bg-[#800000] text-white p-4 -m-6 mb-6 rounded-t-lg flex justify-between items-center">
       <h3 class="font-bold text-xl">Schedule Details</h3>
+      <div class="badge badge-outline text-white">
+        {{selectedEvent?.status}}
+      </div>
     </div>
 
     <!-- Content -->
     <div *ngIf="selectedEvent" class="space-y-4 mt-8">
-      <!-- Topic -->
+      <!-- Show faculty name for admin and superadmin -->
+      <div *ngIf="canManageSchedules()" class="flex flex-col">
+        <label class="text-sm text-gray-600 font-medium">Faculty</label>
+        <p class="text-gray-900 font-semibold">{{selectedEvent.facultyName}}</p>
+      </div>
+
       <div class="flex flex-col">
         <label class="text-sm text-gray-600 font-medium">Topic</label>
         <p class="text-gray-900 font-semibold">{{selectedEvent.title}}</p>
       </div>
 
-      <!-- Faculty -->
-      <div class="flex flex-col">
-        <label class="text-sm text-gray-600 font-medium">Faculty</label>
-        <p class="text-gray-900 font-semibold">{{selectedEvent.faculty}}</p>
-      </div>
-
-      <!-- Subject -->
       <div class="flex flex-col">
         <label class="text-sm text-gray-600 font-medium">Subject</label>
         <p class="text-gray-900 font-semibold">{{selectedEvent.subject}}</p>
       </div>
 
-      <!-- Room -->
       <div class="flex flex-col">
         <label class="text-sm text-gray-600 font-medium">Room</label>
         <p class="text-gray-900 font-semibold">{{selectedEvent.room}}</p>
       </div>
 
-      <!-- Time -->
       <div class="flex flex-col">
-        <label class="text-sm text-gray-600 font-medium">Time</label>
-        <p class="text-gray-900 font-semibold">{{selectedEvent.startTime}} - {{selectedEvent.endTime}}</p>
-      </div>
-
-      <!-- Status -->
-      <div class="flex flex-col">
-        <label class="text-sm text-gray-600 font-medium">Status</label>
-        <span class="font-semibold"
-              [ngClass]="{
-                'text-yellow-600': selectedEvent.status === 'Pending',
-                'text-green-600': selectedEvent.status === 'Completed',
-                'text-red-600': selectedEvent.status === 'Cancelled'
-              }">
-          {{selectedEvent.status}}
-        </span>
+        <label class="text-sm text-gray-600 font-medium">Schedule</label>
+        <p class="text-gray-900 font-semibold">
+          {{selectedEvent.startTime}} - {{selectedEvent.endTime}}
+        </p>
       </div>
     </div>
 
-    <!-- Footer -->
+    <!-- Actions -->
     <div class="modal-action mt-8 border-t pt-4">
+      <!-- Add PDF Download button -->
+      <button 
+        *ngIf="selectedEvent?.status === 'Completed' && selectedEvent?.evaluationId"
+        (click)="downloadPdf(selectedEvent)"
+        class="btn bg-blue-600 hover:bg-blue-700 text-white">
+        <i class="fas fa-download mr-2"></i>Download PDF
+      </button>
+
+      <!-- Show cancel button for admin and superadmin -->
+      <button 
+        *ngIf="canManageSchedules() && selectedEvent?.status === 'Pending'"
+        (click)="updateStatus('Cancelled')"
+        class="btn bg-red-600 hover:bg-red-700 text-white">
+        Cancel Schedule
+      </button>
+
       <form method="dialog">
-        <button class="btn bg-[#800000] hover:bg-[#600000] text-white border-none">
-          Close
-        </button>
+        <button class="btn">Close</button>
       </form>
     </div>
   </div>
 
-  <!-- Click outside to close -->
   <form method="dialog" class="modal-backdrop">
     <button>close</button>
   </form>

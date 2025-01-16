@@ -25,6 +25,8 @@ export class CalendarViewComponent implements OnInit, AfterViewInit {
   calendarApi: any;
   selectedEvent: any;
   userId: number = 0;
+  isAdmin: boolean = false;
+  isSuperAdmin: boolean = false;
 
   constructor(
     private scheduleService: ObservationScheduleService,
@@ -36,6 +38,8 @@ export class CalendarViewComponent implements OnInit, AfterViewInit {
       const decoded: any = jwtDecode(token);
       this.userId = decoded.userId;
     }
+    this.isAdmin = this.authService.isAdmin();
+    this.isSuperAdmin = this.authService.isSuperAdmin();
   }
 
   ngAfterViewInit() {
@@ -151,25 +155,34 @@ export class CalendarViewComponent implements OnInit, AfterViewInit {
   }
 
   loadEvents(): void {
-    // Get only faculty's schedules
-    this.scheduleService.getFacultySchedules(this.userId).subscribe({
+    // If admin or superadmin, get all schedules, otherwise get only faculty's schedules
+    const observable = this.isAdmin || this.isSuperAdmin
+      ? this.scheduleService.getAllSchedules()
+      : this.scheduleService.getFacultySchedules(this.userId);
+
+    observable.subscribe({
       next: (response) => {
         if (response && response.data) {
           const events: EventInput[] = response.data.map((schedule: any) => {
             const scheduleDate = schedule.ScheduledDate.split('T')[0];
+            const facultyName = schedule.Faculty 
+              ? `${schedule.Faculty.FirstName} ${schedule.Faculty.LastName}`
+              : 'Unknown Faculty';
             
             return {
               id: schedule.ScheduleID,
-              title: schedule.Topic,
+              title: `${facultyName} - ${schedule.Topic}`, // Include faculty name in title
               start: `${scheduleDate}T${schedule.StartTime}`,
               end: `${scheduleDate}T${schedule.EndTime}`,
               backgroundColor: this.getStatusColor(schedule.Status),
               borderColor: this.getStatusColor(schedule.Status),
               extendedProps: {
                 faculty: schedule.Faculty,
+                facultyName: facultyName, // Add faculty name to extended props
                 subject: schedule.Subject,
                 room: schedule.RoomNumber,
-                status: schedule.Status
+                status: schedule.Status,
+                evaluationId: schedule.EvaluationID
               },
               display: 'block'
             };
@@ -183,7 +196,7 @@ export class CalendarViewComponent implements OnInit, AfterViewInit {
         }
       },
       error: (error) => {
-        console.error('Error loading faculty schedules:', error);
+        console.error('Error loading schedules:', error);
       }
     });
   }
@@ -203,19 +216,21 @@ export class CalendarViewComponent implements OnInit, AfterViewInit {
 
   handleEventClick(info: any): void {
     const event = info.event;
-    const faculty = event.extendedProps.faculty;
     
     this.selectedEvent = {
+      id: event.id,
       title: event.title,
-      faculty: `${faculty?.FirstName || ''} ${faculty?.LastName || ''}`,
       subject: event.extendedProps.subject,
       room: event.extendedProps.room,
       startTime: event.start?.toLocaleTimeString(),
       endTime: event.end?.toLocaleTimeString(),
-      status: event.extendedProps.status
+      status: event.extendedProps.status,
+      facultyName: event.extendedProps.facultyName,
+      evaluationId: event.extendedProps.evaluationId
     };
     
-    (document.getElementById('schedule-modal') as HTMLDialogElement).showModal();
+    // Open the view modal instead of create modal
+    (document.getElementById('view-schedule-modal') as HTMLDialogElement).showModal();
   }
 
   handleDateSet(dateInfo: any) {
@@ -228,5 +243,54 @@ export class CalendarViewComponent implements OnInit, AfterViewInit {
 
   handleButtonClick(buttonInfo: any) {
     console.log('Calendar button clicked:', buttonInfo);
+  }
+
+  // Add method to handle status updates
+  updateStatus(newStatus: 'Cancelled' | 'Completed'): void {
+    if (this.selectedEvent?.id) {
+      this.scheduleService.updateScheduleStatus(this.selectedEvent.id, newStatus)
+        .subscribe({
+          next: () => {
+            // Close modal
+            (document.getElementById('view-schedule-modal') as HTMLDialogElement).close();
+            // Refresh calendar events
+            this.loadEvents();
+          },
+          error: (error) => {
+            console.error('Error updating schedule status:', error);
+          }
+        });
+    }
+  }
+
+  // Add this method
+  canManageSchedules(): boolean {
+    return this.isAdmin || this.isSuperAdmin;
+  }
+
+  downloadPdf(event: any): void {
+    if (!event.evaluationId) {
+      console.error('No evaluation ID available');
+      return;
+    }
+
+    this.scheduleService.generatePdf(event.evaluationId).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        
+        // Create descriptive filename
+        const facultyName = event.facultyName?.replace(/\s+/g, '_') || 'Unknown';
+        const filename = `${facultyName}_evaluation.pdf`;
+        
+        link.download = filename;
+        link.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (error) => {
+        console.error('Error downloading PDF:', error);
+      }
+    });
   }
 }

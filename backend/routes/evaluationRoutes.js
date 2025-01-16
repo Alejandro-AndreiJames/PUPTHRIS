@@ -33,6 +33,6 @@ router.get('/evaluations/faculties-by-rating/:campusId', authenticateJWT, evalua
 router.get('/immunity-eligible', authenticateJWT, evaluationController.getImmunityEligibleFaculty);
 
 // Add this new route
-router.get('/generate-pdf/:evaluationId', evaluationPdfController.generateEvaluationPdf);
+router.get('/generate-pdf/:evaluationId', authenticateJWT, evaluationPdfController.generateEvaluationPdf);
 
 module.exports = router;

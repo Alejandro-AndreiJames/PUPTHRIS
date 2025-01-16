@@ -342,22 +342,34 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
     }
   }
 
-  editSchedule(schedule: ObservationSchedule): void {
+  editSchedule(schedule: any): void {
     this.isEditing = true;
     this.editingSchedule = { ...schedule };
-    this.showScheduleForm = true;
     
+    // Format the date properly
+    const formattedDate = schedule.Date ? new Date(schedule.Date).toISOString().split('T')[0] : '';
+
+    // Handle the time range
+    let startTime = '';
+    let endTime = '';
+    if (schedule.Time) {
+      [startTime, endTime] = schedule.Time.split(' - ');
+    }
+
     // Populate the form with existing data
     this.scheduleForm.patchValue({
       Topic: schedule.Topic,
       Subject: schedule.Subject,
-      RoomNumber: schedule.RoomNumber,
-      ScheduledDate: schedule.ScheduledDate,
-      StartTime: schedule.StartTime,
-      EndTime: schedule.EndTime,
+      RoomNumber: schedule.Room,
+      ScheduledDate: formattedDate,
+      StartTime: startTime.trim(),
+      EndTime: endTime.trim(),
       AcademicYear: schedule.AcademicYear,
       Semester: schedule.Semester
     });
+
+    // Open the modal
+    (document.getElementById('schedule-modal') as HTMLDialogElement).showModal();
   }
 
   private resetForm(): void {
