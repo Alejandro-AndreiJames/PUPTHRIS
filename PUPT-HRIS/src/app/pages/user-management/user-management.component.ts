@@ -7,6 +7,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CampusContextService } from '../../services/campus-context.service';
 import { Subscription, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { GetUsersParams } from '../../model/get-user-params.model';
 
 interface UserResponse {
   data: User[];
@@ -273,7 +274,9 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   getNonAdminRoles(): Role[] {
     return this.availableRoles.filter(role => 
-      role.RoleName.toLowerCase() !== 'admin' && role.RoleName.toLowerCase() !== 'superadmin'
+      role.RoleName.toLowerCase() !== 'admin' && 
+      role.RoleName.toLowerCase() !== 'superadmin' &&
+      role.RoleName.toLowerCase() !== 'staff'
     );
   }
 
@@ -441,24 +444,38 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   sortData(column: string): void {
     if (this.sortColumn === column) {
-      // If clicking the same column, toggle direction
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
-      // If clicking a new column, set it with ascending direction
       this.sortColumn = column;
       this.sortDirection = 'asc';
     }
 
-    // Sort the users array
-    this.paginatedUsers.sort((a, b) => {
-      let comparison = 0;
-      if (column === 'name') {
-        const nameA = `${a.Surname}, ${a.FirstName}`.toLowerCase();
-        const nameB = `${b.Surname}, ${b.FirstName}`.toLowerCase();
-        comparison = nameA.localeCompare(nameB);
+    const backendSortDirection = this.sortDirection.toUpperCase() as 'ASC' | 'DESC';
+    
+    const params: GetUsersParams = {
+      page: this.currentPage,
+      limit: this.itemsPerPage,
+      ...(this.campusId !== null && { campusId: this.campusId }),
+      search: this.searchTerm || '',
+      employmentType: this.selectedEmploymentType || '',
+      role: this.selectedRole || '',
+      isActive: this.selectedStatus === 'active' ? 'true' : 
+               this.selectedStatus === 'inactive' ? 'false' : 
+               undefined,
+      sortDirection: backendSortDirection
+    };
+
+    this.userManagementService.getAllUsers(params).subscribe({
+      next: (response) => {
+        this.users = response.data;
+        this.filteredUsers = [...this.users];
+        this.paginatedUsers = this.filteredUsers;
+        this.totalItems = response.metadata.totalItems;
+        this.totalPages = response.metadata.totalPages;
+      },
+      error: (error) => {
+        console.error('Error sorting users:', error);
       }
-      
-      return this.sortDirection === 'asc' ? comparison : -comparison;
     });
   }
 
