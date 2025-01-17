@@ -125,6 +125,8 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   sortColumn: string = 'name';
   sortDirection: 'asc' | 'desc' = 'asc';
 
+  isFaculty: boolean = false;
+
   constructor(
     private campusContextService: CampusContextService,
     private userService: UserService,
@@ -143,6 +145,8 @@ export class EvaluationComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.isFaculty = this.authService.isFaculty();
+    
     this.campusSubscription = this.campusContextService.getCampusId().subscribe(
       id => {
         if (id !== null) {

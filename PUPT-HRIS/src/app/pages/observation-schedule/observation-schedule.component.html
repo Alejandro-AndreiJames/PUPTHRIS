@@ -471,6 +471,7 @@
                           </button>
                           
                           <button 
+                            *ngIf="isAdmin"
                             (click)="deleteSchedule(schedule.ScheduleID!)" 
                             class="px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200 text-sm font-medium">
                             Delete
