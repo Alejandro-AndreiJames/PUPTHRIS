@@ -45,6 +45,13 @@ export class CoordinatorManagementComponent implements OnInit, OnDestroy {
   paginatedFacultyUsers: User[] = [];
   paginatedDepartments: Department[] = [];
 
+  // Pagination for modal faculty list
+  modalCurrentPage: number = 1;
+  modalTotalPages: number = 1;
+  modalItemsPerPage: number = 10;
+  modalTotalItems: number = 0;
+  modalPageNumbers: number[] = [];
+
   constructor(
     private coordinatorService: CoordinatorService,
     private userManagementService: UserManagementService,
@@ -115,31 +122,31 @@ export class CoordinatorManagementComponent implements OnInit, OnDestroy {
   }
 
   loadActiveFacultyUsers(): void {
-    if (this.campusId === null) {
-      console.error('Campus ID is null');
-      return;
-    }
-
+    // Show loading state
     this.loading = true;
-    const params: GetUsersParams = {
-      campusId: this.campusId,
-      role: 'faculty',
-      page: this.currentPage,
-      limit: this.itemsPerPage,
-      search: this.facultySearchTerm
+
+    const params = {
+      page: this.modalCurrentPage,
+      limit: this.modalItemsPerPage,
+      search: this.facultySearchTerm,
+      role: 'faculty' // Add this if you want to filter only faculty users
     };
 
     this.userManagementService.getAllUsers(params).subscribe({
-      next: (response: UserResponse) => {
+      next: (response) => {
         this.facultyUsers = response.data;
-        this.paginatedFacultyUsers = response.data;
-        this.totalItems = response.metadata.totalItems;
-        this.totalPages = response.metadata.totalPages;
+        this.modalTotalItems = response.metadata.totalItems;
+        this.modalTotalPages = response.metadata.totalPages;
+        this.modalPageNumbers = Array.from({length: this.modalTotalPages}, (_, i) => i + 1);
+        
+        // Update the paginated faculty users
+        this.paginatedFacultyUsers = this.facultyUsers;
+        
+        // Hide loading state
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error fetching faculty users:', error);
-        this.showToastNotification('Error fetching faculty users', 'error');
+        console.error('Error loading faculty users:', error);
         this.loading = false;
       }
     });
@@ -148,8 +155,9 @@ export class CoordinatorManagementComponent implements OnInit, OnDestroy {
   openAssignModal(department: Department): void {
     this.selectedDepartment = department;
     this.showAssignModal = true;
-    this.facultySearchTerm = '';
-    this.filteredFacultyUsers = [...this.facultyUsers];
+    this.modalCurrentPage = 1; // Reset to first page when opening modal
+    this.facultySearchTerm = ''; // Reset search term
+    this.loadActiveFacultyUsers();
   }
 
   closeAssignModal(): void {
@@ -225,8 +233,9 @@ export class CoordinatorManagementComponent implements OnInit, OnDestroy {
   }
 
   onFacultySearch(event: any): void {
-    const searchTerm = event.target.value;
-    this.facultySearchSubject.next(searchTerm);
+    this.facultySearchTerm = event.target.value;
+    this.modalCurrentPage = 1; // Reset to first page when searching
+    this.loadActiveFacultyUsers();
   }
 
   private filterDepartments(): void {
@@ -295,5 +304,41 @@ export class CoordinatorManagementComponent implements OnInit, OnDestroy {
     }
 
     return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  }
+
+  calculateEndIndex(): number {
+    return Math.min(this.currentPage * this.itemsPerPage, this.totalItems);
+  }
+
+  // Methods for modal faculty list pagination
+  modalNextPage(): void {
+    if (this.modalCurrentPage < this.modalTotalPages) {
+      this.modalCurrentPage++;
+      this.loadActiveFacultyUsers(); // Reload data with new page
+    }
+  }
+
+  modalPreviousPage(): void {
+    if (this.modalCurrentPage > 1) {
+      this.modalCurrentPage--;
+      this.loadActiveFacultyUsers(); // Reload data with new page
+    }
+  }
+
+  modalGoToPage(page: number): void {
+    if (page >= 1 && page <= this.modalTotalPages && page !== this.modalCurrentPage) {
+      this.modalCurrentPage = page;
+      this.loadActiveFacultyUsers(); // Reload data with new page
+    }
+  }
+
+  calculateModalEndIndex(): number {
+    return Math.min(this.modalCurrentPage * this.modalItemsPerPage, this.modalTotalItems);
+  }
+
+  updatePaginatedFacultyUsers(): void {
+    const startIndex = (this.modalCurrentPage - 1) * this.modalItemsPerPage;
+    const endIndex = startIndex + this.modalItemsPerPage;
+    this.paginatedFacultyUsers = this.facultyUsers.slice(startIndex, endIndex);
   }
 }
