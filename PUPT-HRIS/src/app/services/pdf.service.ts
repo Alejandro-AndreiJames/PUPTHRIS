@@ -34,15 +34,19 @@ export class PdfService {
       params,
       responseType: 'blob',
       headers: {
-        'Accept': 'application/pdf',
-        'Content-Type': 'application/json'
+        'Accept': 'application/pdf'
       }
     });
   }
 
-  openPdfInNewTab(blob: Blob): void {
-    const fileURL = URL.createObjectURL(blob);
-    window.open(fileURL, '_blank');
-    URL.revokeObjectURL(fileURL);
+  downloadPdf(blob: Blob, filename: string = 'faculty-profile.pdf'): void {
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
   }
 }
