@@ -38,12 +38,13 @@ export class ProfileImageComponent implements OnInit {
   loadProfileImage(): void {
     this.profileImageService.getProfileImage(this.userID).subscribe(
       (profileImage) => {
-        if (profileImage) {
+        if (profileImage && profileImage.ImagePath) {
           this.profileImageUrl = profileImage.ImagePath + '?t=' + new Date().getTime();
+        } else {
+          this.profileImageUrl = '../assets/default-avatar.jpg';
         }
       },
       (error) => {
-        console.error('Error loading profile image:', error);
       }
     );
   }
@@ -58,7 +59,6 @@ export class ProfileImageComponent implements OnInit {
           this.showToastMessage('Profile image updated successfully');
         },
         (error) => {
-          console.error('Error uploading profile image:', error);
         }
       );
     }
@@ -78,5 +78,10 @@ export class ProfileImageComponent implements OnInit {
     setTimeout(() => {
       this.showToast = false;
     }, 3000);
+  }
+
+  handleImageError(event: any): void {
+    const imgElement = event.target;
+    imgElement.src = '../assets/default-avatar.jpg';
   }
 }
