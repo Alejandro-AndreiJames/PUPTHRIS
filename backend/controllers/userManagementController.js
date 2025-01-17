@@ -189,7 +189,10 @@ exports.getAllUsers = async (req, res) => {
       attributes: { include: ["isActive"] },
       offset: offset,
       limit: limit,
-      order: [["UserID", "ASC"]],
+      order: [
+        ["Surname", "ASC"],
+        ["FirstName", "ASC"]
+      ],
       distinct: true,
     });
 
