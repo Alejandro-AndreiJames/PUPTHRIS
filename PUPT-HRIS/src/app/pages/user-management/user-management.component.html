@@ -34,9 +34,13 @@
         (change)="onRoleChange()"
         class="select select-bordered select-sm w-full max-w-xs">
         <option value="">All Roles</option>
-        <option *ngFor="let role of availableRoles" [value]="role.RoleName.toLowerCase()">
-          {{ role.RoleName }}
-        </option>
+        <ng-container *ngFor="let role of availableRoles">
+          <option 
+            *ngIf="role.RoleName.toLowerCase() !== 'staff'"
+            [value]="role.RoleName.toLowerCase()">
+            {{ role.RoleName }}
+          </option>
+        </ng-container>
       </select>
 
       <select 

@@ -58,19 +58,18 @@ export class EmploymentInformationComponent implements OnInit {
   loadEmploymentInfo(): void {
     this.employmentService.getEmploymentInfo(this.userId).subscribe({
       next: (data: any) => {
-        this.employmentInfo = {
-          ...data,
-          AnnualSalary: this.cleanCurrencyValue(data?.AnnualSalary ?? undefined),
-          RatePerHour: this.cleanCurrencyValue(data?.RatePerHour ?? undefined)
-        };
-        
-        if (this.employmentInfo) {
-          this.employmentForm.patchValue(this.employmentInfo);
+        if (data) {
+          this.employmentInfo = data;
+        } else {
+          // Data is null/undefined but this is an expected state
+          this.employmentInfo = null;
         }
       },
       error: (error) => {
-        console.error('Error fetching employment information:', error);
-        this.showToastNotification('Error loading employment information', 'error');
+        // Only show error toast for actual errors, not for 404 (not found)
+        if (error.status !== 404) {
+          this.showErrorToast('Error fetching employment information');
+        }
       }
     });
   }
@@ -147,5 +146,14 @@ export class EmploymentInformationComponent implements OnInit {
     if (!value) return null;
     const cleanValue = value.toString().replace(/[^\d.-]/g, '');
     return parseFloat(cleanValue);
+  }
+
+  showErrorToast(message: string) {
+    this.toastMessage = message;
+    this.toastType = 'error';
+    this.showToast = true;
+    setTimeout(() => {
+      this.showToast = false;
+    }, 3000);
   }
 }

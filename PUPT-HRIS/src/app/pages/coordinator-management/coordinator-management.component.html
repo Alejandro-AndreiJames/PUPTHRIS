@@ -131,35 +131,38 @@
       </table>
 
       <!-- Pagination Controls -->
-      <div class="pagination-controls flex justify-center gap-2 mt-4" *ngIf="totalPages > 0">
+      <div class="flex justify-center gap-2 mt-4" *ngIf="modalTotalPages > 0">
         <button 
-          (click)="previousPage()" 
-          [disabled]="currentPage === 1" 
-          class="btn btn-sm">
-          Previous
-        </button>
-
-        <button 
-          *ngFor="let page of pageNumbers"
-          (click)="goToPage(page)" 
+          (click)="modalPreviousPage()" 
           class="btn btn-sm"
-          [class.btn-active]="page === currentPage">
-          {{ page }}
+          [disabled]="modalCurrentPage === 1">
+          PREVIOUS
         </button>
 
+        <ng-container *ngFor="let page of modalPageNumbers">
+          <button 
+            (click)="modalGoToPage(page)" 
+            class="btn btn-sm"
+            [class.bg-maroon]="page === modalCurrentPage"
+            [class.text-white]="page === modalCurrentPage"
+            [class.border-maroon]="page === modalCurrentPage">
+            {{ page }}
+          </button>
+        </ng-container>
+
         <button 
-          (click)="nextPage()" 
-          [disabled]="currentPage === totalPages" 
-          class="btn btn-sm">
-          Next
+          (click)="modalNextPage()" 
+          class="btn btn-sm"
+          [disabled]="modalCurrentPage === modalTotalPages">
+          NEXT
         </button>
       </div>
 
       <!-- Add page info -->
-      <div class="text-center text-sm text-gray-600 mt-2" *ngIf="totalItems > 0">
-        Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to 
-        {{ currentPage * itemsPerPage > totalItems ? totalItems : currentPage * itemsPerPage }}
-        of {{ totalItems }} entries
+      <div class="text-center text-sm text-gray-600 mt-2" *ngIf="modalTotalItems > 0">
+        Showing {{ (modalCurrentPage - 1) * modalItemsPerPage + 1 }} to 
+        {{ calculateModalEndIndex() }}
+        of {{ modalTotalItems }} entries
       </div>
     </div>
     <div class="modal-footer">

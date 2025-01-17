@@ -8,9 +8,7 @@ const ObservationSchedule = require('../models/observationScheduleModel');
 const EvaluationScore = require('../models/evaluationScoresModel');
 
 const formatDate = (date) => {
-  console.log('Formatting date:', date);
   if (!date) {
-    console.log('No date provided');
     return 'N/A';
   }
   try {
@@ -19,7 +17,6 @@ const formatDate = (date) => {
       month: 'numeric',
       day: 'numeric'
     });
-    console.log('Formatted date:', formatted);
     return formatted;
   } catch (error) {
     console.error('Error formatting date:', error);
@@ -30,7 +27,6 @@ const formatDate = (date) => {
 exports.generateEvaluationPdf = async (req, res) => {
   try {
     const { evaluationId } = req.params;
-    console.log('Generating PDF for evaluationId:', evaluationId);
 
     // First find the evaluation with detailed logging
     const evaluation = await FacultyEvaluation.findOne({
@@ -49,10 +45,7 @@ exports.generateEvaluationPdf = async (req, res) => {
       ]
     });
 
-    console.log('Raw Evaluation Data:', JSON.stringify(evaluation, null, 2));
-
     if (!evaluation) {
-      console.log('No evaluation found for ID:', evaluationId);
       return res.status(404).json({ error: 'Evaluation not found' });
     }
 
@@ -65,16 +58,13 @@ exports.generateEvaluationPdf = async (req, res) => {
       },
       attributes: ['ScheduledDate', 'Subject', 'Topic', 'RoomNumber']
     });
-
-    console.log('Raw Observation Schedule Data:', JSON.stringify(observationSchedule, null, 2));
-
+    
     // Get evaluation scores with logging
     const evaluationScores = await EvaluationScore.findAll({
       where: { EvaluationID: evaluationId },
       order: [['CriteriaID', 'ASC']]
     });
 
-    console.log('Raw Evaluation Scores:', JSON.stringify(evaluationScores, null, 2));
 
     // Create a map of criteria scores with logging
     const scoreMap = evaluationScores.reduce((map, score) => {
@@ -82,7 +72,6 @@ exports.generateEvaluationPdf = async (req, res) => {
       return map;
     }, {});
 
-    console.log('Score Map:', scoreMap);
 
     // Log the evaluation data being used
     const evaluationData = {

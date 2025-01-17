@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { jwtDecode } from 'jwt-decode';
@@ -65,9 +65,15 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
   viewMode: 'table' | 'calendar' = 'table';
   totalPagesArray: number[] = [];
   semesterOptions = [
+    { value: '', label: 'All Semesters' },
     { value: 'First Semester', label: 'First Semester' },
     { value: 'Second Semester', label: 'Second Semester' }
   ];
+  scheduleFormSemesterOptions = [
+    { value: 'First Semester', label: 'First Semester' },
+    { value: 'Second Semester', label: 'Second Semester' }
+  ];
+  currentDate = new Date().toISOString().split('T')[0];
 
   constructor(
     private fb: FormBuilder,
@@ -124,11 +130,21 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
   }
 
   private initializeForm(): FormGroup {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
+    
     return this.fb.group({
       Topic: ['', Validators.required],
       Subject: ['', Validators.required],
       RoomNumber: ['', Validators.required],
-      ScheduledDate: ['', Validators.required],
+      ScheduledDate: ['', [
+        Validators.required,
+        (control: AbstractControl): ValidationErrors | null => {
+          const selectedDate = new Date(control.value);
+          selectedDate.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
+          return selectedDate >= today ? null : { pastDate: true };
+        }
+      ]],
       StartTime: ['', Validators.required],
       EndTime: ['', Validators.required],
       AcademicYear: [this.currentAcademicYear, Validators.required],
@@ -169,7 +185,7 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
               this.showToastNotification('Schedule created successfully', 'success');
             },
             error: (error) => {
-              this.showToastNotification('Error creating schedule', 'error');
+              this.showToastNotification('A schedule already exists for this semester and academic year', 'error');
             }
           });
       }
@@ -438,5 +454,9 @@ export class ObservationScheduleComponent implements OnInit, OnDestroy {
       this.currentPage = page;
       this.loadSchedules();
     }
+  }
+
+  get scheduledDateControl() {
+    return this.scheduleForm.get('ScheduledDate');
   }
 }

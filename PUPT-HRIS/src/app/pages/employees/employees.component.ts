@@ -633,7 +633,7 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     if (!campusId) return;
 
     const filters: any = {
-      campusId: Number(campusId) // Ensure campusId is a number
+      campusId: Number(campusId)
     };
     
     if (this.generateScope.departmentId !== 'all') {
@@ -647,10 +647,15 @@ export class EmployeeComponent implements OnInit, OnDestroy {
     this.pdfService.generateFacultyProfilePdf(filters)
       .subscribe({
         next: (blob: Blob) => {
-          this.pdfService.openPdfInNewTab(blob);
+          // Generate filename based on filters
+          const timestamp = new Date().toISOString().split('T')[0];
+          const filename = `faculty-profile-${timestamp}.pdf`;
+          this.pdfService.downloadPdf(blob, filename);
           this.showGenerateOptions = false;
         },
         error: (error) => {
+          console.error('Error generating PDF:', error);
+          // Add error handling/user notification here
         }
       });
   }

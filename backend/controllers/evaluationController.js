@@ -94,21 +94,37 @@ exports.submitEvaluation = async (req, res) => {
     }, { transaction });
 
     // Check for matching observation schedule
-    const schedule = await ObservationSchedule.findOne({
+    let schedule = await ObservationSchedule.findOne({
       where: {
         FacultyID: facultyId,
         AcademicYear: academicYear,
         Semester: semester,
-        Status: 'Pending'  // Only update pending schedules
+        Status: 'Pending'
       },
       transaction
     });
 
     if (schedule) {
-      // Update the observation schedule with evaluation ID and status
+      // Update existing schedule
       await schedule.update({ 
         Status: 'Completed',
         EvaluationID: evaluation.EvaluationID 
+      }, { transaction });
+    } else {
+      // Create a new schedule if none exists
+      schedule = await ObservationSchedule.create({
+        FacultyID: facultyId,
+        AcademicYear: academicYear,
+        Semester: semester,
+        Status: 'Completed',
+        EvaluationID: evaluation.EvaluationID,
+        Topic: courseSection,
+        Subject: courseSection,
+        RoomNumber: 'N/A',
+        ScheduledDate: new Date(),
+        StartTime: new Date(),
+        EndTime: new Date(),
+        CreatedBy: createdBy
       }, { transaction });
     }
 

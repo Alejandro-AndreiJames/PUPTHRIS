@@ -130,7 +130,7 @@ exports.getAllUsers = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
-    const { campusId, search, departmentId, employmentType, role, isActive } = req.query;
+    const { campusId, search, departmentId, employmentType, role, isActive, sortDirection } = req.query;
 
     // Build where clause
     let whereClause = {};
@@ -189,7 +189,10 @@ exports.getAllUsers = async (req, res) => {
       attributes: { include: ["isActive"] },
       offset: offset,
       limit: limit,
-      order: [["UserID", "ASC"]],
+      order: [
+        ["Surname", sortDirection || "ASC"],
+        ["FirstName", sortDirection || "ASC"]
+      ],
       distinct: true,
     });
 

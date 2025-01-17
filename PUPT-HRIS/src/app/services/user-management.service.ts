@@ -19,12 +19,13 @@ interface UserResponse {
 interface GetUsersParams {
   page?: number;
   limit?: number;
-  campusId?: number;
+  campusId?: number | null;
   departmentId?: string;
   employmentType?: string;
   search?: string;
   role?: string;
   isActive?: string;
+  sortDirection?: 'ASC' | 'DESC';
 }
 
 @Injectable({
