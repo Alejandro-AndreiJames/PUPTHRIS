@@ -63,7 +63,6 @@ export class TicketListComponent implements OnInit {
     private authService: AuthService
   ) {
     this.isSuperAdmin = this.authService.hasRole('superadmin');
-    console.log('Is SuperAdmin:', this.isSuperAdmin);
     
     this.ticketForm = this.fb.group({
       Subject: ['', [Validators.required]],
@@ -85,19 +84,15 @@ export class TicketListComponent implements OnInit {
 
   private loadAllTickets() {
     this.isLoading = true;
-    console.log('Loading tickets...');
 
     this.ticketService.getAllTickets().subscribe({
       next: (response) => {
-        console.log('Raw response:', response);
         
         if (response && response.data) {
           this.tickets = response.data;
         } else {
           this.tickets = {};
         }
-
-        console.log('Processed tickets:', this.tickets);
         this.isLoading = false;
       },
       error: (error) => {

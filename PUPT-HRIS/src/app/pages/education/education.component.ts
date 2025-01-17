@@ -83,19 +83,15 @@ export class EducationComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log('Component initialized');
     this.loadEducation();
   }
 
   loadEducation(): void {
-    console.log('Loading education data for user:', this.userId);
     this.educationService.getEducationByUser(this.userId).subscribe({
       next: (data) => {
-        console.log('Received education data:', data);
         this.educationData = data;
       },
       error: (error) => {
-        console.error('Error loading education:', error);
         this.showToastNotification('Error fetching education data.', 'error');
       }
     });
@@ -110,8 +106,6 @@ export class EducationComponent implements OnInit {
         const formData = {
           ...education,
         };
-        
-        console.log('Setting form data:', formData);
         this.educationForm.patchValue(formData);
         this.currentEducationId = id;
         this.initialFormValue = this.educationForm.getRawValue();

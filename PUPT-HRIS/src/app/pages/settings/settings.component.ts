@@ -61,11 +61,9 @@ export class SettingsComponent implements OnInit {
     } else {
       this.userID = 0;
     }
-    console.log('SettingsComponent initialized. UserID:', this.userID);
   }
 
   ngOnInit() {
-    console.log('ngOnInit called');
     this.determineUserRole();
     this.loadCollegeCampuses();
     this.loadCurrentCampus();
@@ -93,13 +91,11 @@ export class SettingsComponent implements OnInit {
     } else {
       this.userRole = 'user';
     }
-    console.log('User role:', this.userRole);
   }
 
   loadCollegeCampuses() {
     this.collegeCampusService.getCollegeCampuses().subscribe(
       campuses => {
-        console.log('College campuses loaded:', campuses);
         this.campuses = campuses;
       },
       error => {
@@ -114,11 +110,9 @@ export class SettingsComponent implements OnInit {
     if (currentCampusId) {
       this.campusForm.patchValue({ selectedCampus: currentCampusId });
     } else {
-      console.log('Loading current campus for userID:', this.userID);
       if (this.userID) {
         this.userService.getCurrentUserCampus(this.userID).subscribe(
           campus => {
-            console.log('Current campus loaded:', campus);
             this.campusForm.patchValue({ selectedCampus: campus.CollegeCampusID });
             this.campusContextService.setCampusId(campus.CollegeCampusID);
           },
@@ -137,7 +131,6 @@ export class SettingsComponent implements OnInit {
   onCampusChange(): void {
     const selectedCampusId = this.campusForm.get('selectedCampus')?.value;
     if (selectedCampusId) {
-      console.log('Settings - Changing campus to:', selectedCampusId);
       // Use updateCampus instead of setCampusId
       this.campusContextService.updateCampus(Number(selectedCampusId));
       this.showToastNotification('Campus selection updated!', 'success');
