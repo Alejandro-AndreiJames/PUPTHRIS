@@ -43,6 +43,8 @@ export class NewAccountComponent implements OnInit {
   currentUserCollegeCampusID: number | null = null;
   isLoading: boolean = false;
   showSuccess: boolean = false;
+  isCurrentUserAdmin: boolean = false;
+  decodedToken: any;
 
   constructor(
     private fb: FormBuilder,
@@ -69,6 +71,11 @@ export class NewAccountComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.decodedToken = this.authService.getDecodedToken();
+    if (this.decodedToken && this.decodedToken.roles) {
+      this.isCurrentUserAdmin = this.decodedToken.roles.includes('admin');
+    }
+    
     this.loadRoles();
     this.loadCollegeCampuses();
   
