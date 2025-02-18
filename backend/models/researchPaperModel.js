@@ -36,6 +36,11 @@ const ResearchPaper = sequelize.define('ResearchPaper', {
     type: DataTypes.STRING(500),
     allowNull: true,
   },
+  FileSize: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: 0
+  }
 }, {
   tableName: 'ResearchPapers',
   timestamps: true,

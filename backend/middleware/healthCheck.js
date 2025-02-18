@@ -6,7 +6,7 @@ const CPU_LOAD_THRESHOLD = 95;
 const DB_TIMEOUT = 5000;
 
 /**
- * Checks the health status of the HRIS database connection.
+ * Checks the health status of the FESR database connection.
  * @returns {Promise<Object>} Object containing:
  * - status: 'healthy' | 'degraded' | 'unhealthy'
  * - latency: Database response time in milliseconds
@@ -14,7 +14,7 @@ const DB_TIMEOUT = 5000;
  * - error?: Error message if status is not healthy
  * - errorType?: Type of error encountered
  */
-const checkHrisDbHealth = async () => {
+const checkFesrDbHealth = async () => {
   try {
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(
@@ -108,7 +108,7 @@ const healthCheckHandler = async (_req, res) => {
   const startTime = process.hrtime();
 
   try {
-    const dbStatus = await checkHrisDbHealth();
+    const dbStatus = await checkFesrDbHealth();
     const systemMetrics = getSystemMetrics();
     const [seconds, nanoseconds] = process.hrtime(startTime);
     const responseTime = seconds * 1000 + nanoseconds / 1000000;
@@ -175,6 +175,6 @@ const healthCheckHandler = async (_req, res) => {
 
 module.exports = {
   healthCheckHandler,
-  checkHrisDbHealth,
+  checkFesrDbHealth,
   getSystemMetrics,
 };

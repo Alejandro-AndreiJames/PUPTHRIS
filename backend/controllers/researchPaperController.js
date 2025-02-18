@@ -5,6 +5,9 @@ const s3Client = require('../config/s3.config');
 const { S3_BUCKET_NAME } = process.env;
 const User = require('../models/userModel');
 const { Op } = require('sequelize');
+const checkStorageLimit = require('../middleware/uploadLimitMiddleware');
+const Book = require('../models/bookModel');
+const LectureMaterial = require('../models/lectureMaterialModel');
 
 
 const storage = multer.memoryStorage();
@@ -12,12 +15,15 @@ const upload = multer({ storage });
 
 exports.addResearchPaper = [
   upload.single('document'),
+  checkStorageLimit,
   async (req, res) => {
     try {
-      const researchData = req.body;
-      researchData.UserID = req.user.userId;
+      const researchData = {
+        ...req.body,
+        UserID: req.user.userId,
+        FileSize: req.file ? req.file.size : 0
+      };
 
-      // Handle file upload to S3 if a file is provided
       if (req.file) {
         const fileName = `research-papers/${Date.now()}_${req.file.originalname}`;
         const params = {
@@ -192,6 +198,37 @@ exports.deleteResearchPaper = async (req, res) => {
     res.status(200).json({ message: 'Research paper deleted successfully' });
   } catch (error) {
     console.error('Error deleting research paper:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+// Add an endpoint to check storage usage
+exports.getStorageUsage = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    let totalStorage = 0;
+
+    const [researchPapers, books, lectureMaterials] = await Promise.all([
+      ResearchPaper.findAll({ where: { UserID: userId } }),
+      Book.findAll({ where: { UserID: userId } }),
+      LectureMaterial.findAll({ where: { UserID: userId } })
+    ]);
+
+    [...researchPapers, ...books, ...lectureMaterials].forEach(file => {
+      if (file.FileSize) {
+        totalStorage += file.FileSize;
+      }
+    });
+
+    res.json({
+      totalStorage: totalStorage,
+      maxStorage: MAX_STORAGE_PER_USER,
+      remainingStorage: MAX_STORAGE_PER_USER - totalStorage,
+      usagePercentage: (totalStorage / MAX_STORAGE_PER_USER) * 100,
+      readableUsage: `${(totalStorage / (1024 * 1024)).toFixed(2)}MB / ${MAX_STORAGE_PER_USER / (1024 * 1024)}MB`
+    });
+  } catch (error) {
+    console.error('Error getting storage usage:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 }; 

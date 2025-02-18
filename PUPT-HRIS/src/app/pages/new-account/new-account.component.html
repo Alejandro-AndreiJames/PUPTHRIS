@@ -15,7 +15,9 @@
         <label class="label-text mb-3">Select Roles <span class="text-red-500">*</span></label>
         <div class="grid grid-cols-2 gap-4">
           <ng-container *ngFor="let role of roles">
-            <label *ngIf="role.RoleName.toLowerCase() !== 'staff'" 
+            <label *ngIf="(role.RoleName.toLowerCase() !== 'staff' && 
+                           (role.RoleName.toLowerCase() !== 'superadmin' || 
+                            decodedToken?.roles?.includes('superadmin')))" 
                    style="display: flex; align-items: center; gap: 0.5rem;">
               <input type="checkbox" 
                      [value]="role.RoleID"

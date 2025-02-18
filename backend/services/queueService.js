@@ -165,7 +165,7 @@ class QueueService {
     const response = await axios.post(webhookUrl, payload, {
       headers: {
         "Content-Type": "application/json",
-        "X-HRIS-Secret": signature,
+        "X-FESR-Secret": signature,
         "X-Webhook-ID": webhookId,
       },
       timeout: 10000,
