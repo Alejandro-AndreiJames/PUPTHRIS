@@ -6,12 +6,14 @@ const { S3_BUCKET_NAME, AWS_REGION } = process.env;
 const User = require('../models/userModel');
 const BasicDetails = require('../models/basicDetailsModel');
 const { Op } = require('sequelize');
+const checkStorageLimit = require('../middleware/uploadLimitMiddleware');
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 exports.addBook = [
   upload.single('document'),
+  checkStorageLimit,
   async (req, res) => {
     try {
       // Debug log
@@ -19,7 +21,8 @@ exports.addBook = [
       
       const bookData = {
         ...req.body,
-        UserID: req.user.userId
+        UserID: req.user.userId,
+        FileSize: req.file ? req.file.size : 0
       };
 
       // Debug log
@@ -36,7 +39,7 @@ exports.addBook = [
         };
 
         await s3Client.send(new PutObjectCommand(params));
-        bookData.DocumentPath = `https://${S3_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/${fileName}`;
+        bookData.DocumentPath = fileName;
       }
 
       const newBook = await Book.create(bookData);
@@ -50,6 +53,7 @@ exports.addBook = [
 
 exports.updateBook = [
   upload.single('document'),
+  checkStorageLimit,
   async (req, res) => {
     try {
       const { id } = req.params;
@@ -81,7 +85,8 @@ exports.updateBook = [
           Body: req.file.buffer,
           ContentType: req.file.mimetype,
         }));
-        updates.DocumentPath = `https://${S3_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/${fileName}`;
+        updates.DocumentPath = fileName;
+        updates.FileSize = req.file.size;
       }
 
       await book.update(updates);

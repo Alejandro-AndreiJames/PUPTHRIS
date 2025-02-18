@@ -6,16 +6,21 @@ const { S3_BUCKET_NAME } = process.env;
 const User = require('../models/userModel');
 const BasicDetails = require('../models/basicDetailsModel');
 const { Op } = require('sequelize');
+const checkStorageLimit = require('../middleware/uploadLimitMiddleware');
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 exports.addLectureMaterial = [
   upload.single('file'),
+  checkStorageLimit,
   async (req, res) => {
     try {
-      const lectureData = req.body;
-      lectureData.UserID = req.user.userId;
+      const lectureData = {
+        ...req.body,
+        UserID: req.user.userId,
+        FileSize: req.file ? req.file.size : 0
+      };
 
       if (req.file) {
         const fileName = `lecture-materials/${Date.now()}_${req.file.originalname}`;
@@ -41,6 +46,7 @@ exports.addLectureMaterial = [
 
 exports.updateLectureMaterial = [
   upload.single('file'),
+  checkStorageLimit,
   async (req, res) => {
     try {
       const { id } = req.params;
@@ -72,6 +78,7 @@ exports.updateLectureMaterial = [
           ContentType: req.file.mimetype,
         }));
         updates.FilePath = fileName;
+        updates.FileSize = req.file.size;
       }
 
       await lecture.update(updates);

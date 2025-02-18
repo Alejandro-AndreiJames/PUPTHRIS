@@ -48,7 +48,7 @@ class WebhookController {
       }
 
       const facultyData = {
-        hris_user_id: user.UserID,
+        fesr_user_id: user.UserID,
         faculty_code: user.Fcode,
         first_name: user.FirstName,
         middle_name: user.MiddleName,
@@ -108,7 +108,7 @@ class WebhookController {
       const rawBody = JSON.stringify(req.body);
       console.log("[WebhookController] Raw body:", rawBody);
 
-      const signature = req.headers["x-hris-secret"];
+      const signature = req.headers["x-fesr-secret"];
       if (!signature) {
         console.error("[WebhookController] No signature provided in headers");
         return res.status(401).json({ error: "No signature provided" });
@@ -268,8 +268,8 @@ class WebhookController {
       const mailOptions = {
         from: process.env.EMAIL_USERNAME,
         to: toEmail,
-        subject: "Your HRIS Account Details",
-        text: `Hello ${firstName} ${lastName},\n\nYour HRIS account has been created successfully!\n\nHere are your account details:\n\nEmail: ${toEmail}\nPassword: ${password}\n\nYou can log in using the following link:\n${siteLink}\n\nFor security purposes, we recommend to change your password after your first login.\n\nBest regards, \nPUP Taguig Human Resources System`,
+        subject: "Your FESR Account Details", 
+        text: `Hello ${firstName} ${lastName},\n\nYour FESR account has been created successfully!\n\nHere are your account details:\n\nEmail: ${toEmail}\nPassword: ${password}\n\nYou can log in using the following link:\n${siteLink}\n\nFor security purposes, we recommend to change your password after your first login.\n\nBest regards, \nPUP Taguig Human Resources System`,
       };
 
       await transporter.sendMail(mailOptions);
@@ -373,7 +373,7 @@ class WebhookController {
 
       await this.sendFacultyUpdateWebhook(newUser.UserID, {
         ...facultyData,
-        hris_user_id: newUser.UserID,
+        fesr_user_id: newUser.UserID, 
       });
 
       return newUser;
@@ -564,18 +564,18 @@ class WebhookController {
   }
 
   /**
-   * Map faculty types from HRIS to FLSS format
-   * @param {string} hrisType - HRIS faculty type
+   * Map faculty types from FESR to FLSS format
+   * @param {string} fesrType - FESR faculty type
    * @returns {string} FLSS faculty type
    */
-  #mapFacultyType(hrisType) {
+  #mapFacultyType(fesrType) {
     const typeMapping = {
       fulltime: "Full-Time",
       parttime: "Part-Time",
       designee: "Designee",
       temporary: "Temporary",
     };
-    return typeMapping[hrisType] || hrisType;
+    return typeMapping[fesrType] || fesrType;
   }
 
   /**

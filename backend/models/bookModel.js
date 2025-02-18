@@ -39,6 +39,11 @@ const Book = sequelize.define('Book', {
   DocumentPath: {
     type: DataTypes.STRING(500),
     allowNull: true
+  },
+  FileSize: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: 0
   }
 });
 

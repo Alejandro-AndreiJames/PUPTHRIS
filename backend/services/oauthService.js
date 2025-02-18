@@ -29,7 +29,7 @@ class OAuth2Service {
         secret: process.env.FLSS_CLIENT_SECRET,
       },
       auth: {
-        tokenHost: process.env.HRIS_TOKEN_HOST || "http://localhost:3000",
+        tokenHost: process.env.FESR_TOKEN_HOST || "http://localhost:3000",
         tokenPath: "/oauth/token",
         authorizePath: "/oauth/authorize",
         revokePath: "/oauth/revoke",
@@ -123,7 +123,7 @@ class OAuth2Service {
         Math.floor(Date.now() / 1000) +
         this._getExpiresInSeconds(oauthConfig.token.expiresIn),
       aud: process.env.FLSS_CLIENT_ID,
-      iss: process.env.HRIS_TOKEN_HOST || "http://localhost:3000",
+      iss: process.env.FESR_TOKEN_HOST || "http://localhost:3000",
       ...this._filterFacultyData(userData),
     };
   }
